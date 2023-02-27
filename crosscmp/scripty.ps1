@@ -88,6 +88,7 @@ if($os -eq "Windows_NT")
             pip install pyinstaller
             #should auto install pyinstaller
         }
+        pip install pandas
 
         $files=Get-ChildItem $projPath
         $pythonFiles = $files | Where-Object {$_.Extension -eq ".py"}

@@ -26,12 +26,7 @@ if(Get-ChildItem | Where-Object {$_.Name} -eq "labels.txt")
 else {
     New-Item "$folderpath\labels.txt"
 }
-
-
 Add-Content "$folderpath\labels.txt" "hello"
-
-
-
 
 foreach ($folder in $avFolders)
 {

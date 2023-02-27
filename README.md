@@ -28,10 +28,3 @@ your output files is named **labels.txt** inside the dataset folder you just pas
 as the name suggests, it is a cross compiler, it can accept any source file written in any language for any processor architecture.
 *currently we support C, CPP, Python, any binary files*
 
-# Input and Output Directory
-## For input Directory:
-you should make a folder and dump all your source files or binary executables there.
-## For output Directory:
-you will find a new folder called "**output**" in the same folder where you put your input files,
-the output directory will contain the executable PE file and the LLVM file ready to be analyzed.
-
