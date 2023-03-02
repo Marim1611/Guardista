@@ -6,7 +6,7 @@ $retdecPath = $args[2]
 #YOU SHOULD PASS THE PATH OF THE Juliet Test Suite
 #Compiled is just a flag, options are "true" or "false"
 #YOU SHOULD PASS THE PATH OF RETDEC\BIN
-#run this script like this    "./llextractor.ps1 "D:\ClassWork\GP\C_comp" "D:\ClassWork\GP\RetDec\bin""
+#run this script like this    "./llextractor.ps1 "D:\ClassWork\GP\C_comp" true "D:\ClassWork\GP\RetDec\bin""
 #where    "C_comp" is the folder of the compiled dataset
 #and      "RetDec\bin" is the bin folder of RetDec Tool
 
@@ -33,9 +33,18 @@ $avFolders = Get-ChildItem | Where-Object {$_.Attributes -eq "Directory"}
 $avFolders = $avFolders.Name
 
 
+###################################### JUST FOR DISPLAYING A PROGRESS BAR #####################
+$totalFolderCount = $avFolders.Count
+$currentFolderIndex = 0
+$percentComplete = 0
+###############################################################################################
+
+
 
 foreach ($folder in $avFolders)
 {
+
+
     Set-Location "$rootpath\$folder"
     Get-Location
     if(Get-ChildItem | Where-Object {$_.Attributes -eq "Directory"})
@@ -80,6 +89,13 @@ foreach ($folder in $avFolders)
         }
         $counter = $counter +1
     }
+
+
+    ###################################### JUST FOR DISPLAYING A PROGRESS BAR #####################
+    Write-Progress -Activity "Extracting LLVM files from executables in 'output' folder for each case" -Status "$PercentComplete% of Folders Crawled:" -PercentComplete $PercentComplete
+    $currentFolderIndex++
+    $percentComplete = [int](($currentFolderIndex / $totalFolderCount) * 100)
+    ################################################################################################
     
 }
 

@@ -2,6 +2,13 @@
 
 #README FIRST
 
+
+<#
+    this script is a cross compiler, it takes the folder containing all source files and compiles them all regardless of the language
+#>
+
+
+
 <#
         you should put all your source files in a folder, then pass its absolute path to this script
         so if you put all your source files in folder D:\ClassWork\GP\testpath,
