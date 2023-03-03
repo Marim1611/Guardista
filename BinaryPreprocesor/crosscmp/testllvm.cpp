@@ -5,7 +5,13 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
- 
+
+
+// i dont know wtf i was doing in my life when I wanted to override some LLVM functions and write my own instead
+// pray for me if you read this, I was not doing good.
+
+
+
 
 
 

@@ -5,6 +5,11 @@
 
 <#
     this script is a cross compiler, it takes the folder containing all source files and compiles them all regardless of the language
+    output files are written inside output directory inside the passed folder
+    if you don't have some packages, no problem, this script will hopefully figure out which packages you lack and install them for you
+    currently we compile C, CPP, Python, Fortran files
+    
+    ENJOY :)
 #>
 
 

@@ -1,3 +1,19 @@
+<#
+    this is just a dummy ps1 script for whenever I want to test something without screwing my other scripts
+
+    3ashan ahbed bra7ty hena we mabawzsh ba2y elmashro3
+
+
+    ENJOY :)
+#>
+
+
+
+
+
+
+
+
 $folderpath = $args[0]
 
 

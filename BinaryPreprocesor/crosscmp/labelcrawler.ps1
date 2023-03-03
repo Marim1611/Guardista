@@ -1,5 +1,20 @@
 $folderpath = $args[0]
 
+<#
+Remember the 'Juliet Test Suite v1.3' dataset?
+first, we couldn't find results for which line is causing the vulnerability in manifest.xml so we had to get the line by ourselves.
+so I wrote this script to crawl each high level file and search for 'Potential Flaw' line, then capture the next line
+write the result in a labels.txt file, the result contains the path for the code file then the high level code line in front of it
+
+NOTE : THIS SCRIPT IS OUTDATED, we already figured out another clean way to do so, called julietBin2LL.ps1
+
+ENJOY :)
+#>
+
+
+
+
+
 $origpath = Get-location
 
 Set-Location $folderpath

@@ -5,14 +5,22 @@ import re
 import os
 from xml.dom import minidom
 import xml.etree.ElementTree as ET
-
-
-
 from lxml import etree
 
 
-# parse an xml file by name
+"""
+Remember the dataset 'Juliet test Suite v1.3' ?
+the results of the dataset was inside a xml file but it specified the line number and file name only, without the source code line.
+so this is just a script to put all the results in a csv file called labels.csv, with the source code line causing the vulnerability.
 
+ENJOY :)
+"""
+
+
+
+
+
+# parse an xml file by name
 rootpath = 'D:/ClassWork/GP/C'
 xmlPath = rootpath + '/manifest.xml'
 file = ET.parse(xmlPath)
