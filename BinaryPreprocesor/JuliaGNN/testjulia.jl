@@ -45,9 +45,19 @@ function read_csvs_and_extract_structural_graphs(csv_list)
         m = Matrix(df)
         arr = slicematrix(m)
         arr_str = Vector{Vector{String}}()
+        arr_casted_back_to_int = Vector{Vector{BigInt}}()
         for i in arr
             #println(string.(i))
             push!(arr_str , string.(i))
+            temp_arr = Vector{Int64}()
+            for inner in string.(i)
+                unicode_vector_for_each_char = ""
+                for eachchar in inner
+                    unicode_vector_for_each_char = unicode_vector_for_each_char * string(Int(eachchar), base=10, pad = 0)
+                end
+                push!(temp_arr, parse(Int64,unicode_vector_for_each_char))
+            end
+            push!(arr_casted_back_to_int, temp_arr)
         end
         #println(arr_str)
         #arr = convert(Vector{Vector{String}},arr)
@@ -63,13 +73,13 @@ function read_csvs_and_extract_structural_graphs(csv_list)
         #end
 
         #fg = FeaturedGraph(g)
-
-        gr = GNNGraph(arr)
+        println(arr_casted_back_to_int)
+        gr = GNNGraph(arr_casted_back_to_int)
         rand_label = rand((1,4))
         gr.gdata.z = rand_label
-        #println(gr.num_nodes)
-        #println(gr.num_edges)
-        #println(gr.num_graphs)
+        println(gr.num_nodes)
+        println(gr.num_edges)
+        println(gr.num_graphs)
         #println(rand_label)
         #println(typeof(rand_label))
         push!(graph_list, gr)
@@ -89,7 +99,7 @@ end
 
 
 
-
+#=
 
 function eval_loss_accuracy(model, data_loader, device)
     loss = 0.0
@@ -184,9 +194,10 @@ function train(; kws...)
 end
 
 
+train()
+=#
 
 csv_list = ["edges1.csv", "edges2.csv", "edges3.csv"]
 
 grap_list, labl_list = read_csvs_and_extract_structural_graphs(csv_list)
 
-train()
