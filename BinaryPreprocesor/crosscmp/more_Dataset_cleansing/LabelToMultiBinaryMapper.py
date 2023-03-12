@@ -3,10 +3,17 @@ import re
 import os
 import shutil
 import time
+import sys
 
 
 '''
-                                                            ------DESCRIPTION------
+    TAKES TWO ARGUMENT ONLY, WHICH IS THE ROOT PATH TO THE DATASET CONATINING THE "OneBinary" and "MultiBinaries" FOLDERS.
+    SECOND ARGUMENT IS THE PATH TO RETDEC's bin FOLDER
+    run this script like this:
+    python LabelToMultiBinaryMapper.py D:\classwork\dataset\sample_modified D:\classwork\Guardista\RetDec\bin
+    
+
+                                                            ------DESCRIPTION-----
     HELLO again, do you remember the multibinary dataset? it was a subset from the 3-in-1 dataset but filtered by testcases which
     produced multiple binaries, not just a single executable.
 
@@ -42,10 +49,12 @@ count_of_all_vulnerabilities = 0
 start_time = time.time()
 
 #path to the multibinaries dataset
-rootPathToDataset = "D:/ClassWork/Dataset/sample/Multibinaries"
+rootPathToDataset = str(sys.argv[1]) + "/MultiBinaries"
+rootPathToDataset = re.sub(r'\\', '/', rootPathToDataset)
 
 #path to RetDec's bin folder
-RetDecPath = "D:/ClassWork/Guardista/BinaryPreprocesor/RetDec/bin"
+RetDecPath = str(sys.argv[2])
+RetDecPath = re.sub(r'\\', '/', RetDecPath)
 
 #list containing all files and folders
 root_dir_list = os.listdir(rootPathToDataset)
@@ -85,6 +94,9 @@ for folder in root_dir_list:
         exepath = Path + '/' + exe
         nullout = os.system("python "+RetDecPath+"/retdec-decompiler.py "+ exepath + " --stop-after bin2llvmir -o "+ Path+'/llvmout/'+exe)
 
+
+
+
     #just take the ll files and ignore anything else
     dir_list = os.listdir(llvmirPath)
     llvms = []
@@ -117,8 +129,8 @@ for folder in root_dir_list:
     flag_to_skip_safe_file = False
     if data == []:                                        #if report.json is empty
         count_of_safe_files = count_of_safe_files + 1
-        new_data = dict()
-        new_data['safe'] = True
+        new_data = [dict()]
+        new_data[0]['safe'] = True
         txtfileobj = 'safe'
         flag_to_skip_safe_file = True
 
@@ -147,9 +159,10 @@ for folder in root_dir_list:
 
                 #defining our own regex script
                 func_splitted_name = funcname
-                re.sub('::','.*',func_splitted_name)
-                re.sub('<.*>','.*',func_splitted_name)
-                regex_script = 'define.*'+func_splitted_name+'\(.*{'
+                func_splitted_name = re.sub(r'::','.*',func_splitted_name)
+                func_splitted_name = re.sub(r'<.*>','.*',func_splitted_name)
+                #print(func_splitted_name)
+                regex_script = 'define.*'+func_splitted_name+'\(.*\{'
                 regex_binary_content_script =  r'define[^\n]*'+func_splitted_name+r'\([^\n]*\n(?:[^\n}]*\n)*}'
 
 

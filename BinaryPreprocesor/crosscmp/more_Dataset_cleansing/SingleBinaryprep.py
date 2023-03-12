@@ -3,8 +3,15 @@ import re
 import os
 import shutil
 import time
+import sys
 
 '''
+    TAKES TWO ARGUMENT ONLY, WHICH IS THE ROOT PATH TO THE DATASET CONATINING THE "OneBinary" and "MultiBinaries" FOLDERS.
+    SECOND ARGUMENT IS THE PATH TO RETDEC's bin FOLDER
+    run this script like this:
+    python SingleBinaryprep.py D:\classwork\dataset\sample_modified D:\classwork\Guardista\RetDec\bin
+    
+    
                                                         ---DESCRIPTION---
     Remember the SinleBinary dataset? the dataset where each test case contains only one binary file.
     this python script just decompiles each test case and puts the llvm files in a directory inside each folder. also it captures the
@@ -19,10 +26,14 @@ count_of_vulnerable_cases = 0
 start_time = time.time()
 
 #path to the multibinaries dataset
-rootPathToDataset = "D:/ClassWork/Dataset/sample/One Binary"
+rootPathToDataset = str(sys.argv[1]) + '/OneBinary'
+rootPathToDataset = re.sub(r'\\', '/')
+#rootPathToDataset = "D:/ClassWork/Dataset/sample/One Binary"
 
 #path to RetDec's bin folder
-RetDecPath = "D:/ClassWork/Guardista/BinaryPreprocesor/RetDec/bin"
+RetDecPath = str(sys.argv[2])
+RetDecPath = re.sub(r'\\', '/', RetDecPath)
+#RetDecPath = "D:/ClassWork/Guardista/BinaryPreprocesor/RetDec/bin"
 
 #list containing all files and folders
 root_dir_list = os.listdir(rootPathToDataset)
@@ -99,8 +110,8 @@ for iter,folder in enumerate(root_dir_list):
     flag_to_skip_safe_file = False
     if data == []:                                        #if report.json is empty
         count_of_safe_files = count_of_safe_files + 1
-        new_data = dict()
-        new_data['safe'] = True
+        new_data = [dict()]
+        new_data[0]['safe'] = True
         txtfileobj = 'safe'
         flag_to_skip_safe_file = True
     else:
@@ -122,8 +133,8 @@ for iter,folder in enumerate(root_dir_list):
 
             #defining our own regex script
             func_splitted_name = funcname
-            re.sub('::','.*',func_splitted_name)
-            re.sub('<.*>','.*',func_splitted_name)
+            func_splitted_name = re.sub('::','.*',func_splitted_name)
+            func_splitted_name = re.sub('<.*>','.*',func_splitted_name)
             regex_script = r'define[^\n]*'+func_splitted_name+r'\([^\n]*\n(?:[^\n}]*\n)*}'
 
 
