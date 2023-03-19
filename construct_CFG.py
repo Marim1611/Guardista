@@ -1,8 +1,12 @@
 #!/usr/bin/env python
 # coding: utf-8
+'''
+this file contains functions to construct the CFG of an IR file
+how to run?
+python construct_CFG.py <foldername containing IR files>
+folder is assumed to exist in the same directory as this file
 
-# In[144]:
-
+'''
 
 import os
 import CFG as cfg
@@ -11,24 +15,8 @@ from uuid import uuid4
 import csv
 import json
 import copy
+import sys
 # python retdec-decompiler.py yourbinary.exe --stop-after bin2llvmir
-
-
-# In[145]:
-
-
-def print_nodes(nodes):
-    #print node data in dictionary format
-    print(len(nodes))
-    for ID in nodes.keys():
-        print("node data")
-        print("label: ", nodes[ID].label)
-        print("is_entry: ", nodes[ID].is_entry)
-        print("is_exit: ", nodes[ID].is_exit)
-        for ir in nodes[ID].instructions:
-            print(ir)
-        print("-----------------")
-
 
 # In[146]:
 
@@ -74,7 +62,7 @@ def extract_functions(filename):
 
 # In[147]:
 
-
+#---------------------------------------------------------------------------------------------------------------------
 def construct_nodes(lines,function_id, function_name):
     '''
     this function stores the nodes' data for each function
@@ -96,15 +84,12 @@ def construct_nodes(lines,function_id, function_name):
     for line in lines:
         #1---------- start of a node (basic block)
         if not node_start:
-           
             #node_start_found=re.search("(?<=^dec_label_pc_)[0-9a-z]+(?=:)", line)
             node_start_found=re.search("(?<=^dec_label_pc_).+(?=:)", line)
            
         if node_start_found:
             node_start=True
             label = node_start_found[0]
-            if label == "45bcc0":
-                print("ehhhh")
 
             node_start_found=None #3shan mad5olsh a-search kol mara 3la awl line 
             if i==0:
@@ -123,12 +108,7 @@ def construct_nodes(lines,function_id, function_name):
                 if temp:
                     # called function name , source node label, calling function
                     calls.append((temp[0],label, function_name))
-        # if "unreachable" in line:
-        #     print("yoooooh") 
-        #     print(line)     
-        #     node_end_found=re.search("( ret| br| switch | unreachable| resume).*", line)
-        #     print(node_end_found)
-        #     print("******")
+       
         #4------------- end of a node (basic block)
         node_end_found=re.search("( ret| br| switch | unreachable| resume).*", line)
        
@@ -150,7 +130,7 @@ def construct_nodes(lines,function_id, function_name):
     return nodes ,calls,function_entry
         
         
-                
+#---------------------------------------------------------------------------------------------------------------------          
 
 
 # In[148]:
@@ -189,7 +169,6 @@ def construct_edges (nodes,functions_entry,calls):
             for call in calls:
                 # in all calls find the call where the called function the function containing this ret instruction
                 # connect it with all calling functions
-               
                 if call[0] == nodes[ID].function_name:
                     #get entry of calling function
                     target = call[1]
@@ -197,7 +176,7 @@ def construct_edges (nodes,functions_entry,calls):
                     edges.append(new_edge)
                     nodes[ID].edges_out.append(new_edge)
     return edges
-
+#---------------------------------------------------------------------------------------------------------------------
 
 # In[149]:
 
@@ -224,35 +203,45 @@ def connect_functions (nodes , calls,functions_entry):
     
     return call_edges, nodes
         
-
+#---------------------------------------------------------------------------------------------------------------------
 
 # In[150]:
 
+def get_key(new_nodes, label):
+    ''' map the node label to its number integer id '''
+    for id in new_nodes.keys():
+        if new_nodes[id].label == label:
+            return id
 
-def create_dataFrame(edges,file_name):
-    with open('edges/edges_'+file_name+'.csv', 'w', newline='') as file:
+def create_dataFrame(edges,file_name,new_nodes):
+    with open('numbered_edges/edges_'+file_name+'.csv', 'w', newline='') as file:
         writer = csv.writer(file)
         for edge in edges:
-            writer.writerow( [edge.source_id, edge.target_id])
-        # file.close()
-
-
+            src=get_key(new_nodes,edge.source_id)
+            target=get_key(new_nodes,edge.target_id)
+            writer.writerow( [src, target])
+#---------------------------------------------------------------------------------------------------------------------
 # In[151]:
-
 
 def create_json(nodes, file_name):
     nodes_IRs={}
     for ID in nodes.keys():
         nodes_IRs[ID]=nodes[ID].instructions 
     jsonString = json.dumps(nodes_IRs)
-    jsonFile = open('ir_nodes/json_'+file_name+".json", "w")
+    jsonFile = open('numbered_nodes/json_'+file_name+".json", "w")
     jsonFile.write(jsonString)
     jsonFile.close()
 
+def convert_labels_to_IDs(nodes):
+    new_nodes={}
+    ID=0
+    for key in nodes.keys():
+        new_nodes[ID]=nodes[key]
+        ID+=1
+    return new_nodes
 
+#---------------------------------------------------------------------------------------------------------------------
 # In[152]:
-
-
 def handle_switch(function_lines):
     '''
     this function takes dictionary of function lines ("function index" :[list of lines in the function])
@@ -285,7 +274,7 @@ def handle_switch(function_lines):
                     switch_cut=''
    
     return function_lines
-
+#---------------------------------------------------------------------------------------------------------------------
 
 # In[153]:
 
@@ -299,39 +288,42 @@ def setup(directory):
     nodes={} # dictionary of nodes for all functions
     temp_calls=[]
     calls=[] # list of all calls in the CFG tuples (called function_name, source_node_id, calling function name)
-    temp_edges=[]
     edges=[]
     functions_entry={} # dict to access the entry node of each function easily by its name
     for filename in os.listdir(directory):
-        # print(filename)
+        #----- clear all data structures for the new file----------
+        functions_lines={} 
+        function_names.clear()
+        temp_nodes={} 
+        nodes={}
+        temp_calls.clear()
+        calls=[] 
+        edges=[]
+        functions_entry={} 
         lines.clear()
+        #------------------------------------
         f = os.path.join(directory, filename)
         # checking if it is a file
         if os.path.isfile(f):
            #Dict contains each function lines with key as index 0,1,2 .. representing its position in the file
             functions_lines, function_names= extract_functions(directory+'/'+filename) # print file name
             functions_lines=handle_switch(functions_lines)
-            for name in function_names:
-                if name == "@_ZNSt11_Deque_baseI7OperandSaIS0_EED2Ev":
-                    print("hola")
-                    print(functions_lines)
-             
-        
+            # construct node for all functions in the file & gathering all the calls
             for key in functions_lines:
-
                 temp_nodes, temp_calls,function_entry= construct_nodes(functions_lines[key], key , function_names[key])
-               
                 functions_entry[function_entry[0]]=function_entry[1]
                 nodes.update(temp_nodes)
                 calls+=temp_calls
-          
-            create_json(nodes,filename)
+            #----- create new dict with keys are number IDs not string labels
+            new_nodes=convert_labels_to_IDs(nodes)          
+            create_json(new_nodes,filename)
+            #---- construct edges for the nodes 
             edges = construct_edges(nodes,functions_entry,calls)
-         
             call_edges, nodes = connect_functions(nodes , calls,functions_entry)
             edges.extend(call_edges)
-            create_dataFrame(edges,filename) 
-
+            #----- store edges in csv file
+            create_dataFrame(edges,filename,new_nodes) 
+            #----- store the whole graph in graph object
             final_CFG=cfg.CFG(nodes,edges,calls)
     return final_CFG
            
@@ -344,6 +336,7 @@ def setup(directory):
 
 
 #pass the folder name that contains the IR files
-folder_name=input("=> folder name contains IR files")
+folder_name=sys.argv[1]
 setup(folder_name)
+
 
