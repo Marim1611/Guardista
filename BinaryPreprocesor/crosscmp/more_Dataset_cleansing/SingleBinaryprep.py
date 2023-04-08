@@ -3,6 +3,7 @@ import re
 import os
 import shutil
 import time
+from tqdm import tqdm
 import sys
 
 '''
@@ -26,13 +27,17 @@ count_of_vulnerable_cases = 0
 start_time = time.time()
 
 #path to the multibinaries dataset
+scr = re.compile(r'\\')
 rootPathToDataset = str(sys.argv[1]) + '/OneBinary'
-rootPathToDataset = re.sub(r'\\', '/')
+rootPathToDataset = re.sub(scr, '/', rootPathToDataset)
+print(rootPathToDataset)
 #rootPathToDataset = "D:/ClassWork/Dataset/sample/One Binary"
 
 #path to RetDec's bin folder
 RetDecPath = str(sys.argv[2])
-RetDecPath = re.sub(r'\\', '/', RetDecPath)
+RetDecPath = re.sub(scr, '/', RetDecPath)
+print(RetDecPath)
+
 #RetDecPath = "D:/ClassWork/Guardista/BinaryPreprocesor/RetDec/bin"
 
 #list containing all files and folders
@@ -97,8 +102,8 @@ for iter,folder in enumerate(root_dir_list):
     f = open(labelPath)
     data = json.load(f)
     new_data = data                     #it is the same as result.json, but with our modifications :)
-    txtfileobj = ''                     #just for Ayman to check out something
-
+    #txtfileobj = ''                     #just for Ayman to check out something
+    f.close()
 
    
 
@@ -106,7 +111,6 @@ for iter,folder in enumerate(root_dir_list):
 
     ############## read all vulnerable functions from the results.json and store them in a dictionary #################
     function_names = dict()
-
     flag_to_skip_safe_file = False
     if data == []:                                        #if report.json is empty
         count_of_safe_files = count_of_safe_files + 1
@@ -125,9 +129,13 @@ for iter,folder in enumerate(root_dir_list):
     ################################## open each ll file and search for all function names in this ll file ##############################
     output = []
 
-    FileLL = open(llfilepath)
-    content = FileLL.read()
-
+    try:
+        FileLL = open(llfilepath)
+        content = FileLL.read()
+        FileLL.close()
+    except:
+        print(f"couldnt open LLVM file: {llfilepath}")
+        flag_to_skip_safe_file = True
     if(not flag_to_skip_safe_file):
         for funcname in function_names.keys():
 
@@ -135,18 +143,23 @@ for iter,folder in enumerate(root_dir_list):
             func_splitted_name = funcname
             func_splitted_name = re.sub('::','.*',func_splitted_name)
             func_splitted_name = re.sub('<.*>','.*',func_splitted_name)
-            regex_script = r'define[^\n]*'+func_splitted_name+r'\([^\n]*\n(?:[^\n}]*\n)*}'
+            func_splitted_name = re.sub('.cpp','.*',func_splitted_name)
+            regex_script = r'define.*@(.*'+func_splitted_name+r'.*\(.*\)).*\{'
 
-
-            matches = re.findall(regex_script , str(content), re.DOTALL)
-            #print (f"\n\n\n\n\nFILE {iter}   :   {str(matches[0])}\n\n\n\n\n")
+            try:
+                #print(f"HERERERER: {func_splitted_name}")
+                matches = re.findall(regex_script , str(content))
+                #print("FINISHED")
+            except:
+                print (f"\n\nUNKNOWN EXCEPTION\n")
             if (matches != []):
-                final_func_name = re.findall('(?<=@).*(?=\()', matches[0])
-                new_data[function_names[funcname]]['function_name_in_binary'] = str(final_func_name)
-                new_data[function_names[funcname]]['function_content_in_binary'] = str(matches[0])
-                txtfileobj = txtfileobj+funcname + ' --> ' + str(matches) + '\n'
+                #final_func_name = re.findall('(?<=@)(.*\))(?=.*\{)', matches[0])
+                new_data[function_names[funcname]]['function_name_in_binary'] = str(matches[0])
+                new_data[function_names[funcname]]['whichbinary'] = llvm
+                #new_data[function_names[funcname]]['function_content_in_binary'] = str(matches[0])
+                #txtfileobj = txtfileobj+funcname + ' --> ' + str(matches) + '\n'
 
-            FileLL.close()
+    
     ############################################################################################################################################
 
     #just write the output files in the test case folder
@@ -159,10 +172,9 @@ for iter,folder in enumerate(root_dir_list):
     outfile.write(jsonobj)
     outfile.close()
 
-    txtfile = open(Path+'\Aymoonanalysis.txt', "w")
-    txtfile.write(txtfileobj)
-    txtfile.close()
-    f.close()
+    #txtfile = open(Path+'\Aymoonanalysis.txt', "w")
+    #txtfile.write(txtfileobj)
+    #txtfile.close()
 
 print(f"count of vulnerable test cases : {count_of_vulnerable_cases}")
 print(f"Total : {count_of_all_vulnerabilities} vulnerabilities")

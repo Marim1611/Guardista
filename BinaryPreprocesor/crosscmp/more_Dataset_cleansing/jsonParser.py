@@ -20,6 +20,12 @@ ENJOY :)
 
 
 
+
+
+
+
+
+
 # parse an xml file by name
 rootpath = 'D:/ClassWork/GP/C'
 xmlPath = rootpath + '/manifest.xml'
@@ -36,7 +42,7 @@ DF = pd.DataFrame()
 #range(len(root))
 
 DF.loc[0,"line"] = "gg"
-DF.loc[0,"CVE-ID"] = "gg"
+DF.loc[0,"cve-ids"] = "gg"
 DF.loc[0, "fileName"]= "gg"
 DF.loc[0, "CodeLine"] = "gg"
 DF.loc[0, "testCaseID"] = 0
@@ -91,6 +97,9 @@ for testcase in tqdm(range(len(root))):
                 count = count+1
                 
 DF.to_csv("labels.csv")
+
+
+
 
 
 
