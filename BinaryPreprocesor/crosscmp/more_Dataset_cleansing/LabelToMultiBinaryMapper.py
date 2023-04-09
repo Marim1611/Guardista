@@ -167,11 +167,14 @@ for folder in root_dir_list:
 
 
                 matches = re.findall(regex_script , str(content))
-                binary_content = re.findall(regex_binary_content_script , str(content))
+                #binary_content = re.findall(regex_binary_content_script , str(content))
                 if (matches != []):
                     final_func_name = re.findall('(?<=@)(.*\))(?=.*\{)', matches[0])
                     new_data[function_names[funcname]]['function_name_in_binary'] = str(final_func_name[0])
-                    new_data[function_names[funcname]]['function_content_in_binary'] = str(binary_content[0])
+                    
+                    #we dont need this function
+                    #new_data[function_names[funcname]]['function_content_in_binary'] = str(binary_content[0])
+                    
                     new_data[function_names[funcname]]['whichbinary'] = directoryfiles[llfilepath]
                     txtfileobj = txtfileobj+funcname+' --> ' + directoryfiles[llfilepath] + ' --> ' + str(matches[0]) + '\n'
 

@@ -7,7 +7,7 @@ $RetDecPath = $args[1]
 python SingleBinaryprep.py $BigDataSetRootPath $RetDecPath
 python LabelToMultiBinaryMapper.py $BigDataSetRootPath $RetDecPath
 ./irfilescombiner.ps1 $BigDataSetRootPath
-python jsonlabelfilescombiner.py $BigDataSetRootPath
+#python jsonlabelfilescombiner.py $BigDataSetRootPath
 
 
 

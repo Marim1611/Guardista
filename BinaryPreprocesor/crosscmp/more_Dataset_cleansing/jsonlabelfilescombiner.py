@@ -4,7 +4,7 @@ import os
 import shutil
 import time
 import sys
-
+import glob
 
 '''
     This script is called inside the "irfilescombiner.ps1" script, no need to run this script standalone.
@@ -84,8 +84,12 @@ for testcasefolder in testcasesfolders:
     outputjson_dst = pathToJsonLabelFiles+f'/{executable}.json'
     llvmoutfolder = rootPathToMultiBinaryy+f'/{testcasefolder}/llvmout'
 
-    if(os.path.exists(outputjson_src)):
-        
+
+   
+    #if "output.json" in glob.glob(rootPathToMultiBinaryy+f'/{testcasefolder}/*.json'):
+
+
+    if(os.path.isfile(outputjson_src)):
         f = open(outputjson_src)
         outputjson = json.load(f)
         arr_of_unique_file_names = set()
@@ -142,12 +146,15 @@ for testcasefolder in testcasesfolders:
         #print("num Bina " + str(num_binary))
         #print(outputjson)
 
-
-
     elif(os.path.exists(reportjson_src)):
-        os.rename(reportjson_src, outputjson_dst)
+        print(f"\nOutput.json NOT FOUND IN PATH : {outputjson_src}\n")
+        #should do another iteration
+        #os.rename(reportjson_src, outputjson_src)
+    
+
+    
     else:
-        print("no report found")
+        print("\n\n\nno report.json nor output.json found\n\n\n")
         continue
 
 
