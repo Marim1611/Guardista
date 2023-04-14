@@ -37,6 +37,8 @@ class node:
     is_exit = False # is the node exit of a function
     function_name = None 
     function_id = None 
+    vulnerable = False
+    vulns_IDs= [] # list of IDs of vulnerabilities in the function which this node belongs to
 
     def __init__(self, id, label, is_entry, is_exit,edges_in, edges_out,instructions):
         self.ID =id #TODO remove this
