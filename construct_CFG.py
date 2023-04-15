@@ -213,8 +213,11 @@ def get_key(new_nodes, label):
         if new_nodes[id].label == label:
             return id
 
-def create_dataFrame(edges,file_name,new_nodes):
-    with open('numbered_edges/edges_'+file_name+'.csv', 'w', newline='') as file:
+def create_dataFrame(edges,file_name,new_nodes,directory):
+    folder_name=directory+'_edges'
+    if not os.path.exists(folder_name):
+        os.mkdir(folder_name)
+    with open(folder_name+'/edges_'+file_name+'.csv', 'w', newline='') as file:
         writer = csv.writer(file)
         for edge in edges:
             src=get_key(new_nodes,edge.source_id)
@@ -223,12 +226,15 @@ def create_dataFrame(edges,file_name,new_nodes):
 #---------------------------------------------------------------------------------------------------------------------
 # In[151]:
 
-def create_json(nodes, file_name):
+def create_json(nodes, file_name,directory):
     nodes_IRs={}
+    folder_name=directory+'_nodes'
+    if not os.path.exists(folder_name):
+        os.mkdir(folder_name)
     for ID in nodes.keys():
         nodes_IRs[ID]=nodes[ID].instructions 
     jsonString = json.dumps(nodes_IRs)
-    jsonFile = open('numbered_nodes/json_'+file_name+".json", "w")
+    jsonFile = open(folder_name+'/json_'+file_name+".json", "w")
     jsonFile.write(jsonString)
     jsonFile.close()
 
@@ -316,13 +322,13 @@ def setup(directory):
                 calls+=temp_calls
             #----- create new dict with keys are number IDs not string labels
             new_nodes=convert_labels_to_IDs(nodes)          
-            create_json(new_nodes,filename)
+            create_json(new_nodes,filename,directory)
             #---- construct edges for the nodes 
             edges = construct_edges(nodes,functions_entry,calls)
             call_edges, nodes = connect_functions(nodes , calls,functions_entry)
             edges.extend(call_edges)
             #----- store edges in csv file
-            create_dataFrame(edges,filename,new_nodes) 
+            create_dataFrame(edges,filename,new_nodes,directory) 
             #----- store the whole graph in graph object
             final_CFG=cfg.CFG(nodes,edges,calls)
     return final_CFG
