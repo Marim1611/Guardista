@@ -232,10 +232,11 @@ def get_key(new_nodes, label):
             return id
 
 def create_dataFrame(edges,file_name,new_nodes, foldername):
-    folder=foldername+"_edges"
-    if not os.path.exists(folder):
-        os.mkdir(folder)
-    with open(folder+'/edges_'+file_name+'.csv', 'w', newline='') as file:
+    edges_folder="edges_"+foldername
+    if not os.path.exists(edges_folder):
+        os.mkdir(edges_folder)
+    path="CFGs/"+foldername+"_CFGs/"+edges_folder+'/edges_'+file_name+'.csv'
+    with open(path, 'w', newline='') as file:
         writer = csv.writer(file)
         for edge in edges:
             src=get_key(new_nodes,edge.source_id)
@@ -250,10 +251,9 @@ def create_json(nodes, file_name,foldername):
         nodes[ID].instructions.append(1 if nodes[ID].vulnerable else 0)
         nodes_IRs[ID]=nodes[ID].instructions 
     jsonString = json.dumps(nodes_IRs)
-    folder=foldername+"_nodes"
-    if not os.path.exists( folder):
-        os.mkdir(folder)
-    jsonFile = open(folder+'/json_'+file_name+".json", "w")
+    nodes_folder="nodes_"+foldername
+    path="CFGs/"+foldername+"_CFGs/"+nodes_folder+'/json_'+file_name+".json"
+    jsonFile = open(path, "w")
     jsonFile.write(jsonString)
     jsonFile.close()
  
@@ -317,8 +317,24 @@ def handle_switch(function_lines):
     return function_lines
 #---------------------------------------------------------------------------------------------------------------------
 
-# In[153]:
-
+def prepare_directories(foldername):
+    root_folder="CFGs"
+    # root folder for all graphs
+    if not os.path.exists(root_folder):
+        os.mkdir(root_folder) 
+    # folder for all graphs of a specific testcase
+    specific_folder=root_folder+"/"+foldername+"_"+root_folder
+    if not os.path.exists(specific_folder):
+        os.mkdir(specific_folder) 
+    # folder for all edges of a specific testcase
+    edges_folder=specific_folder+"/edges_"+foldername
+    if not os.path.exists(edges_folder):
+        os.mkdir(edges_folder)
+    # folder for all nodes of a specific testcase
+    nodes_folder=specific_folder+"/nodes_"+foldername
+    if not os.path.exists(nodes_folder):
+        os.mkdir(nodes_folder)
+     
 
 # apply for all IR files in the directory 
 def setup(directory):
@@ -366,7 +382,8 @@ def setup(directory):
             call_edges, nodes = connect_functions(nodes , calls,functions_entry)
             edges.extend(call_edges)
             #----- create new dict with keys are number IDs not string labels
-            new_nodes=convert_labels_to_IDs(nodes)          
+            new_nodes=convert_labels_to_IDs(nodes)   
+            prepare_directories(directory)       
             create_json(new_nodes,filename, directory)
             # create_json(nodes,filename)
             #----- store edges in csv file
