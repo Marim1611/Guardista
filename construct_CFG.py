@@ -28,6 +28,7 @@ def extract_functions(filename):
     '''
     functions_lines={} # store each function lines with key as index 0,1,2 .. representing the position of the function in the file
     function_names=[]
+    function_vulns=[] # store the vulnerability ID if exists
     lines=[] # temporary list of lines for each function
     start = False
     end=False
@@ -38,35 +39,47 @@ def extract_functions(filename):
                 # start storing lines withe the firs fuction
                 if not start:
                     start_found=re.search("^define.+", line)
+                    if start_found:
+                        #---------store the vulnerability ID if exists
+                        vuln_found=re.search(" CVE.+", line)
+                        if vuln_found:
+                            CVEs=re.findall("[0-9]+(?=,)", vuln_found[0])
+                            function_vulns.append(CVEs)
+                        else:
+                            function_vulns.append([])
+                        #------------------------------
+                # to avoid checking define line every time 
                 if start_found:
                     start=True
+                   
                 if start:
                     lines.append(line)
-                
+                #---- end of function
                 end_found=re.search("^}$", line, re.MULTILINE)
                 if end_found:
                     functions_lines[index]=lines
                     lines=[]
                     index+=1
                     start=False
+                    #---- get the function name
                     if start_found:
 #TODO exclude bracket from .+ 3shan da @mingw_set_invalid_parameter_handler(void (i16*, i16*, i16*, i32, i64) bytl3 el name kda @mingw_set_invalid_parameter_handler(void
                         temp=re.search("@.+(?=\()", start_found[0])
                     if temp:
                         function_names.append(temp[0])
-                    else:
-                        print(start_found[0])
+                    # else:
+                    #     print(start_found[0])
     f.close()
-    return functions_lines, function_names
+    return functions_lines, function_names,function_vulns
 
 
 # In[147]:
 
 #---------------------------------------------------------------------------------------------------------------------
-def construct_nodes(lines,function_id, function_name):
+def construct_nodes(lines,function_id, function_name,function_vuln):
     '''
     this function stores the nodes' data for each function
-    input: lines of the function, id and name of the function
+    input: lines of the function, id and name of the function, list of vulnerability IDs in the function
     return a dictionary of nodes contains all basic blocks of the functions nodes' objects
     with all its data and a list of tuples contain all calls to other functions in this function
     '''
@@ -99,7 +112,7 @@ def construct_nodes(lines,function_id, function_name):
                 
             continue #TODO CHECK ANA SHLTHA 3SHAN MYSGLSH AWL IR (DEC LABEL..)
         #2-------- store IRs
-        if node_start:    
+        if node_start:   
             IRs.append(line)
             #3-------- store calls
             call_found=re.search("(?<=call ).+", line)
@@ -114,12 +127,16 @@ def construct_nodes(lines,function_id, function_name):
        
         # when reaching end of the basic block store the node data
         if node_end_found:
-                
             #----create object for the new node and add it to the dictionary
             nodes[label]=cfg.node("",label, is_entry,False,[], [],IRs)
             nodes[label].function_id=function_id
             nodes[label].function_name=function_name
-
+            #--- check if the node is vulnerable
+            if len(function_vuln)>0:
+                nodes[label].vulnerable=True
+                nodes[label].vulns_IDs=function_vuln
+            # nodes[label].vulnerable=True if len(function_vuln)>0 else False
+            # nodes[label].vulns_IDs=function_vuln if len(function_vuln)>0 else []
             #--- reset variables
             IRs=[]
             node_start=False
@@ -155,6 +172,7 @@ def construct_edges (nodes,functions_entry,calls):
         src =nodes[ID].label
 
         branch_found="br " or "switch " in ir #TODO need rejex?
+       
         ret_found ="ret " in ir #TODO need rejex? 
         if branch_found:
             #TODO check rule of writing labels
@@ -213,11 +231,11 @@ def get_key(new_nodes, label):
         if new_nodes[id].label == label:
             return id
 
-def create_dataFrame(edges,file_name,new_nodes,directory):
-    folder_name=directory+'_edges'
-    if not os.path.exists(folder_name):
-        os.mkdir(folder_name)
-    with open(folder_name+'/edges_'+file_name+'.csv', 'w', newline='') as file:
+def create_dataFrame(edges,file_name,new_nodes, foldername):
+    folder=foldername+"_edges"
+    if not os.path.exists(folder):
+        os.mkdir(folder)
+    with open(folder+'/edges_'+file_name+'.csv', 'w', newline='') as file:
         writer = csv.writer(file)
         for edge in edges:
             src=get_key(new_nodes,edge.source_id)
@@ -226,24 +244,41 @@ def create_dataFrame(edges,file_name,new_nodes,directory):
 #---------------------------------------------------------------------------------------------------------------------
 # In[151]:
 
-def create_json(nodes, file_name,directory):
+def create_json(nodes, file_name,foldername):
     nodes_IRs={}
-    folder_name=directory+'_nodes'
-    if not os.path.exists(folder_name):
-        os.mkdir(folder_name)
     for ID in nodes.keys():
+        nodes[ID].instructions.append(1 if nodes[ID].vulnerable else 0)
         nodes_IRs[ID]=nodes[ID].instructions 
     jsonString = json.dumps(nodes_IRs)
-    jsonFile = open(folder_name+'/json_'+file_name+".json", "w")
+    folder=foldername+"_nodes"
+    if not os.path.exists( folder):
+        os.mkdir(folder)
+    jsonFile = open(folder+'/json_'+file_name+".json", "w")
     jsonFile.write(jsonString)
     jsonFile.close()
-
+ 
 def convert_labels_to_IDs(nodes):
     new_nodes={}
     ID=0
+
     for key in nodes.keys():
         new_nodes[ID]=nodes[key]
-        ID+=1
+        # if nodes[key].vulnerable:
+        #     print("shotrt")
+        # # print(key)
+        # # if ID == 909:
+        # #     print("found you")
+        # #     print(key)
+        # #     print(nodes[key].instructions) 
+        # #     print(new_nodes[ID])  
+        ID+=1  
+                       
+    # print(new_nodes)
+    # print(len(nodes))
+    # print(len(new_nodes))
+    # sys.exit()
+    # print(new_nodes[909].instructions)
+    # sys.exit()
     return new_nodes
 
 #---------------------------------------------------------------------------------------------------------------------
@@ -290,6 +325,7 @@ def setup(directory):
     lines=[]
     functions_lines={} # store each function lines with key as index 0,1,2 .. representing the position of the function in the file
     function_names=[]
+    function_vulns=[] # list of lists of vulnerabilities for each function
     temp_nodes={} # temporary dictionary of nodes for each function
     nodes={} # dictionary of nodes for all functions
     temp_calls=[]
@@ -312,31 +348,34 @@ def setup(directory):
         # checking if it is a file
         if os.path.isfile(f):
            #Dict contains each function lines with key as index 0,1,2 .. representing its position in the file
-            functions_lines, function_names= extract_functions(directory+'/'+filename) # print file name
+            functions_lines, function_names,function_vulns= extract_functions(directory+'/'+filename) # print file name
+            #PROBLEM HERE REPEATED FUNCTION NAMES
+            for name in function_names:
+                if name == "@CWE247_Reliance_on_DNS_Lookups_in_Security_Decision__w32_01_bad":
+                    print(name)
+                    print("$$")
             functions_lines=handle_switch(functions_lines)
             # construct node for all functions in the file & gathering all the calls
             for key in functions_lines:
-                temp_nodes, temp_calls,function_entry= construct_nodes(functions_lines[key], key , function_names[key])
+                temp_nodes, temp_calls,function_entry= construct_nodes(functions_lines[key], key , function_names[key],function_vulns[key] )
                 functions_entry[function_entry[0]]=function_entry[1]
                 nodes.update(temp_nodes)
                 calls+=temp_calls
-            #----- create new dict with keys are number IDs not string labels
-            new_nodes=convert_labels_to_IDs(nodes)          
-            create_json(new_nodes,filename,directory)
             #---- construct edges for the nodes 
             edges = construct_edges(nodes,functions_entry,calls)
             call_edges, nodes = connect_functions(nodes , calls,functions_entry)
             edges.extend(call_edges)
+            #----- create new dict with keys are number IDs not string labels
+            new_nodes=convert_labels_to_IDs(nodes)          
+            create_json(new_nodes,filename, directory)
+            # create_json(nodes,filename)
             #----- store edges in csv file
             create_dataFrame(edges,filename,new_nodes,directory) 
+            # create_dataFrame(edges,filename,nodes) 
             #----- store the whole graph in graph object
             final_CFG=cfg.CFG(nodes,edges,calls)
     return final_CFG
            
-          
-            
-            
-
 
 # In[154]:
 
