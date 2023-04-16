@@ -231,10 +231,11 @@ def get_key(new_nodes, label):
         if new_nodes[id].label == label:
             return id
 
-def create_dataFrame(edges,file_name,new_nodes):
-    if not os.path.exists("final_edges"):
-        os.mkdir("final_edges")
-    with open('final_edges/edges_'+file_name+'.csv', 'w', newline='') as file:
+def create_dataFrame(edges,file_name,new_nodes, foldername):
+    folder=foldername+"_edges"
+    if not os.path.exists(folder):
+        os.mkdir(folder)
+    with open(folder+'/edges_'+file_name+'.csv', 'w', newline='') as file:
         writer = csv.writer(file)
         for edge in edges:
             src=get_key(new_nodes,edge.source_id)
@@ -243,15 +244,16 @@ def create_dataFrame(edges,file_name,new_nodes):
 #---------------------------------------------------------------------------------------------------------------------
 # In[151]:
 
-def create_json(nodes, file_name):
+def create_json(nodes, file_name,foldername):
     nodes_IRs={}
     for ID in nodes.keys():
         nodes[ID].instructions.append(1 if nodes[ID].vulnerable else 0)
         nodes_IRs[ID]=nodes[ID].instructions 
     jsonString = json.dumps(nodes_IRs)
-    if not os.path.exists("final_nodes"):
-        os.mkdir("final_nodes")
-    jsonFile = open('final_nodes/json_'+file_name+".json", "w")
+    folder=foldername+"_nodes"
+    if not os.path.exists( folder):
+        os.mkdir(folder)
+    jsonFile = open(folder+'/json_'+file_name+".json", "w")
     jsonFile.write(jsonString)
     jsonFile.close()
  
@@ -365,10 +367,10 @@ def setup(directory):
             edges.extend(call_edges)
             #----- create new dict with keys are number IDs not string labels
             new_nodes=convert_labels_to_IDs(nodes)          
-            create_json(new_nodes,filename)
+            create_json(new_nodes,filename, directory)
             # create_json(nodes,filename)
             #----- store edges in csv file
-            create_dataFrame(edges,filename,new_nodes) 
+            create_dataFrame(edges,filename,new_nodes,directory) 
             # create_dataFrame(edges,filename,nodes) 
             #----- store the whole graph in graph object
             final_CFG=cfg.CFG(nodes,edges,calls)
