@@ -1,8 +1,10 @@
 $rootpath = $args[0]
 $Compiled = $args[1]
 $CompileInd = $args[2]
-$GenerateSafeFiles = $args[3]
-$retdecPath = $args[4]
+$specialARG = $args[3]
+$GenerateSafeFiles = $args[4]
+$retdecPath = $args[5]
+
 
 <#
 Remember the 'Juliet Test Suite v1.3' dataset?
@@ -12,10 +14,7 @@ if you haven't compiled the dataset using the compile-all.bat, no problem, just 
 if you want to compile each test case individually, pass true as a third argument
 if you want to generate safe dataset files, pass true as a fourth argument.
 and RetDec's bin path as fifth argument
-
 ENJOY :)
-
-
 THIS SCRIPT SHOULD BE RUN IN VISUAL STUDIO POWERSHELL, not sure how to open it? open visual studio, from tools then command line, then developer power shell
 args[0] : YOU SHOULD PASS THE PATH OF THE Juliet Test Suite
 args[1] : Compiled is just a flag, options are "true" or "false"
@@ -30,6 +29,11 @@ and      "RetDec\bin" is the bin folder of RetDec Tool
 
 $origPATTH = Get-Location
 $rootToDataset = $rootpath
+
+
+$countCompoundedTestCases = 0
+$countNumberOfTestCasesPerCVE = 0
+
 
 if($Compiled -eq "false")
 {
@@ -60,7 +64,8 @@ if($Compiled -eq "false")
 
     ############################################################################################################################
                         #Compiling every CWE family of test cases in a single .exe file containing ALL TEST CASES per this CWE
-    if($CompileInd -eq "false"){
+    if($CompileInd -eq "false")
+    {
         Set-Location $rootpath
         $fileContent = Get-Content compile_all.bat
         $ss = 'cl /I"testcasesupport" /W3 /MT /GS  /Zi /RTC1 /bigobj /EHsc /nologo /c "testcasesupport\main.cpp" "testcasesupport\io.c" "testcasesupport\std_thread.c"'
@@ -105,7 +110,119 @@ if($Compiled -eq "false")
 
     ############################################################################################################################
                                     #Compiling individual test case alone, each .exe file contains ONLY one test case
-    if($CompileInd -eq "true"){
+    if($CompileInd -eq "true")
+    {
+        if($specialARG -eq "true")
+        {
+            
+            Write-Host("!!!!!!!Iamhere!!!!!!!!!!!!")
+            Set-Location $rootpath\testcases
+            $allFolders = Get-ChildItem -Directory
+            foreach( $fold in $allFolders)
+            {
+                $loc = Get-Location
+                Set-Location "$rootpath\testcases\$fold"
+                $subsubFolers = Get-ChildItem -Directory
+                if($subsubFolers)
+                {
+                    foreach ($ffold in $subsubFolers)
+                    {
+                        Set-Location "$rootpath\testcases\$fold\$ffold"
+                        $TestCaseFiles = Get-ChildItem | Where-Object {($_.Extension -eq ".cpp") -or (($_.Extension -eq ".c"))}
+                        foreach ($case in $TestCaseFiles)
+                        {
+                            $countNumberOfTestCasesPerCVE = $countNumberOfTestCasesPerCVE + 1
+                            Set-Location "$rootpath\testcases\$fold\$ffold"
+                            $filename = $case.Name
+                            $casebasename = $case.BaseName
+                            $casebasename -match 'CWE[0-9]+_.*_[0-9]+'
+                            $testcaseName = $Matches.0
+                            if($casebasename.SubString(0, 3) -eq "CWE")
+                            {
+                                if(($casebasename -match 'CWE[0-9]+_.*_[0-9]+.*(good|bad)(G2G|G2B|B2G|B2B)\.')-or($casebasename -match 'CWE[0-9]+_.*_[0-9]+[a-zA-Z]\.'))
+                                {
+                                    
+                                    $safeBaseName = $casebasename + "Safe"
+                                    $filenamewith_Asterix = $testcaseName+"*"+$case.Extension
+                                    Write-Host($filenamewith_Asterix)
+                                    if($casebasename.SubString(0,3) -eq "CWE")
+                                    {
+                                        $countCompoundedTestCases = $countCompoundedTestCases+1
+                                        $CasePath = Get-Location
+                                        Set-Location $rootpath
+                                        #cl /Itestcasesupport /DINCLUDEMAIN /Zi /Fe"$rootpath\testcases\$fold\$ffold\$casebasename.exe" testcasesupport\io.c testcasesupport\std_thread.c "$CasePath\$filenamewith_Asterix"
+                                        if($GenerateSafeFiles -eq "true"){ #if we specified to generate safe files
+                                            cl /Itestcasesupport /DINCLUDEMAIN /DOMITBAD /Zi /Fe"$rootpath\testcases\$fold\$ffold\$safeBaseName.exe" testcasesupport\io.c testcasesupport\std_thread.c "$CasePath\$filenamewith_Asterix"
+                                        }else{cl /Itestcasesupport /DINCLUDEMAIN /Zi /Fe"$rootpath\testcases\$fold\$ffold\$casebasename.exe" testcasesupport\io.c testcasesupport\std_thread.c "$CasePath\$filenamewith_Asterix"}
+                                    }
+                                    Write-Host("$ffold done")
+                                }
+                                else{continue}
+                            }
+                            else{continue}
+                        }
+                        Set-Location $rootToDataset
+                        $tempFiles = Get-ChildItem | Where-Object {$_.Extension -eq ".obj" -and $_.Name.SubString(0,3) -eq "CWE"}
+                        foreach ($tempFile in $tempFiles)
+                        {
+                            Remove-Item -fo $tempFile
+                        }
+                    }
+                    
+                    Set-Location $loc
+                }
+                else
+                {
+                    $loc = Get-Location
+                    $TestCaseFiles = Get-ChildItem | Where-Object {($_.Extension -eq ".cpp") -or (($_.Extension -eq ".c"))}
+                    foreach ($case in $TestCaseFiles)
+                    {
+                        $countNumberOfTestCasesPerCVE = $countNumberOfTestCasesPerCVE + 1
+                        Set-Location $loc
+                        $filename = $case.Name
+                        $casebasename = $case.BaseName
+                        $casebasename -match 'CWE[0-9]+_.*_[0-9]+'
+                        $testcaseName = $Matches.0
+                        if($casebasename.SubString(0, 3) -eq "CWE")
+                        {
+                            if(($casebasename -match 'CWE[0-9]+_.*_[0-9]+.*(good|bad)(G2G|G2B|B2G|B2B)\.')-or($casebasename -match 'CWE[0-9]+_.*_[0-9]+[a-zA-Z]\.'))
+                            {                            
+                                $safeBaseName = $casebasename + "Safe"
+                                $filenamewith_Asterix = $testcaseName+"*"+$case.Extension
+                                Write-Host($filenamewith_Asterix)
+                                if($casebasename.SubString(0,3) -eq "CWE")
+                                {
+                                    $countCompoundedTestCases = $countCompoundedTestCases + 1
+                                    $CasePath = Get-Location
+                                    Set-Location $rootpath
+                                    #cl /Itestcasesupport /DINCLUDEMAIN /Zi /Fe"$rootpath\testcases\$fold\$ffold\$casebasename.exe" testcasesupport\io.c testcasesupport\std_thread.c "$CasePath\$filenamewith_Asterix"
+                                    if($GenerateSafeFiles -eq "true"){ #if we specified to generate safe files
+                                        cl /Itestcasesupport /DINCLUDEMAIN /DOMITBAD /Zi /Fe"$rootpath\testcases\$fold\$ffold\$safeBaseName.exe" testcasesupport\io.c testcasesupport\std_thread.c "$CasePath\$filenamewith_Asterix"
+                                    }else{cl /Itestcasesupport /DINCLUDEMAIN /Zi /Fe"$rootpath\testcases\$fold\$ffold\$casebasename.exe" testcasesupport\io.c testcasesupport\std_thread.c "$CasePath\$filenamewith_Asterix"}
+                                }
+                                Write-Host("$ffold done")
+                            }
+                            else{continue}
+                        }
+                        else{continue}
+                        Set-Location $rootToDataset
+                        $tempFiles = Get-ChildItem | Where-Object {$_.Extension -eq ".obj" -and $_.Name.SubString(0,3) -eq "CWE"}
+                        foreach ($tempFile in $tempFiles)
+                        {
+                            Remove-Item -fo $tempFile
+                        }
+                    }
+                    Write-Host("$fold done")
+                }
+            }
+            Set-Location $origPATTH
+        }
+        else
+        {
+
+            
+        Write-Host("############3Iamhere##############")
+        
         Set-Location $rootpath\testcases
         $allFolders = Get-ChildItem -Directory
         foreach( $fold in $allFolders)
@@ -122,20 +239,30 @@ if($Compiled -eq "false")
                     foreach ($case in $TestCaseFiles)
                     {
                         Set-Location "$rootpath\testcases\$fold\$ffold"
+                        $countNumberOfTestCasesPerCVE = $countNumberOfTestCasesPerCVE +1
+                        if(($casebasename -match 'CWE[0-9]+_.*_[0-9]+.*(good|bad)(G2G|G2B|B2G|B2B)\.')-or($casebasename -match 'CWE[0-9]+_.*_[0-9]+[a-zA-Z]\.'))
+                        {$countCompoundedTestCases = $countCompoundedTestCases+1}
                         $filename = $case.Name
                         $casebasename = $case.BaseName
-                        $safeBaseName = $casebasename + "Safe"
-                        $filenamewith_Asterix = $filename.replace('.',"*.")
-                        if($casebasename.SubString(0,3) -eq "CWE")
-                        {
-                            $CasePath = Get-Location
-                            Set-Location $rootpath
-                            #cl /Itestcasesupport /DINCLUDEMAIN /Zi /Fe"$rootpath\testcases\$fold\$ffold\$casebasename.exe" testcasesupport\io.c testcasesupport\std_thread.c "$CasePath\$filenamewith_Asterix"
-                            if($GenerateSafeFiles -eq "true"){ #if we specified to generate safe files
-                                cl /Itestcasesupport /DINCLUDEMAIN /DOMITBAD /Zi /Fe"$rootpath\testcases\$fold\$ffold\$safeBaseName.exe" testcasesupport\io.c testcasesupport\std_thread.c "$CasePath\$filenamewith_Asterix"
-                            }else{cl /Itestcasesupport /DINCLUDEMAIN /Zi /Fe"$rootpath\testcases\$fold\$ffold\$casebasename.exe" testcasesupport\io.c testcasesupport\std_thread.c "$CasePath\$filenamewith_Asterix"}
-                        }
-                        Write-Host("$ffold done")
+                        $casebasename -match 'CWE[0-9]+_.*_[0-9]+'
+                        $testcaseName = $Matches.0
+                        if($casebasename.SubString(0, 3) -eq "CWE")
+                        {                            
+                                $safeBaseName = $casebasename + "Safe"
+                                $filenamewith_Asterix = $testcaseName+"*"+$case.Extension
+                                Write-Host($filenamewith_Asterix)
+                                if($casebasename.SubString(0,3) -eq "CWE")
+                                {
+                                    $countCompoundedTestCases = $countCompoundedTestCases + 1
+                                    $CasePath = Get-Location
+                                    Set-Location $rootpath
+                                    #cl /Itestcasesupport /DINCLUDEMAIN /Zi /Fe"$rootpath\testcases\$fold\$ffold\$casebasename.exe" testcasesupport\io.c testcasesupport\std_thread.c "$CasePath\$filenamewith_Asterix"
+                                    if($GenerateSafeFiles -eq "true"){ #if we specified to generate safe files
+                                        cl /Itestcasesupport /DINCLUDEMAIN /DOMITBAD /Zi /Fe"$rootpath\testcases\$fold\$ffold\$safeBaseName.exe" testcasesupport\io.c testcasesupport\std_thread.c "$CasePath\$filenamewith_Asterix"
+                                    }else{cl /Itestcasesupport /DINCLUDEMAIN /Zi /Fe"$rootpath\testcases\$fold\$ffold\$casebasename.exe" testcasesupport\io.c testcasesupport\std_thread.c "$CasePath\$filenamewith_Asterix"}
+                                }
+                                Write-Host("$ffold done")
+                        }else{continue}
                     }
                     Set-Location $rootToDataset
                     $tempFiles = Get-ChildItem | Where-Object {$_.Extension -eq ".obj" -and $_.Name.SubString(0,3) -eq "CWE"}
@@ -147,25 +274,37 @@ if($Compiled -eq "false")
                 
                 Set-Location $loc
             }
-            else{
+            else
+            {
                 $loc = Get-Location
                 $TestCaseFiles = Get-ChildItem | Where-Object {($_.Extension -eq ".cpp") -or (($_.Extension -eq ".c"))}
                 foreach ($case in $TestCaseFiles)
                 {
+                    $countNumberOfTestCasesPerCVE = $countNumberOfTestCasesPerCVE +1
                     Set-Location $loc
                     $filename = $case.Name
                     $casebasename = $case.BaseName
-                    $safeBaseName = $casebasename + "Safe"
-                    $filenamewith_Asterix = $filename.replace('.',"*.")
-                    if($casebasename.SubString(0,3) -eq "CWE")
-                    {
-                        $CasePath = Get-Location
-                        Set-Location $rootpath
-                        #cl /Itestcasesupport /DINCLUDEMAIN /Zi /Fe"$CasePath\$casebasename.exe" testcasesupport\io.c testcasesupport\std_thread.c "$CasePath\$filenamewith_Asterix"
-                        if($GenerateSafeFiles -eq "true"){
-                            cl /Itestcasesupport /DINCLUDEMAIN /DOMITBAD /Zi /Fe"$CasePath\$safeBaseName.exe" testcasesupport\io.c testcasesupport\std_thread.c "$CasePath\$filenamewith_Asterix"
-                        }else{cl /Itestcasesupport /DINCLUDEMAIN /Zi /Fe"$CasePath\$casebasename.exe" testcasesupport\io.c testcasesupport\std_thread.c "$CasePath\$filenamewith_Asterix"}
-                    }
+                    $casebasename -match 'CWE[0-9]+_.*_[0-9]+'
+                    $testcaseName = $Matches.0
+                    if($casebasename.SubString(0, 3) -eq "CWE")
+                    {         
+                                if(($casebasename -match 'CWE[0-9]+_.*_[0-9]+.*(good|bad)(G2G|G2B|B2G|B2B)\.')-or($casebasename -match 'CWE[0-9]+_.*_[0-9]+[a-zA-Z]\.'))
+                                {$countCompoundedTestCases = $countCompoundedTestCases+1}                   
+                                $safeBaseName = $casebasename + "Safe"
+                                $filenamewith_Asterix = $testcaseName+"*"+$case.Extension
+                                Write-Host($filenamewith_Asterix)
+                                if($casebasename.SubString(0,3) -eq "CWE")
+                                {
+                                    $countCompoundedTestCases = $countCompoundedTestCases + 1
+                                    $CasePath = Get-Location
+                                    Set-Location $rootpath
+                                    #cl /Itestcasesupport /DINCLUDEMAIN /Zi /Fe"$rootpath\testcases\$fold\$ffold\$casebasename.exe" testcasesupport\io.c testcasesupport\std_thread.c "$CasePath\$filenamewith_Asterix"
+                                    if($GenerateSafeFiles -eq "true"){ #if we specified to generate safe files
+                                        cl /Itestcasesupport /DINCLUDEMAIN /DOMITBAD /Zi /Fe"$rootpath\testcases\$fold\$ffold\$safeBaseName.exe" testcasesupport\io.c testcasesupport\std_thread.c "$CasePath\$filenamewith_Asterix"
+                                    }else{cl /Itestcasesupport /DINCLUDEMAIN /Zi /Fe"$rootpath\testcases\$fold\$ffold\$casebasename.exe" testcasesupport\io.c testcasesupport\std_thread.c "$CasePath\$filenamewith_Asterix"}
+                                }
+                                Write-Host("$ffold done")
+                    }else{continue}
                     Write-Host("$ffold done")
                     Set-Location $rootToDataset
                     $tempFiles = Get-ChildItem | Where-Object {$_.Extension -eq ".obj" -and $_.Name.SubString(0,3) -eq "CWE"}
@@ -179,6 +318,7 @@ if($Compiled -eq "false")
         }
         Set-Location $origPATTH
     }
+}
 }
 
 
@@ -307,10 +447,11 @@ Remove-Item $GarbageOutputfolder -Recurse
 
 
 
-Write-Host($counter)
-
+Write-Host("total number of LL files: $counter")
+Write-Host("number of all files for this CVE: $countNumberOfTestCasesPerCVE")
+Write-Host("Compounded TestCases out of them: $countCompoundedTestCases")
 
 #finally
 Set-Location $origpath
 
-#python .\ManifestParser.py $rootToDataset
+#python .\ManifestParser.py $rootToDataset false
