@@ -4,8 +4,10 @@ python construct_CFG.py <foldername containing IR files>
 folder is assumed to exist in the same directory as this file
 
 '''
-
-import CFG as cfg
+# import node file from classes folder
+import sys; sys.path.append('../../')
+from Classes.node import node
+from Classes.edge import edge
 import re
 from uuid import uuid4
 
@@ -61,7 +63,7 @@ def construct_nodes(lines,function_id, function_name,function_vuln):
         # when reaching end of the basic block store the node data
         if node_end_found:
             #----create object for the new node and add it to the dictionary
-            nodes[label]=cfg.node("",label, is_entry,False,[], [],IRs)
+            nodes[label]= node("",label, is_entry,False,[], [],IRs)
             nodes[label].function_id=function_id
             nodes[label].function_name=function_name
             #--- check if the node is vulnerable
@@ -106,7 +108,7 @@ def construct_edges (nodes,calls):
             targets=re.findall("(?<=%dec_label_pc_)[0-9a-z\.]+(?=\W)", ir)
            
             for target in targets:
-                new_edge= cfg.edge ( src, target)
+                new_edge= edge ( src, target)
                 edges.append(new_edge)
                 nodes[ID].edges_out.append(new_edge) 
         if ret_found:
@@ -116,7 +118,7 @@ def construct_edges (nodes,calls):
                 if call[0] == nodes[ID].function_name:
                     #get entry of calling function
                     target = call[1]
-                    new_edge= cfg.edge (src, target)
+                    new_edge= edge (src, target)
                     edges.append(new_edge)
                     nodes[ID].edges_out.append(new_edge)
     return edges

@@ -14,9 +14,9 @@ it converts IR files to CFGs as nodes in JSON format and edges in CSV format
 '''
 
 import os
-import CFG as cfg
-from uuid import uuid4
-import sys
+import sys; sys.path.append('../../')
+from Classes.CFG import CFG
+# import sys
 from generate_files import *
 from construct_graph import *
 from utils import *
@@ -71,7 +71,7 @@ def generate_graphs(directory,testcase_name):
             #----- store edges in csv file
             create_dataFrame(edges,filename,new_nodes,testcase_name,root_folder) 
             #----- store the whole graph in graph object
-            final_CFG=cfg.CFG(nodes,edges,calls)
+            final_CFG=CFG(nodes,edges,calls)
            
 
 

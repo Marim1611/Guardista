@@ -1,4 +1,6 @@
-import CFG as cfg
+import sys; sys.path.append('../../')
+from Classes.edge import edge
+
 import re
 
 
@@ -70,7 +72,7 @@ def connect_functions (nodes , calls,functions_entry):
         # the target node   is the entry node of the called function
         if call[0] in functions_entry.keys():
             target=functions_entry[call[0]]
-            new_edge= cfg.edge (src, target)
+            new_edge= edge (src, target)
             call_edges.append(new_edge)
             nodes[call[1]].edges_out.append(new_edge)
             #TODO does we need to add edges in of the targets? i don't have their IDs
