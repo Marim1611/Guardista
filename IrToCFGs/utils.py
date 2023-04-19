@@ -6,10 +6,10 @@ import re
 
 def extract_functions(filename):
     '''
-    this function take the IR file name passes through the its lines
-    and returns a dictionary of all functions in the file and list of their names
+    this function take the IR file name passes through its lines
+    and returns a dictionary of functions in the file {index of function : [list of lines in the function]}
     '''
-    functions_lines={} # store each function lines with key as index 0,1,2 .. representing the position of the function in the file
+    functions_lines={} # store each function lines with key as index 0,1,2 .. representing the existence of the function in the file
     function_names=[]
     function_vulns=[] # store the vulnerability ID if exists
     lines=[] # temporary list of lines for each function
