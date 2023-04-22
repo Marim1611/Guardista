@@ -32,10 +32,9 @@ def get_key(new_nodes, label):
         
 #-------------------------------------------------------------------------------
 
-def create_json(nodes, file_name,foldername,root_folder):
+def prepare_json(nodes, file_name,foldername,root_folder):
     ''' create a json file for the nodes of the graph
     '''
-    
     nodes_IRs={}
     for ID in nodes.keys():
         nodes[ID].instructions.append(1 if nodes[ID].vulnerable else 0)
@@ -43,6 +42,15 @@ def create_json(nodes, file_name,foldername,root_folder):
     jsonString = json.dumps(nodes_IRs)
     nodes_folder="nodes_"+foldername
     path=root_folder+foldername+"_CFGs/"+nodes_folder+'/json_'+file_name+".json"
+    jsonFile = open(path, "w")
+    jsonFile.write(jsonString)
+    jsonFile.close()
+
+
+def create_json(dic, path):
+    ''' create a json file for the nodes of the graph
+    '''
+    jsonString = json.dumps(dic)
     jsonFile = open(path, "w")
     jsonFile.write(jsonString)
     jsonFile.close()
