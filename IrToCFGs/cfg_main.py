@@ -37,8 +37,10 @@ def generate_graphs(directory,testcase_name):
     calls=[] # list of all calls in the CFG tuples (called function_name, source_node_id, calling function name)
     edges=[]
     functions_entry={} # dict to access the entry node of each function easily by its name
-    print("0######")
     for filename in os.listdir(directory):
+        #----- check if the file is IR file
+        if not filename.endswith(".ll"):
+            continue
         #----- clear all data structures for the new file----------
         functions_lines={} 
         function_names.clear()
@@ -49,14 +51,12 @@ def generate_graphs(directory,testcase_name):
         edges=[]
         functions_entry={} 
         lines.clear()
-        print("1######")
         #------------------------------------
         f = os.path.join(directory, filename)
         # checking if it is a file
         if os.path.isfile(f):
            #Dict contains each function lines with key as index 0,1,2 .. representing its position in the file
             functions_lines, function_names,function_vulns= extract_functions(directory+'/'+filename) # print file name
-            print("2######")
             functions_lines=handle_switch(functions_lines)
             # construct node for all functions in the file & gathering all the calls
             for key in functions_lines:
