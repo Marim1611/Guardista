@@ -4,13 +4,14 @@ it converts IR files to CFGs as nodes in JSON format and edges in CSV format
 
 **  How to run?
     Be in the same directory of this script and run the following command:
-    python cfg_main.py <flag> <foldername>
+    python cfg_main.py <flag> <path> <foldername>
 
 **  flag = 1 if you have one folder containing IR files
     flag = 0 if you have folder contains multiple sub folders containing IR files
 
-**  folder name is the name of the folder containing IR files or contains multiple sub folders containing IR files
-    this folder is assumed to exist in the same directory of this script
+**  path is the abs path of the folder containing IR files or contains multiple sub folders containing IR files
+
+**  folder name is optional arg for naming the output folders, default "vuln"
 
 '''
 
@@ -36,6 +37,7 @@ def generate_graphs(directory,testcase_name):
     calls=[] # list of all calls in the CFG tuples (called function_name, source_node_id, calling function name)
     edges=[]
     functions_entry={} # dict to access the entry node of each function easily by its name
+    print("0######")
     for filename in os.listdir(directory):
         #----- clear all data structures for the new file----------
         functions_lines={} 
@@ -47,12 +49,14 @@ def generate_graphs(directory,testcase_name):
         edges=[]
         functions_entry={} 
         lines.clear()
+        print("1######")
         #------------------------------------
         f = os.path.join(directory, filename)
         # checking if it is a file
         if os.path.isfile(f):
            #Dict contains each function lines with key as index 0,1,2 .. representing its position in the file
             functions_lines, function_names,function_vulns= extract_functions(directory+'/'+filename) # print file name
+            print("2######")
             functions_lines=handle_switch(functions_lines)
             # construct node for all functions in the file & gathering all the calls
             for key in functions_lines:
@@ -77,14 +81,18 @@ def generate_graphs(directory,testcase_name):
 
 #pass the folder name that contains the IR files
 one_folder=sys.argv[1]
-folder_name=sys.argv[2]
-current_path=(os.path.dirname(os.path.abspath(__file__))).replace("\\","/")
+path=sys.argv[2]
+if len(sys.argv) > 3:
+    folder_name=sys.argv[3]
+else:
+    folder_name="vuln"
+
 # one folder contains IR files
 if one_folder == "1":
-    generate_graphs(current_path+"/"+folder_name, folder_name)
+    generate_graphs(path, folder_name)
 # folder contains sub folders of IR files
 elif one_folder == "0":
-    for subfolder in os.listdir(current_path+"/"+folder_name):
-        generate_graphs(current_path+"/"+folder_name+"/"+subfolder,subfolder)
+    for subfolder in os.listdir(path):
+        generate_graphs(path+"/"+subfolder,subfolder)
 
 
