@@ -21,6 +21,7 @@ def construct_nodes(lines,function_id, function_name,function_vuln):
     nodes={}
     # data needed for each function and each node inside the function
     node_start=False
+    calls_precedence=0
     IRs=[]
     # repeated names functions?
     calls=[] # list of tuples (function_name, source_node_id)
@@ -44,18 +45,20 @@ def construct_nodes(lines,function_id, function_name,function_vuln):
                 is_entry=True #this the first basic block in the function
                 function_entry=(function_name,label)                
                 i+=1
+                calls_precedence=0 # reset the precedence of calls for each new node
                 
             continue #TODO CHECK ANA SHLTHA 3SHAN MYSGLSH AWL IR (DEC LABEL..)
         #2-------- store IRs
-        if node_start:   
+        if node_start:   #still inside the node
             IRs.append(line)
             #3-------- store calls
             call_found=re.search("(?<=call ).+", line)
             if call_found:
+                calls_precedence+=1 #precedence of the call inside the same node (basic block)
                 temp=re.search("@\w+(?=\()", call_found[0])
                 if temp:
-                    # called function name , source node label, calling function
-                    calls.append((temp[0],label, function_name))
+                    # called function name , source node label,precedence calling function
+                    calls.append((temp[0],label,calls_precedence, function_name))
        
         #4------------- end of a node (basic block)
         node_end_found=re.search("( ret| br| switch | unreachable| resume).*", line)

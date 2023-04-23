@@ -3,20 +3,21 @@ This script is the main script for CFG construction
 it converts IR files to CFGs as nodes in JSON format and edges in CSV format
 
 **  How to run?
-    python "./IrToCFGs/cfg_main.py" <flag> <foldername>
+    Be in the same directory of this script and run the following command:
+    python cfg_main.py <flag> <path> <foldername>
 
 **  flag = 1 if you have one folder containing IR files
     flag = 0 if you have folder contains multiple sub folders containing IR files
 
-**  folder name is the name of the folder containing IR files or contains multiple sub folders containing IR files
-    this folder is assumed to exist in the same directory of this script
+**  path is the abs path of the folder containing IR files or contains multiple sub folders containing IR files
+
+**  folder name is optional arg for naming the output folders, default "vuln"
 
 '''
 
 import os
 import sys; sys.path.append('../../')
 from Classes.CFG import CFG
-# import sys
 from generate_files import *
 from construct_graph import *
 from utils import *
@@ -37,6 +38,9 @@ def generate_graphs(directory,testcase_name):
     edges=[]
     functions_entry={} # dict to access the entry node of each function easily by its name
     for filename in os.listdir(directory):
+        #----- check if the file is IR file
+        if not filename.endswith(".ll"):
+            continue
         #----- clear all data structures for the new file----------
         functions_lines={} 
         function_names.clear()
@@ -67,7 +71,7 @@ def generate_graphs(directory,testcase_name):
             #----- create new dict with keys are number IDs not string labels
             new_nodes=convert_labels_to_IDs(nodes)   
             root_folder=prepare_directories(testcase_name)       
-            create_json(new_nodes,filename, testcase_name,root_folder)
+            prepare_json(new_nodes,filename, testcase_name,root_folder)
             #----- store edges in csv file
             create_dataFrame(edges,filename,new_nodes,testcase_name,root_folder) 
             #----- store the whole graph in graph object
@@ -77,15 +81,18 @@ def generate_graphs(directory,testcase_name):
 
 #pass the folder name that contains the IR files
 one_folder=sys.argv[1]
-folder_name=sys.argv[2]
-current_path=(os.path.dirname(os.path.abspath(__file__))).replace("\\","/")
+path=sys.argv[2]
+if len(sys.argv) > 3:
+    folder_name=sys.argv[3]
+else:
+    folder_name="vuln"
+
 # one folder contains IR files
 if one_folder == "1":
-    print(current_path+"/"+folder_name)
-    generate_graphs(current_path+"/"+folder_name, folder_name)
+    generate_graphs(path, folder_name)
 # folder contains sub folders of IR files
 elif one_folder == "0":
-    for subfolder in os.listdir(current_path+"/"+folder_name):
-        generate_graphs(current_path+"/"+folder_name+"/"+subfolder,subfolder)
+    for subfolder in os.listdir(path):
+        generate_graphs(path+"/"+subfolder,subfolder)
 
 
