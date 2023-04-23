@@ -26,15 +26,23 @@ from tensorflow.keras import Model
 import numpy as np
 import os
 import csv
+import sys
+
+# PUT CVE CLASS
+# cve = 'SAFE_23'
+# edges_directory_path = 'CFGs/'+ cve +'_CFGs/edges_' + cve
+edges_directory_path = sys.argv[1]
 
 
 # PUT CVE CLASS
-cve = 'SAFE_23'
-with open('features_matrices/features_matrices_' + cve + '.npy', 'rb') as f:
+# with open('features_matrices/features_matrices_' + cve + '.npy', 'rb') as f:
+#     features_matrices_list = np.load(f,  allow_pickle=True)
+
+with open('features_matrices/features_matrices.npy', 'rb') as f:
     features_matrices_list = np.load(f,  allow_pickle=True)
 
 for i, mat in enumerate(features_matrices_list):
-    print('file' ,i ,'o/p',mat.shape)
+    print('file' ,i ,'dimensions after',mat.shape)
 
 print('number of matrices', len(features_matrices_list))
 
@@ -53,9 +61,6 @@ if not os.path.exists(graphs_representaions_path):
             writer = csv.writer(file)
             writer.writerow(features_names)
 
-
-# PUT CVE CLASS
-edges_directory_path = 'CFGs/'+ cve +'_CFGs/edges_' + cve
 
 i = 0
 for filename in os.listdir(edges_directory_path):
@@ -135,8 +140,15 @@ for filename in os.listdir(edges_directory_path):
         z = graph_rep.tolist()
 
         # PUT CVE CLASS
-        z.append('safe')
+        # z.append('safe')
         # print(z)
+        if filename[-11:-7] == 'Safe':
+            z.append('safe')
+        else:
+            if filename[11] == '_':
+                z.append(filename[6:11])
+            else:
+                z.append(filename[6:12])
 
         with open(graphs_representaions_path, 'a', newline='') as file:
             writer = csv.writer(file)
