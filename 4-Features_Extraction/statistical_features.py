@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import json
 import os
-import pickle
+import sys
 
 def prepare(fi):
     f = open(fi)
@@ -62,36 +62,48 @@ def statistical_features(data, list_features, features_matrix):
 
 #--------------------------------------------------------------------------------------------------------------------------------
 
+def features_per_graph_per_node(nodes_directory_path):
+    features_matrices_list = []
+    i = 0
+    for filename in os.listdir(nodes_directory_path):
+        f = os.path.join(nodes_directory_path, filename)
+
+        if os.path.isfile(f):
+            # print(f)
+            data, list_features, initial_features_matrix = prepare(f)
+            features_matrix, list_features = statistical_features(data,list_features, initial_features_matrix)
+
+            features_matrices_list.append(features_matrix)
+            print('dimensions before', features_matrix.shape)
+
+            # nodes_targets = []
+            # for key, val in data.items():
+            #     node_target = [key,val[-1]]
+            #     # node_target = val[-1]
+            #     nodes_targets.append(node_target)
+            # SimpleDataFrame=pd.DataFrame(data=nodes_targets, columns=['id','vulnerable'])
+            # # SimpleDataFrame.to_csv('D:/AbeerD/College/4th Year/GP/Feature Extraction/features/vulnerable_target.csv')
+            # SimpleDataFrame.to_csv('targets_folder/vulnerable_target_'+str(i)+'.csv')
+
+            i+=1
+
+    return features_matrices_list
+
+#------------------------------------------------------------------------------------------------------------------------------------
+
+nodes_directory_path = sys.argv[1]
+
 # PUT CVE CLASS
-cve = 'SAFE_23'
-nodes_directory_path = 'CFGs/'+ cve +'_CFGs/nodes_' + cve
- 
-features_matrices_list = []
-i = 0
-for filename in os.listdir(nodes_directory_path):
-    f = os.path.join(nodes_directory_path, filename)
+# cve = 'SAFE_23'
+# nodes_directory_path = 'CFGs/'+ cve +'_CFGs/nodes_' + cve
 
-    if os.path.isfile(f):
-        # print(f)
-        data, list_features, initial_features_matrix = prepare(f)
-        features_matrix, list_features = statistical_features(data,list_features, initial_features_matrix)
-
-        features_matrices_list.append(features_matrix)
-        print('1st', features_matrix.shape)
-
-        # nodes_targets = []
-        # for key, val in data.items():
-        #     node_target = [key,val[-1]]
-        #     # node_target = val[-1]
-        #     nodes_targets.append(node_target)
-        # SimpleDataFrame=pd.DataFrame(data=nodes_targets, columns=['id','vulnerable'])
-        # # SimpleDataFrame.to_csv('D:/AbeerD/College/4th Year/GP/Feature Extraction/features/vulnerable_target.csv')
-        # SimpleDataFrame.to_csv('targets_folder/vulnerable_target_'+str(i)+'.csv')
-
-        i+=1
+features_matrices_list = features_per_graph_per_node(nodes_directory_path)
 
 print('number of matrices', len(features_matrices_list))
 
 # PUT CVE CLASS
-with open('features_matrices/features_matrices_' + cve + '.npy', 'wb') as f:
+# with open('features_matrices/features_matrices_' + cve + '.npy', 'wb') as f:
+#     np.save(f, features_matrices_list)
+
+with open('features_matrices/features_matrices.npy', 'wb') as f:
     np.save(f, features_matrices_list)
