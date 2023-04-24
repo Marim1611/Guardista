@@ -1,8 +1,9 @@
 import sys; sys.path.append('../../')
 from Classes.edge import edge
-
 import re
 
+sys.stdin.reconfigure(encoding='utf-8')
+sys.stdout.reconfigure(encoding='utf-8')
 
 def extract_functions(filename):
     '''
@@ -17,7 +18,7 @@ def extract_functions(filename):
     end=False
     index =0
     #loop on file lines
-    with open(filename, 'r') as f:
+    with open(filename, 'r',encoding="utf8",errors='ignore') as f:
         for line in f:
                 # start storing lines withe the firs fuction
                 if not start:
