@@ -152,8 +152,8 @@ if($Compiled -eq "false")
                                         Set-Location $rootpath
                                         #cl /Itestcasesupport /DINCLUDEMAIN /Zi /Fe"$rootpath\testcases\$fold\$ffold\$casebasename.exe" testcasesupport\io.c testcasesupport\std_thread.c "$CasePath\$filenamewith_Asterix"
                                         if($GenerateSafeFiles -eq "true"){ #if we specified to generate safe files
-                                            cl /Itestcasesupport /DINCLUDEMAIN /DOMITBAD /Zi /Fe"$rootpath\testcases\$fold\$ffold\$safeBaseName.exe" testcasesupport\io.c testcasesupport\std_thread.c "$CasePath\$filenamewith_Asterix"
-                                        }else{cl /Itestcasesupport /DINCLUDEMAIN /Zi /Fe"$rootpath\testcases\$fold\$ffold\$casebasename.exe" testcasesupport\io.c testcasesupport\std_thread.c "$CasePath\$filenamewith_Asterix"}
+                                            cl /Itestcasesupport /DINCLUDEMAIN /DOMITBAD /Zi /EHsc /Fe"$rootpath\testcases\$fold\$ffold\$safeBaseName.exe" testcasesupport\io.c testcasesupport\std_thread.c "$CasePath\$filenamewith_Asterix"
+                                        }else{cl /Itestcasesupport /DINCLUDEMAIN /Zi /EHsc /Fe"$rootpath\testcases\$fold\$ffold\$casebasename.exe" testcasesupport\io.c testcasesupport\std_thread.c "$CasePath\$filenamewith_Asterix"}
                                     }
                                     Write-Host("$ffold done")
                                 }
@@ -197,8 +197,8 @@ if($Compiled -eq "false")
                                     Set-Location $rootpath
                                     #cl /Itestcasesupport /DINCLUDEMAIN /Zi /Fe"$rootpath\testcases\$fold\$ffold\$casebasename.exe" testcasesupport\io.c testcasesupport\std_thread.c "$CasePath\$filenamewith_Asterix"
                                     if($GenerateSafeFiles -eq "true"){ #if we specified to generate safe files
-                                        cl /Itestcasesupport /DINCLUDEMAIN /DOMITBAD /Zi /Fe"$rootpath\testcases\$fold\$ffold\$safeBaseName.exe" testcasesupport\io.c testcasesupport\std_thread.c "$CasePath\$filenamewith_Asterix"
-                                    }else{cl /Itestcasesupport /DINCLUDEMAIN /Zi /Fe"$rootpath\testcases\$fold\$ffold\$casebasename.exe" testcasesupport\io.c testcasesupport\std_thread.c "$CasePath\$filenamewith_Asterix"}
+                                        cl /Itestcasesupport /DINCLUDEMAIN /DOMITBAD /Zi /EHsc /Fe"$rootpath\testcases\$fold\$ffold\$safeBaseName.exe" testcasesupport\io.c testcasesupport\std_thread.c "$CasePath\$filenamewith_Asterix"
+                                    }else{cl /Itestcasesupport /DINCLUDEMAIN /Zi /EHsc /Fe"$rootpath\testcases\$fold\$ffold\$casebasename.exe" testcasesupport\io.c testcasesupport\std_thread.c "$CasePath\$filenamewith_Asterix"}
                                 }
                                 Write-Host("$ffold done")
                             }
@@ -258,8 +258,8 @@ if($Compiled -eq "false")
                                     Set-Location $rootpath
                                     #cl /Itestcasesupport /DINCLUDEMAIN /Zi /Fe"$rootpath\testcases\$fold\$ffold\$casebasename.exe" testcasesupport\io.c testcasesupport\std_thread.c "$CasePath\$filenamewith_Asterix"
                                     if($GenerateSafeFiles -eq "true"){ #if we specified to generate safe files
-                                        cl /Itestcasesupport /DINCLUDEMAIN /DOMITBAD /Zi /Fe"$rootpath\testcases\$fold\$ffold\$safeBaseName.exe" testcasesupport\io.c testcasesupport\std_thread.c "$CasePath\$filenamewith_Asterix"
-                                    }else{cl /Itestcasesupport /DINCLUDEMAIN /Zi /Fe"$rootpath\testcases\$fold\$ffold\$casebasename.exe" testcasesupport\io.c testcasesupport\std_thread.c "$CasePath\$filenamewith_Asterix"}
+                                        cl /Itestcasesupport /DINCLUDEMAIN /DOMITBAD /Zi /EHsc /Fe"$rootpath\testcases\$fold\$ffold\$safeBaseName.exe" testcasesupport\io.c testcasesupport\std_thread.c "$CasePath\$filenamewith_Asterix"
+                                    }else{cl /Itestcasesupport /DINCLUDEMAIN /Zi /EHsc /Fe"$rootpath\testcases\$fold\$ffold\$casebasename.exe" testcasesupport\io.c testcasesupport\std_thread.c "$CasePath\$filenamewith_Asterix"}
                                 }
                                 Write-Host("$ffold done")
                         }else{continue}
@@ -300,8 +300,8 @@ if($Compiled -eq "false")
                                     Set-Location $rootpath
                                     #cl /Itestcasesupport /DINCLUDEMAIN /Zi /Fe"$rootpath\testcases\$fold\$ffold\$casebasename.exe" testcasesupport\io.c testcasesupport\std_thread.c "$CasePath\$filenamewith_Asterix"
                                     if($GenerateSafeFiles -eq "true"){ #if we specified to generate safe files
-                                        cl /Itestcasesupport /DINCLUDEMAIN /DOMITBAD /Zi /Fe"$rootpath\testcases\$fold\$ffold\$safeBaseName.exe" testcasesupport\io.c testcasesupport\std_thread.c "$CasePath\$filenamewith_Asterix"
-                                    }else{cl /Itestcasesupport /DINCLUDEMAIN /Zi /Fe"$rootpath\testcases\$fold\$ffold\$casebasename.exe" testcasesupport\io.c testcasesupport\std_thread.c "$CasePath\$filenamewith_Asterix"}
+                                        cl /Itestcasesupport /DINCLUDEMAIN /DOMITBAD /Zi /EHsc /Fe"$rootpath\testcases\$fold\$ffold\$safeBaseName.exe" testcasesupport\io.c testcasesupport\std_thread.c "$CasePath\$filenamewith_Asterix"
+                                    }else{cl /Itestcasesupport /DINCLUDEMAIN /Zi /EHsc /Fe"$rootpath\testcases\$fold\$ffold\$casebasename.exe" testcasesupport\io.c testcasesupport\std_thread.c "$CasePath\$filenamewith_Asterix"}
                                 }
                                 Write-Host("$ffold done")
                     }else{continue}
