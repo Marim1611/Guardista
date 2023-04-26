@@ -4,8 +4,10 @@ python construct_CFG.py <foldername containing IR files>
 folder is assumed to exist in the same directory as this file
 
 '''
-
-import CFG as cfg
+# import node file from classes folder
+import sys; sys.path.append('../../')
+from Classes.node import node
+from Classes.edge import edge
 import re
 from uuid import uuid4
 
@@ -19,6 +21,7 @@ def construct_nodes(lines,function_id, function_name,function_vuln):
     nodes={}
     # data needed for each function and each node inside the function
     node_start=False
+    calls_precedence=0
     IRs=[]
     # repeated names functions?
     calls=[] # list of tuples (function_name, source_node_id)
@@ -42,18 +45,20 @@ def construct_nodes(lines,function_id, function_name,function_vuln):
                 is_entry=True #this the first basic block in the function
                 function_entry=(function_name,label)                
                 i+=1
+                calls_precedence=0 # reset the precedence of calls for each new node
                 
             continue #TODO CHECK ANA SHLTHA 3SHAN MYSGLSH AWL IR (DEC LABEL..)
         #2-------- store IRs
-        if node_start:   
+        if node_start:   #still inside the node
             IRs.append(line)
             #3-------- store calls
             call_found=re.search("(?<=call ).+", line)
             if call_found:
+                calls_precedence+=1 #precedence of the call inside the same node (basic block)
                 temp=re.search("@\w+(?=\()", call_found[0])
                 if temp:
-                    # called function name , source node label, calling function
-                    calls.append((temp[0],label, function_name))
+                    # called function name , source node label,precedence calling function
+                    calls.append((temp[0],label,calls_precedence, function_name))
        
         #4------------- end of a node (basic block)
         node_end_found=re.search("( ret| br| switch | unreachable| resume).*", line)
@@ -61,7 +66,7 @@ def construct_nodes(lines,function_id, function_name,function_vuln):
         # when reaching end of the basic block store the node data
         if node_end_found:
             #----create object for the new node and add it to the dictionary
-            nodes[label]=cfg.node("",label, is_entry,False,[], [],IRs)
+            nodes[label]= node("",label, is_entry,False,[], [],IRs)
             nodes[label].function_id=function_id
             nodes[label].function_name=function_name
             #--- check if the node is vulnerable
@@ -106,7 +111,7 @@ def construct_edges (nodes,calls):
             targets=re.findall("(?<=%dec_label_pc_)[0-9a-z\.]+(?=\W)", ir)
            
             for target in targets:
-                new_edge= cfg.edge ( src, target)
+                new_edge= edge ( src, target)
                 edges.append(new_edge)
                 nodes[ID].edges_out.append(new_edge) 
         if ret_found:
@@ -116,7 +121,7 @@ def construct_edges (nodes,calls):
                 if call[0] == nodes[ID].function_name:
                     #get entry of calling function
                     target = call[1]
-                    new_edge= cfg.edge (src, target)
+                    new_edge= edge (src, target)
                     edges.append(new_edge)
                     nodes[ID].edges_out.append(new_edge)
     return edges

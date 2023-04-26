@@ -4,3 +4,11 @@
 BinaryPreprocessor/RetDec/
 BinaryPreprocessor/openssl/
 BinaryPreprocessor/ghidra_10.2.2_PUBLIC/
+
+*.pyo
+*.pyc
+DATASET
+CFGs
+23
+SAFE_23
+targets_folder

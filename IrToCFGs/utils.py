@@ -1,13 +1,16 @@
-import CFG as cfg
+import sys; sys.path.append('../../')
+from Classes.edge import edge
 import re
 
+sys.stdin.reconfigure(encoding='utf-8')
+sys.stdout.reconfigure(encoding='utf-8')
 
 def extract_functions(filename):
     '''
-    this function take the IR file name passes through the its lines
-    and returns a dictionary of all functions in the file and list of their names
+    this function take the IR file name passes through its lines
+    and returns a dictionary of functions in the file {index of function : [list of lines in the function]}
     '''
-    functions_lines={} # store each function lines with key as index 0,1,2 .. representing the position of the function in the file
+    functions_lines={} # store each function lines with key as index 0,1,2 .. representing the existence of the function in the file
     function_names=[]
     function_vulns=[] # store the vulnerability ID if exists
     lines=[] # temporary list of lines for each function
@@ -15,7 +18,7 @@ def extract_functions(filename):
     end=False
     index =0
     #loop on file lines
-    with open(filename, 'r') as f:
+    with open(filename, 'r',encoding="utf8",errors='ignore') as f:
         for line in f:
                 # start storing lines withe the firs fuction
                 if not start:
@@ -70,7 +73,7 @@ def connect_functions (nodes , calls,functions_entry):
         # the target node   is the entry node of the called function
         if call[0] in functions_entry.keys():
             target=functions_entry[call[0]]
-            new_edge= cfg.edge (src, target)
+            new_edge= edge (src, target)
             call_edges.append(new_edge)
             nodes[call[1]].edges_out.append(new_edge)
             #TODO does we need to add edges in of the targets? i don't have their IDs
