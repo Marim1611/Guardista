@@ -69,6 +69,7 @@ def construct_nodes(lines,function_id, function_name,function_vuln):
             nodes[label]= node("",label, is_entry,False,[], [],IRs)
             nodes[label].function_id=function_id
             nodes[label].function_name=function_name
+            nodes[label].is_exit=True
             #--- check if the node is vulnerable
             if len(function_vuln)>0:
                 nodes[label].vulnerable=True
