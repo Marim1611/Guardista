@@ -7,4 +7,10 @@ class edge:
     def __init__(self, source, target):
         self.source_id = source
         self.target_id = target
- 
+    
+    def get_edge_dict(self):
+        edge_dict=dict()
+        edge_dict["source_id"]=self.source_id   
+        edge_dict["target_id"]=self.target_id
+        return edge_dict 
+        

@@ -21,8 +21,24 @@ class node:
         self.edges_in = edges_in
         self.edges_out = edges_out
         self.instructions = instructions
-    # def add_edges_out(self, edge):
-    #     self.edges_out.append(edge)
-    # def add_edges_in(self, edge):
-    #     self.edges_in.append(edge)
+    
+    def get_node_dict(self):
+        node_dict=dict()
+        node_dict["ID"]=self.ID
+        node_dict["label"]=self.label
+        node_dict["is_entry"]=self.is_entry
+        node_dict["is_exit"]=self.is_exit
+        node_dict["instructions"]=self.instructions
+        node_dict["function_name"]=self.function_name
+        node_dict["function_id"]=self.function_id
+        node_dict["vulnerable"]=self.vulnerable
+        node_dict["vulns_IDs"]=self.vulns_IDs
+        node_dict["edges_out"]=[]
+        for edge in self.edges_out:
+                node_dict["edges_out"].append(edge.get_edge_dict())
+        return node_dict
+    def add_edges_out(self, edge):
+        self.edges_out.append(edge)
+    def add_edges_in(self, edge):
+        self.edges_in.append(edge)
   
