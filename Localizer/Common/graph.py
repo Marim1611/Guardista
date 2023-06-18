@@ -454,3 +454,20 @@ def matchTwoGraphs(srcGraph:Graph , dstGraph:Graph, found = False, timeLimit=Non
 
 
 
+def matchGraphWithListOfGraphs (UserGraph, ListOfStoredGraphs, timeLimit=None, otherWayAround=False)->str:
+    '''
+    this function takes the graph of User Code
+    and a list of graphs (should be stored with us)
+    otherWayAround is a flag whether or not you want to try switching both src and dst Graphs. it is better to leave it as False to avoid False Positives
+    returns the name of the User function and the name of the stored function it matched with, or False otherwise
+    '''
+    output = []
+    for gr in ListOfStoredGraphs:
+        #gr.vizualizeGraph(title="original", saveGraph=True)
+        #UserGraph.vizualizeGraph(title="other", saveGraph=True)
+        if(matchTwoGraphs(gr, UserGraph, timeLimit=timeLimit)):
+            output.append( (UserGraph.Name, gr.Name))
+        if(otherWayAround):
+            if (matchTwoGraphs(UserGraph, gr, timeLimit=timeLimit)):
+                output.append( (UserGraph.Name, gr.Name))
+    return output
