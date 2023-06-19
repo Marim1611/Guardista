@@ -19,7 +19,7 @@ THIS SCRIPT SHOULD BE RUN IN VISUAL STUDIO POWERSHELL, not sure how to open it? 
 args[0] : YOU SHOULD PASS THE PATH OF THE Juliet Test Suite
 args[1] : Compiled is just a flag, options are "true" or "false"
 args[2] : Compile individual, to compile each test case on its own
-args[3] : whethe your want to generate Safe dataset or not OPTIONS: true   false
+args[3] : whether your want to generate Safe dataset or not OPTIONS: true   false
 args[4] : YOU SHOULD PASS THE PATH OF RETDEC\BIN
 run this script like this    "./julietBin2LL.ps1 "D:\ClassWork\GP\juliet" false true true "D:\ClassWork\GP\RetDec\bin""
 where    "C_comp" is the folder of the compiled dataset
