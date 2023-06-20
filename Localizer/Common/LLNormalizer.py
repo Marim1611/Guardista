@@ -798,7 +798,6 @@ def TokenizeLLVM(String_After_Normalizing):
     return output
 '''
 
-#CALL THIS ONLY
 def tokenizeLLVM (String_After_Normalizing):
     StringTemp = re.sub('\s+', ' ', String_After_Normalizing)
     StringTemp = re.sub(r'\n', ' ', StringTemp)
@@ -811,6 +810,17 @@ def tokenizeLLVM (String_After_Normalizing):
     return final_output
 
 
-#out1 = NormalizeLLVM(String2)
 
+
+#CALL THIS ONLY
+def Normalize_Tokenize_LLVM(llvmString):
+    out1 = NormalizeLLVM(llvmString)
+    out2 = tokenizeLLVM (out1)
+    return out2
+
+
+
+
+
+#out1 = NormalizeLLVM(String2)
 #out2 = tokenizeLLVM(out1)
