@@ -1,3 +1,6 @@
+#import code_tokenize as ctok
+
+
 '''
 this scripts aims to normalize and abstract away any noise in the LLVM that can cause deviations during matching
 matching noise is defined by any substring prune to frequent and customizable changes which do not affect the semantics of the subject-
@@ -6,6 +9,7 @@ string
 in our case we want to normalize:
 *Temp Variables
 *Function names
+*Function calls
 *Basic Block labels
 *standardize spaces
 *standardize data types (as the conversion from any integers (i16,i32,i128,etc) to i64)
@@ -24,7 +28,11 @@ abstract the number in front of them?
 
 Question: shall we normalize all new lines? they will not affect any semantics ever!
 I wanna normalize them, but it will be verrrry hard to vizualize
+
+Question: shall we leave the predefined functions without normalizing?
+I really want to leave them because functions like memcpy() is a predefined function and plays a great role in identification of vulns
 '''
+
 
 import re
 
@@ -681,17 +689,48 @@ dec_label_pc_45814b:                              ; preds = %dec_label_pc_458141
   ret %"`anonymous-namespace'::write_result.733" { i32 ptrtoint (i32* @80 to i32) }, !insn.addr !5867
 '''
 
+
+
+
+
+
+LLVM_OPERATORS = ['sext', 'ptrtoint', 'load', 'alloca', 'trunc', 'add', 'and', 'icmp', 'store', 'br', 'sub', 'select', 'ret'\
+                   ,'getelementptr', 'inbounds', 'reload', 'eq', 'inttoptr', 'align', 'strcmp', 'label', 'false', 'reg2mem', 'reload',\
+                    'global_var', '_IO_FILE', 'fprintf', 'stack_var_', 'Fadd', 'fadd', 'fsub', 'mul', 'fmul', 'udiv'\
+                        ,'sdiv', 'fdiv', 'or', 'xor', 'fneg', 'cmpxchg', 'fcmp', 'ne', 'ugt', 'uge', 'ult', 'ule', 'sgt', 'sge', 'slt'\
+                            ,'sle', 'switch', 'indirectbr', 'invoke', 'callbr', 'resume', 'catchswitch', 'catchret', 'cleanupret',\
+                                'urem', 'srem', 'frem', 'extractelement', 'extractvalue', 'insertelement', 'extractvalue', 'insertvalue', 'addrspace',\
+                                    'zext', 'fptrunc', 'fpext', 'fptoui', 'fptosi', 'uitofp', 'sitofp', 'ptrtoint', 'intoptr',\
+                    'memset', 'inline', 'memcpy', 'llvm', 'sadd', 'with', 'overflow', 'uadd', 'ssub', 'usub', 'smul', 'umul', 'sat', 'sshl'\
+                        ,'ushl', 'set', 'loop', 'iterations', 'test', 'decrement', 'reg', 'increment', 'stack_var_-', 'dataBuffer_-'\
+                          , 'x86_amx', 'x86_mmx', 'ppc_fp128', 'ptr', 'half', 'bfloat', 'float', 'fp128', 'x86_fp80']
+
+
+#LLVM_DATA_TYPES = ['void', 'i32', 'i16', 'i64', 'i128', 'half', 'bfloat', 'float', 'fp128', 'x86_fp80', 'ptr', 'ppc_fp128',\
+#                       'x86_amx', 'x86_mmx']
+
+regex_reserved = []
+for i in LLVM_OPERATORS:
+    regex_reserved.append('\b'+i+'\b')
+
+
 def NormalizeLLVM(String1):
     tempVariables = re.findall('%\d+', String1)
     String1 = re.sub('%\d+', "TMP", String1)
     #print(tempVariables)
     #print(String1)
 
-    functionCalls = re.findall("(@\w+\(.*\))",String1)
-    String1 = re.sub("(@\w+\(.*\))", "FUNC", String1)
+    #I put a special sign '$$' before Any token I want to reserve, then will convert them later to their original token
+    reservedWordsReserver = re.findall('('+'|'.join(regex_reserved) + ')', String1)
+    String1 = re.sub('('+'|'.join(regex_reserved) + ')', r'$$\1', String1)
+    #print(reservedWordsReserver)
+
+    functionCalls = re.findall("(@(?<!$$)\w+\(.*\))",String1)
+    String1 = re.sub("(@(?<!$$)\w+\(.*\))", "FUNC", String1)
     #print(functionCalls)
     #print(String1)
 
+    
 
     bigIntegers = re.findall("i6[5-9]", String1)
     bigIntegers = bigIntegers + re.findall("i[7-9][0-9]+", String1)
@@ -739,8 +778,39 @@ def NormalizeLLVM(String1):
     #print(insnAddr)
     #print(String1)
 
+
+    #retrieve all reserved tokens
+    String1 = re.sub('$$(\w+)', r'\1', String1)
+
+
     #eliminate multiple spaces but leave new lines
     String1 = re.sub("\t| +", " ", String1)
 
 
     return String1
+
+
+
+#DEPRECATED
+'''
+def TokenizeLLVM(String_After_Normalizing):
+    output = ctok.tokenize(String_After_Normalizing, lang = "python", syntax_error='ignore')
+    return output
+'''
+
+#CALL THIS ONLY
+def tokenizeLLVM (String_After_Normalizing):
+    StringTemp = re.sub('\s+', ' ', String_After_Normalizing)
+    StringTemp = re.sub(r'\n', ' ', StringTemp)
+    output = re.split(r'\b', StringTemp)
+    
+    final_output = []
+    for tok in output:
+        if tok != ' ':
+            final_output.append(re.sub(' ', '', tok))
+    return final_output
+
+
+#out1 = NormalizeLLVM(String2)
+
+#out2 = tokenizeLLVM(out1)
