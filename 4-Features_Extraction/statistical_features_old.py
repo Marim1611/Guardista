@@ -97,15 +97,13 @@ nodes_directory_path = sys.argv[1]
 # cve = 'SAFE_23'
 # nodes_directory_path = 'CFGs/'+ cve +'_CFGs/nodes_' + cve
 
-cve = sys.argv[2]
-
 features_matrices_list = features_per_graph_per_node(nodes_directory_path)
 
 print('number of matrices', len(features_matrices_list))
 
 # PUT CVE CLASS
-with open('features_matrices/features_matrices_' + cve + '.npy', 'wb') as f:
-    np.save(f, features_matrices_list)
-
-# with open('features_matrices/features_matrices.npy', 'wb') as f:
+# with open('features_matrices/features_matrices_' + cve + '.npy', 'wb') as f:
 #     np.save(f, features_matrices_list)
+
+with open('features_matrices/features_matrices.npy', 'wb') as f:
+    np.save(f, features_matrices_list)

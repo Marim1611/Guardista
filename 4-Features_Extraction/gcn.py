@@ -32,21 +32,25 @@ import sys
 # cve = 'SAFE_23'
 # edges_directory_path = 'CFGs/'+ cve +'_CFGs/edges_' + cve
 edges_directory_path = sys.argv[1]
+cve = sys.argv[2]
 
 
 # PUT CVE CLASS
-# with open('features_matrices/features_matrices_' + cve + '.npy', 'rb') as f:
-#     features_matrices_list = np.load(f,  allow_pickle=True)
-
-with open('features_matrices/features_matrices.npy', 'rb') as f:
+with open('features_matrices/features_matrices_' + cve + '.npy', 'rb') as f:
     features_matrices_list = np.load(f,  allow_pickle=True)
+
+with open('nodes_targets/nodes_targets_' + cve + '.npy', 'rb') as f:
+    nodes_targets_list = np.load(f,  allow_pickle=True)
+
+# with open('features_matrices/features_matrices.npy', 'rb') as f:
+#     features_matrices_list = np.load(f,  allow_pickle=True)
 
 for i, mat in enumerate(features_matrices_list):
     print('file' ,i ,'dimensions after',mat.shape)
 
 print('number of matrices', len(features_matrices_list))
 
-graphs_representaions_path = 'graphs_representations.csv'
+graphs_representaions_path = 'graphs_representations_'+ cve +'.csv'
 
 features_number = features_matrices_list[0].shape[1] #not used bec the embeddings size turns out to be 128
 
@@ -73,6 +77,7 @@ for filename in os.listdir(edges_directory_path):
         print(f)
 
         features_matrix = features_matrices_list[i]
+        nodes_targets = nodes_targets_list[i]
         
         # Read in edges
         edges = pd.read_csv(f)
@@ -130,8 +135,12 @@ for filename in os.listdir(edges_directory_path):
         # gcn_acc = (y_pred == test_subjects).mean()
         # print(f"Test classification accuracy: {gcn_acc}")
         #--------------------------------------------------------------------------------------------
+        
+        if 'safe' in cve or 'SAFE' in cve:
+            targets = np.zeros(features_matrix.shape[0])
+        else: 
+            targets = nodes_targets
 
-        targets = np.zeros(features_matrix.shape[0])
         all_embeddings = emb_model.predict(fullbatch_generator.flow(G.nodes(), targets))
         print(all_embeddings.shape)
 

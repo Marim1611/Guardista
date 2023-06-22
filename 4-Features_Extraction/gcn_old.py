@@ -32,22 +32,21 @@ import sys
 # cve = 'SAFE_23'
 # edges_directory_path = 'CFGs/'+ cve +'_CFGs/edges_' + cve
 edges_directory_path = sys.argv[1]
-cve = sys.argv[2]
 
 
 # PUT CVE CLASS
-with open('features_matrices/features_matrices_' + cve + '.npy', 'rb') as f:
-    features_matrices_list = np.load(f,  allow_pickle=True)
-
-# with open('features_matrices/features_matrices.npy', 'rb') as f:
+# with open('features_matrices/features_matrices_' + cve + '.npy', 'rb') as f:
 #     features_matrices_list = np.load(f,  allow_pickle=True)
+
+with open('features_matrices/features_matrices.npy', 'rb') as f:
+    features_matrices_list = np.load(f,  allow_pickle=True)
 
 for i, mat in enumerate(features_matrices_list):
     print('file' ,i ,'dimensions after',mat.shape)
 
 print('number of matrices', len(features_matrices_list))
 
-graphs_representaions_path = 'graphs_representations_'+ cve +'.csv'
+graphs_representaions_path = 'graphs_representations.csv'
 
 features_number = features_matrices_list[0].shape[1] #not used bec the embeddings size turns out to be 128
 
