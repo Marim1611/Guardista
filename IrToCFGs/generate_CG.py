@@ -5,8 +5,8 @@ This script construct call graphs for all IR files in the directory
     Be in the same directory of this script and run the following command:
     python generate_CG.py <folder name> <path>
 
-**  folder name is the name of the folder containing IR files
-    this folder is assumed to exist in the same directory of this script
+**  folder name is the absolute Path of the folder containing IR files
+    this folder is --a-s-s-u-m-e-d- -t-o- -e-x-i-s-t- -i-n- -t-h-e- -s-a-m-e- -d-i-r-e-c-t-o-r-y- -o-f- -t-h-i-s- -s-c-r-i-p-t--  
 
 **  path is the absolute path you want to store the CGs in 
 
@@ -66,6 +66,9 @@ def generate_CG(directory,folder_name,path):
         file_path=path+"/"+folder_name+"_CGs/"+filename+"_CG.json"
         create_json(CGs,file_path)
 
-folder_name=sys.argv[1]
+#AYMAN : just passed the abs path of the input folder and extract its name from the abs path :/
+folder_path=sys.argv[1]
+folder_name = re.split(r'[/\\]', folder_path)[-1]
 path=sys.argv[2]
-generate_CG(CURRENT_PATH+"/"+folder_name,folder_name,path)
+
+generate_CG(folder_path,folder_name,path)
