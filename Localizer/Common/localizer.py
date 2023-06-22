@@ -103,7 +103,6 @@ for vuln_family, vuln_funcs in vulnerable_code.items():
             scores.sort(reverse=True) 
             if(check_function_vulnerable(threshold, scores[0], scores[1], scores[2])):
                 Vulnerable_Matches[(key, vuln_head)] = (fn, vuln_func)
-                #print((key, vuln_head))
                 break
 
             code_scores[key]=scores
