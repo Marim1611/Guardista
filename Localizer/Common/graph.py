@@ -454,7 +454,7 @@ def matchTwoGraphs(srcGraph:Graph , dstGraph:Graph, found = False, timeLimit=Non
 
 
 
-def matchGraphWithListOfGraphs (UserGraph, ListOfStoredGraphs, timeLimit=None, otherWayAround=False)->str:
+def matchGraphWithListOfGraphs (UserGraph, ListOfStoredGraphs, Names=None,timeLimit=None, otherWayAround=False)->str:
     '''
     this function takes the graph of User Code
     and a list of graphs (should be stored with us)
@@ -463,6 +463,8 @@ def matchGraphWithListOfGraphs (UserGraph, ListOfStoredGraphs, timeLimit=None, o
     '''
     output = []
     for gr in ListOfStoredGraphs:
+        if gr.Name not in Names:
+            continue 
         #gr.vizualizeGraph(title="original", saveGraph=True)
         #UserGraph.vizualizeGraph(title="other", saveGraph=True)
         if(matchTwoGraphs(gr, UserGraph, timeLimit=timeLimit)):

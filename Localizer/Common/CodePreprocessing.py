@@ -8,17 +8,18 @@ It takes both the llvm file and the name of the json file as input.
 it's imported inside the StringSimilarities.ipynb and the json file is loaded into a list of functions.
 
 '''
-def functions_preprocessing( llvm_file, json_file ):
+def functions_preprocessing( llvm_file, json_file , writeJson=True):
     functions = dict()
     
     with open( llvm_file, 'r' ) as f:
         new_fn= 0
-        fn_name= []
+        fn_header= []
+        fn_names= []
 
         for line in f:
             if re.match( r'^define.+',line ):
-                # fn_name.append(re.search( r"@.+(?=\})",line ).group(0))
-                fn_name.append(line)
+                fn_names.append(re.findall('(@.*)\(', line)[0]) #to be returned
+                fn_header.append(line) #to be saved in json
                 functions[new_fn]= ' ' 
                 continue
 
@@ -31,7 +32,15 @@ def functions_preprocessing( llvm_file, json_file ):
 
     #replace all keys with the function name
     for i in range(len(functions)):
-        functions[fn_name[i]]=functions.pop(i)
+        functions[fn_header[i]]=functions.pop(i)
 
-    with open( json_file+'.json', 'w' ) as f:
-        f.write( json.dumps( functions, indent=6, sort_keys=True ) )
+    if(writeJson):
+        with open( json_file+'.json', 'w' ) as f:
+            f.write( json.dumps( functions, indent=6, sort_keys=True ) )
+
+    fn_body= []
+    for key in functions.keys():
+        fn_body.append(functions[key])
+
+    return fn_names,fn_body
+

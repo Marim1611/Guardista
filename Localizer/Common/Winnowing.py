@@ -172,3 +172,40 @@ def diff (stringSRC, stringOTHER, K, WindowSize, P, PrintStats = False):
     '''
 
     return Accuracy_Metric1, Accuracy_Metric2,hits, misses, misses2
+
+
+
+
+
+
+def diffSignatures(sig1, sig2):
+    sig1 = sorted(sig1)
+    sig2 = sorted(sig2)
+    hits = 0
+    misses = 0
+    minLeng = min(len(sig1), len(sig2))
+    sig1Smaller = (minLeng == len(sig1))        #1 if sig1 is smaller, 0 if sig2 is smaller
+    for i in range(minLeng):
+        if sig1Smaller and sig1[i] in sig2:
+            hits += 1
+            sig2.remove(sig1[i])
+        elif (not sig1Smaller) and sig2[i] in sig1:
+            hits += 1
+            sig1.remove(sig2[i])
+        else:
+            misses += 1
+
+    if(sig1Smaller):
+        misses += len(sig2)
+    else:
+        misses += len(sig1)
+
+    Accuracy_Metric1 = hits/(hits+misses)
+
+    #if(sig1Smaller):
+    misses2 = abs(hits-len(sig2))
+    #else:
+    #    misses2 = abs(hits-len(sig2))
+    Accuracy_Metric2 = hits/(hits+misses2)
+
+    return Accuracy_Metric1, Accuracy_Metric2,hits, misses, misses2
