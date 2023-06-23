@@ -13,7 +13,7 @@ def pipeline(userFilePath,userFile):
     # ------------------- 1. Binary Preprocessing ------------------- #
     # TODO: Add the binary preprocessing script here. 
     '''
-    input: user file
+    input: user Folder
     output: output/user.ll
     '''
     # absPathtoPreprocessingScript = str(os.path.abspath("BinaryPreprocesor/crosscmp/scripty.ps1")).replace("\\", "/")
@@ -36,7 +36,7 @@ def pipeline(userFilePath,userFile):
     # absPathtoRetDec[0] = absPathtoRetDec[0].upper()
     # absPathtoRetDec = ''.join(absPathtoRetDec)
 
-    # run(["powershell.exe", absPathtoPreprocessingScript, absPathToUserFile,absPathToActivationScript,absPathtoRetDec]) 
+    # run(["powershell.exe", absPathtoPreprocessingScript, absPathToUserFile,GUARDISTA OUTPUT FOLDER PATH ,absPathtoRetDec, COMPILED OR NOT ?]) 
     # ----------------------------------------------------------------------------------------
 
     # ------------------- 2. IR to CFG ------------------- #
