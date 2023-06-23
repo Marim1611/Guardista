@@ -33,11 +33,11 @@
 
 
 $projPath = $args[0]
+$activate_script_path = $args[1]
 
 $scriptPath = $PSScriptRoot
-$rootPath = (get-item $scriptPath).parent.FullName
-$retdecPath = "$rootPath/RetDec/bin"
-
+# $rootPath = (get-item $scriptPath).parent.FullName
+$retdecPath = $args[2]
 
 $os = $Env:os
 
@@ -93,7 +93,11 @@ if($os -eq "Windows_NT")
         }
         if($flag -eq $true){python -m venv GP_Env}
         
-        ./GP_Env/bin/Activate.ps1
+        # ./GP_Env/bin/Activate.ps1
+        & $activate_script_path
+
+
+
         if ($null -eq (Get-Command "pyinstaller.exe" -ErrorAction SilentlyContinue)) 
         { 
             Write-Host "Unable to find pyinstaller in your PATH, please install it"
