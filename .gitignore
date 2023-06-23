@@ -5,7 +5,8 @@ BinaryPreprocessor/RetDec/
 BinaryPreprocessor/openssl/
 BinaryPreprocessor/ghidra_10.2.2_PUBLIC/
 play
-.npy
+*.npy
+*.rar
 *.pyo
 *.pyc
 DATASET
