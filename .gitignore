@@ -17,3 +17,6 @@ SAFE_23
 targets_folder
 
 4-Features_Extraction/gcn_v_env/
+4-Features_Extraction/p38/
+4-Features_Extraction/venv/
+LSTM/
