@@ -1,12 +1,12 @@
 '''
-This script converts IR files to CFG as nodes in JSON format and edges in CSV format
+This script converts IR file to CFG as nodes in JSON format and edges in CSV format
 
 **  How to run?
     Be in the same directory of this script and run the following command:
     python cfg_infer.py  <path_in> <path_out>
 
 **  path_in is the abs path of the IR file
-**  path_out is the abs path of the output file
+**  path_out is the abs required path of the output folder containing the CFG
 
 '''
 
@@ -18,10 +18,9 @@ from construct_graph import *
 from utils import *
 from tqdm import tqdm
 
-# apply for all IR files in the directory 
 def generate_graph(path_in,path_out):
     ''' 
-     this function constructs CFG for all IR files in the directory
+     this function constructs CFG for one IR file 
     '''
     lines=[]
     functions_lines={} # store each function lines with key as index 0,1,2 .. representing the position of the function in the file
