@@ -2,7 +2,7 @@ import csv
 import json
 import os
 
-def create_dataFrame(edges,file_name,new_nodes, foldername,root_folder):
+def create_dataFrame(edges,file_name,new_nodes, foldername=None,root_folder =None,path=""):
     ''' create a csv file for the edges of the graph
     Args:
         edges (list): list of edges
@@ -10,11 +10,13 @@ def create_dataFrame(edges,file_name,new_nodes, foldername,root_folder):
         new_nodes (dict): dictionary of nodes with key: integer ids
         foldername (str): name of the folder(cve)
     '''
-
-    edges_folder="edges_"+foldername
-    if not os.path.exists(edges_folder):
-        os.mkdir(edges_folder)
-    path=root_folder+foldername+"_CFGs/"+edges_folder+'/edges_'+file_name+'.csv'
+    if path == "":
+        edges_folder="edges_"+foldername
+        if not os.path.exists(edges_folder):
+            os.mkdir(edges_folder)
+        path=root_folder+foldername+"_CFGs/"+edges_folder+'/edges_'+file_name+'.csv'
+    else:
+        path=path+'/edges_'+file_name+".csv"
     with open(path, 'w', newline='') as file:
         writer = csv.writer(file)
         for edge in edges:
@@ -32,7 +34,7 @@ def get_key(new_nodes, label):
         
 #-------------------------------------------------------------------------------
 
-def prepare_json(nodes, file_name,foldername,root_folder):
+def prepare_json(nodes, file_name,foldername= None ,root_folder=None,path=""):
     ''' create a json file for the nodes of the graph
     '''
     nodes_IRs={}
@@ -40,8 +42,11 @@ def prepare_json(nodes, file_name,foldername,root_folder):
         nodes[ID].instructions.append(1 if nodes[ID].vulnerable else 0)
         nodes_IRs[ID]=nodes[ID].instructions 
     jsonString = json.dumps(nodes_IRs)
-    nodes_folder="nodes_"+foldername
-    path=root_folder+foldername+"_CFGs/"+nodes_folder+'/json_'+file_name+".json"
+    if path == "":
+        nodes_folder="nodes_"+foldername
+        path=root_folder+foldername+"_CFGs/"+nodes_folder+'/json_'+file_name+".json"
+    else:
+        path=path+'/nodes_'+file_name+".json"
     jsonFile = open(path, "w")
     jsonFile.write(jsonString)
     jsonFile.close()
