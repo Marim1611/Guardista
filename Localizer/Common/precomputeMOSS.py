@@ -1,6 +1,6 @@
-import Winnowing
+import Localizer.Common.CodePreprocessing as CodePreprocessing
+import Localizer.Common.Winnowing as Winnowing
 import os
-import CodePreprocessing
 from tqdm import tqdm
 import json
 
@@ -35,6 +35,8 @@ this script assumes the representatives are put inside pairs/ourVulnCodes/
 
 pathToOurVulnCodes = 'pairs/OurVulnCodes'
 
+# make cwd the path to the script
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
 CVEFolders = os.listdir(pathToOurVulnCodes)
 
 BigDict = dict()

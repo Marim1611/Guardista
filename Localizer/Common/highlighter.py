@@ -1,4 +1,4 @@
-from matchers import levenshtein_similarity
+from Localizer.Common.matchers import levenshtein_similarity
 import re
 import sys
 
@@ -22,7 +22,6 @@ def cleanseFunctionName(funcName):
     funcName = re.sub('@', '', funcName)
     functionNamesSplitted = re.split('::', funcName)
     return functionNamesSplitted
-
 
 
 
