@@ -2,6 +2,8 @@ import os, sys, pickle, re
 from subprocess import run
 import Localizer.Common.localizer as Localizer
 
+RETDEC_PATH = "F:/retdec-v4.0-windows-64b/retdec/bin"
+
 '''
     The main pipeline for the project.
 '''
@@ -24,24 +26,44 @@ def pipeline(userFilePath,userFile):
     # absPathToUserFile[0] = absPathToUserFile[0].upper()
     # absPathToUserFile = ''.join(absPathToUserFile)
 
-    # run(["powershell.exe", absPathtoPreprocessingScript, absPathToUserFile]) 
-    # error here: ./GP_Env/bin/Activate.ps1 : The term './GP_Env/bin/Activate.ps1' is not recognized as the name of a cmdlet 
+    # absPathToActivationScript= str(os.path.abspath("BinaryPreprocesor/crosscmp/GP_Env/bin/Activate.ps1")).replace("\\", "/")
+    # absPathToActivationScript = list(absPathToActivationScript)
+    # absPathToActivationScript[0] = absPathToActivationScript[0].upper()
+    # absPathToActivationScript = ''.join(absPathToActivationScript)
+
+    # absPathtoRetDec= str(os.path.abspath(RETDEC_PATH)).replace("\\", "/")
+    # absPathtoRetDec = list(absPathtoRetDec)
+    # absPathtoRetDec[0] = absPathtoRetDec[0].upper()
+    # absPathtoRetDec = ''.join(absPathtoRetDec)
+
+    # run(["powershell.exe", absPathtoPreprocessingScript, absPathToUserFile,absPathToActivationScript,absPathtoRetDec]) 
+    # ----------------------------------------------------------------------------------------
 
     # ------------------- 2. IR to CFG ------------------- #
     '''
-    input: output/user.ll
+    input: output/source/output/user.ll
     output: output/userCFG/nodes.json 
             output/userCFG/edges.csv
     '''
 
-    # absPathtoCFGScript = str(os.path.abspath("IrToCFGs/cfg_main.py")).replace("\\", "/")
+    # absPathtoCFGScript = str(os.path.abspath("IrToCFGs/cfg_infer.py")).replace("\\", "/")
     # absPathtoCFGScript = list(absPathtoCFGScript)
     # absPathtoCFGScript[0] = absPathtoCFGScript[0].upper()
     # absPathtoCFGScript = ''.join(absPathtoCFGScript)
 
-    # run(["python",absPathtoCFGScript])
+    # absPathtoLLFile = str(os.path.abspath("output/source/output/user.ll"))
+    # absPathtoLLFile = list(absPathtoLLFile)
+    # absPathtoLLFile[0] = absPathtoLLFile[0].upper()
+    # absPathtoLLFile = ''.join(absPathtoLLFile)
 
+    # absPathtoCFGOutput = str(os.path.abspath("output/"))
+    # absPathtoCFGOutput = list(absPathtoCFGOutput)
+    # absPathtoCFGOutput[0] = absPathtoCFGOutput[0].upper()
+    # absPathtoCFGOutput = ''.join(absPathtoCFGOutput)
 
+    # run(["python",absPathtoCFGScript,absPathtoLLFile,absPathtoCFGOutput])
+
+    # ----------------------------------------------------------------------------------------
     # ------------------- 3. Features Extraction ------------------- #
     # ------------------- 3.1. Statistical Features ------------------- #
     '''
@@ -57,6 +79,7 @@ def pipeline(userFilePath,userFile):
     # run(["python",absPathtoStatFeaturesScript])
     X_test = []
 
+    # ----------------------------------------------------------------------------------------
 
     # ------------------- 4. Classification ------------------- #
     '''
@@ -65,8 +88,9 @@ def pipeline(userFilePath,userFile):
     '''
 
     # models=[]
-    # with open("output/model.pkl", 'rb') as f:
-    #     models.append(pickle.load(f))
+    # for file in os.listdir("models"):
+    #     with open("models/"+file, 'rb') as f:
+    #         models.append(pickle.load(f))
     
     # with open('output/classification.txt', 'w') as f:
     #     for model in models:
@@ -80,6 +104,7 @@ def pipeline(userFilePath,userFile):
     #     print("No vulnerabilities found")
     #     sys.exit()
 
+    # ----------------------------------------------------------------------------------------
 
     # ------------------- 5. Localizer ------------------- #
     '''
@@ -96,4 +121,4 @@ def pipeline(userFilePath,userFile):
     
 
 
-pipeline(userFilePath='output/source',userFile='output/source/UserSRC.cpp')
+pipeline(userFilePath='/output/source',userFile='output/source/UserSRC.cpp')
