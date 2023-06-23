@@ -21,6 +21,7 @@ from Classes.CFG import CFG
 from generate_files import *
 from construct_graph import *
 from utils import *
+from tqdm import tqdm
 
 # apply for all IR files in the directory 
 def generate_graphs(directory,testcase_name):
@@ -37,7 +38,7 @@ def generate_graphs(directory,testcase_name):
     calls=[] # list of all calls in the CFG tuples (called function_name, source_node_id, calling function name)
     edges=[]
     functions_entry={} # dict to access the entry node of each function easily by its name
-    for filename in os.listdir(directory):
+    for filename in tqdm(os.listdir(directory)):
         #----- check if the file is IR file
         if not filename.endswith(".ll"):
             continue

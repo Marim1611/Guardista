@@ -64,6 +64,7 @@ def statistical_features(data, list_features, features_matrix):
 
 def features_per_graph_per_node(nodes_directory_path):
     features_matrices_list = []
+    nodes_targets_list = []
     i = 0
     for filename in os.listdir(nodes_directory_path):
         f = os.path.join(nodes_directory_path, filename)
@@ -76,18 +77,22 @@ def features_per_graph_per_node(nodes_directory_path):
             features_matrices_list.append(features_matrix)
             print('dimensions before', features_matrix.shape)
 
-            # nodes_targets = []
-            # for key, val in data.items():
-            #     node_target = [key,val[-1]]
-            #     # node_target = val[-1]
-            #     nodes_targets.append(node_target)
+            nodes_targets = []
+            for key, val in data.items():
+                # node_target = [key,val[-1]]
+                node_target = val[-1]
+                if node_target == '1':
+                    print(node_target)
+                nodes_targets.append(node_target)
+            # print(len(nodes_targets))
+            nodes_targets_list.append(nodes_targets)
             # SimpleDataFrame=pd.DataFrame(data=nodes_targets, columns=['id','vulnerable'])
             # # SimpleDataFrame.to_csv('D:/AbeerD/College/4th Year/GP/Feature Extraction/features/vulnerable_target.csv')
             # SimpleDataFrame.to_csv('targets_folder/vulnerable_target_'+str(i)+'.csv')
 
             i+=1
 
-    return features_matrices_list
+    return np.array(features_matrices_list, dtype=object), np.array(nodes_targets_list, dtype=object)
 
 #------------------------------------------------------------------------------------------------------------------------------------
 
@@ -97,13 +102,18 @@ nodes_directory_path = sys.argv[1]
 # cve = 'SAFE_23'
 # nodes_directory_path = 'CFGs/'+ cve +'_CFGs/nodes_' + cve
 
-features_matrices_list = features_per_graph_per_node(nodes_directory_path)
+cve = sys.argv[2]
+
+features_matrices_list, nodes_targets_list = features_per_graph_per_node(nodes_directory_path)
 
 print('number of matrices', len(features_matrices_list))
 
 # PUT CVE CLASS
-# with open('features_matrices/features_matrices_' + cve + '.npy', 'wb') as f:
-#     np.save(f, features_matrices_list)
-
-with open('features_matrices/features_matrices.npy', 'wb') as f:
+with open('features_matrices/features_matrices_' + cve + '.npy', 'wb') as f:
     np.save(f, features_matrices_list)
+
+with open('nodes_targets/nodes_targets_' + cve + '.npy', 'wb') as f:
+    np.save(f, nodes_targets_list)
+
+# with open('features_matrices/features_matrices.npy', 'wb') as f:
+#     np.save(f, features_matrices_list)
