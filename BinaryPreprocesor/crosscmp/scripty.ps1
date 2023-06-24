@@ -267,15 +267,26 @@ if($os -eq "Windows_NT")
             }
             
             else{
+                $cnt = 0
                 foreach ($exe in $exeFiles)
                 {
-                    python $retdecPath/retdec-decompiler.py "$GuardistaOutputPath/source/$exe" -o "$GuardistaOutputPath/LLfiles/$exe" --stop-after bin2llvmir --backend-no-opts --backend-no-symbolic-names --backend-strict-fpu-semantics --backend-no-var-renaming --backend-no-compound-operators --backend-no-time-varying-info -k
+                    python $retdecPath/retdec-decompiler.py "$GuardistaOutputPath/source/$exe" -o "$GuardistaOutputPath/LLfiles/UserCode$cnt" --stop-after bin2llvmir --backend-no-opts --backend-no-symbolic-names --backend-strict-fpu-semantics --backend-no-var-renaming --backend-no-compound-operators --backend-no-time-varying-info -k
+                    $cnt = $cnt + 1
                 }
             }
             
 
             Set-Location $scriptPath
             
+        }
+
+
+        #Cleaning the LLfiles folder
+        $FilesInLLfiles = Get-ChildItem "$GuardistaOutputPath/LLfiles"
+        $uselessFiles = $FilesInLLfiles | Where-Object {$_.Extension -ne ".ll"}
+        foreach($useless in $uselessFiles)
+        {
+            Remove-Item "$GuardistaOutputPath/LLfiles/$useless"
         }
         
 

@@ -1,4 +1,4 @@
-from Localizer.Common.matchers import levenshtein_similarity
+#from Localizer.Common.matchers import levenshtein_similarity
 import re
 import sys
 
@@ -16,12 +16,14 @@ each line represents a vulnerability
 
 
 string1 = '@"CWE23_Relative_Path_Traversal__char_connect_socket_fopen_01::bad"'
+string2 = '@_Z51CWE126_Buffer_Overread__wchar_t_declare_loop_05_badv'
 
 def cleanseFunctionName(funcName):
     funcName = re.sub('"', '', funcName)
     funcName = re.sub('@', '', funcName)
     funcName = re.sub('^(_\w+?\d+)', '', funcName)
     functionNamesSplitted = re.split('::', funcName)
+    print(functionNamesSplitted)
     return functionNamesSplitted
 
 
@@ -74,7 +76,7 @@ def findFunctionNameUsingSimilarity (ListOfFuncNames, fileContents, outputLines)
             if(counter > 0):
                 counter -= 1
                 continue
-            if(levenshtein_similarity(fileContents[i:i+len(funcName)], funcName) > 0.99):
+            if(True):#levenshtein_similarity(fileContents[i:i+len(funcName)], funcName) > 0.99):
                 
                 startOfFunction = i
                 matches = re.search('[a-zA-Z0-9 _]*?\([\s\S]*?\)', fileContents[i: len(fileContents)], re.MULTILINE)
@@ -119,10 +121,18 @@ def getMatchingLines(filePath, functionLLVM):
     return outputLines
 
 
-'''
-filePath = "UserSRC.cpp"
+
+filePath = "CWE126_Buffer_Overread__wchar_t_declare_loop_05.c"
 functionInLLVM = '@"CWE23_Relative_Path_Traversal__char_connect_socket_fopen_01::bad"'
-outputLines = getMatchingLines(filePath, functionInLLVM)
-'''
+f = open(filePath, 'r')
+contents = f.read()
+f.close()
+functionNamesSplitted = cleanseFunctionName(string2)
+outputLines = []
+outputLines = findFunctionNameUsingRegex(functionNamesSplitted, contents, outputLines)
+print(outputLines)
+
+print(contents[outputLines[0][0] : outputLines[0][1]])
+
 
 
