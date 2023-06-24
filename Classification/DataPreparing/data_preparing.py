@@ -17,3 +17,16 @@ def read_data(file_name):
     X_train, X_val, y_train, y_val = train_test_split(features, labels, test_size=0.2, random_state=0)
     return X_train, X_val, y_train, y_val
 
+def drop(x,y,c,p):
+        '''
+        this function to drop of certain class in the data
+        x,y => data and labels
+        c => class to be dropped
+        p => int number  (0.5 data => p=2)
+        '''
+        class_indices = np.where(y == c)[0]
+        num_to_drop = len(class_indices) // p
+        indices_to_drop = np.random.choice(class_indices, num_to_drop, replace=False)
+        x_dropped = np.delete(x, indices_to_drop, axis=0)
+        y_dropped = np.delete(y, indices_to_drop, axis=0)
+        return x_dropped, y_dropped
