@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
 import os
+from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
 
 
 def read_data(file_name):
@@ -30,3 +31,19 @@ def drop(x,y,c,p):
         x_dropped = np.delete(x, indices_to_drop, axis=0)
         y_dropped = np.delete(y, indices_to_drop, axis=0)
         return x_dropped, y_dropped
+
+
+def parameter_search(X, y, clf, param_grid , cv = 5):
+        '''
+        this function to search for the best parameters for the classifier
+        X, y => data and labels
+        clf => classifier
+        param_grid => dict of parameters with their range to be searched {'C' : [0,100]}
+        cv => number of folds in cross validation
+        
+        '''
+        search = RandomizedSearchCV(clf, param_grid, cv=cv)
+        search.fit(X,y)
+        print("Best parameters: ", search.best_params_)
+        print("Best cross-validation score: ", search.best_score_)
+        return search.best_estimator_
