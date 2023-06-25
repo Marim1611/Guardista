@@ -4,6 +4,8 @@
 BinaryPreprocessor/RetDec/
 BinaryPreprocessor/openssl/
 BinaryPreprocessor/ghidra_10.2.2_PUBLIC/
+4-Features_Extraction
+
 play
 .npy
 *.pyo
