@@ -20,6 +20,7 @@ string1 = '@"CWE23_Relative_Path_Traversal__char_connect_socket_fopen_01::bad"'
 def cleanseFunctionName(funcName):
     funcName = re.sub('"', '', funcName)
     funcName = re.sub('@', '', funcName)
+    funcName = re.sub('^(_\w+?\d+)', '', funcName)
     functionNamesSplitted = re.split('::', funcName)
     return functionNamesSplitted
 
@@ -42,6 +43,10 @@ def findFunctionNameUsingRegex(ListOfFuncNames, fileContents, outputLines):
             functionDefinitionString = ''
             regexScript = r'\b' + funcName + r'\b'+'\([\s\S]*?\)[\s\S]*?\{'
             matches = re.search(regexScript, fileContents, re.MULTILINE)
+            while(not matches):
+                funcName = funcName[:-1]
+                regexScript = r'\b' + funcName + r'\b'+'\([\s\S]*?\)[\s\S]*?\{'
+                matches = re.search(regexScript, fileContents, re.MULTILINE)
             if(matches):
                 #outputLines.append(matches.span())
                 
