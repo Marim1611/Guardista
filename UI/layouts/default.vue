@@ -1,17 +1,22 @@
 <template>
-  <v-app >
-    <Nuxt />
+  <v-app fluid class="pa-0 ma-0">
+    <v-main>
+      <NavBar />
+      <Nuxt />
+    </v-main>
 
+    <!-- <TheFooter /> -->
   </v-app>
 </template>
 
 <script>
+import NavBar from "../components/NavBar.vue";
+// import TheFooter from "../components/TheFooter.vue";
 export default {
-  name: 'DefaultLayout',
-  data () {
-    return {
-     
-    }
-  }
-}
+  components: {
+    NavBar,
+    // TheFooter,
+  },
+  name: "DefaultLayout",
+};
 </script>
