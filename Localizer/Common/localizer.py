@@ -237,7 +237,7 @@ def main_localizer(llvm_user_file,clf_path, src_path, output_path):
     for src in srcFiles:
         currentPath = str(os.getcwd()).replace('\\', '/')
         currentPath = re.split(r"/" ,currentPath)[:-2]
-        srcFilePath = currentPath+ ['temp','source',src]
+        srcFilePath = currentPath+ ['output','source',src]
         srcFilePath = '/'.join(srcFilePath)
         for func,_ in final_Matched_Functions:
             highlighter.getMatchingLines(srcFilePath, func)
