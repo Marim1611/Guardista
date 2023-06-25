@@ -69,13 +69,13 @@ def features_per_graph_per_node(nodes_directory_path):
     for filename in os.listdir(nodes_directory_path):
         f = os.path.join(nodes_directory_path, filename)
 
-        if os.path.isfile(f):
+        if os.path.isfile(f) and f.endswith('.json'):
             # print(f)
             data, list_features, initial_features_matrix = prepare(f)
             features_matrix, list_features = statistical_features(data,list_features, initial_features_matrix)
 
             features_matrices_list.append(features_matrix)
-            print('dimensions before', features_matrix.shape)
+            # print('dimensions before', features_matrix.shape)
 
             nodes_targets = []
             for key, val in data.items():
@@ -86,9 +86,6 @@ def features_per_graph_per_node(nodes_directory_path):
                 nodes_targets.append(node_target)
             # print(len(nodes_targets))
             nodes_targets_list.append(nodes_targets)
-            # SimpleDataFrame=pd.DataFrame(data=nodes_targets, columns=['id','vulnerable'])
-            # # SimpleDataFrame.to_csv('D:/AbeerD/College/4th Year/GP/Feature Extraction/features/vulnerable_target.csv')
-            # SimpleDataFrame.to_csv('targets_folder/vulnerable_target_'+str(i)+'.csv')
 
             i+=1
 
@@ -96,24 +93,31 @@ def features_per_graph_per_node(nodes_directory_path):
 
 #------------------------------------------------------------------------------------------------------------------------------------
 
+# nodes_directory_path = 'CFGs/'+ cve +'_CFGs/nodes_' + cve
 nodes_directory_path = sys.argv[1]
+
+out_path = sys.argv[2]
 
 # PUT CVE CLASS
 # cve = 'SAFE_23'
-# nodes_directory_path = 'CFGs/'+ cve +'_CFGs/nodes_' + cve
-
-cve = sys.argv[2]
+cve = sys.argv[3]
 
 features_matrices_list, nodes_targets_list = features_per_graph_per_node(nodes_directory_path)
 
 print('number of matrices', len(features_matrices_list))
 
+if not os.path.exists(out_path):
+    os.mkdir(out_path)
+
+if not os.path.exists(out_path+'/features_matrices'):
+    os.mkdir(out_path+'/features_matrices')
+
+if not os.path.exists(out_path+'/nodes_targets'):
+    os.mkdir(out_path+'/nodes_targets')
+
 # PUT CVE CLASS
-with open('features_matrices/features_matrices_' + cve + '.npy', 'wb') as f:
+with open(out_path+'/features_matrices/features_matrices_' + cve + '.npy', 'wb') as f:
     np.save(f, features_matrices_list)
 
-with open('nodes_targets/nodes_targets_' + cve + '.npy', 'wb') as f:
+with open(out_path+'/nodes_targets/nodes_targets_' + cve + '.npy', 'wb') as f:
     np.save(f, nodes_targets_list)
-
-# with open('features_matrices/features_matrices.npy', 'wb') as f:
-#     np.save(f, features_matrices_list)
