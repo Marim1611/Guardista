@@ -10,10 +10,10 @@
         <pre>{{ userCode }}</pre>
       </v-col>
       <v-col class="text-left pr-10 pl-10">
-        <v-row class="pb-10 text-center">
-          <h3>
+        <v-row class="pb-10 text-center mx-auto">
+          <h3 class="text-center">
             Report Summary
-            <v-icon medium right> mdi-bug-check </v-icon>
+            <v-icon medium> mdi-bug-check </v-icon>
           </h3>
         </v-row>
 
