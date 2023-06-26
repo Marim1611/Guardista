@@ -107,10 +107,13 @@ def getMatchingLines(filePath, functionLLVM):
     if(not outputLines):
         print(f"\nExact Matching for Function name in source code Failed, Trying Similarity Matching...\n")
         #perform similarity matching
-        findFunctionNameUsingSimilarity(functionNamesSplitted, contents, outputLines)
+        outputLines = findFunctionNameUsingSimilarity(functionNamesSplitted, contents, outputLines)
+    if(not outputLines):
+        return outputLines
 
     FolderPath = re.split(r"/" ,filePath)[:-2]
-    textFilePath = FolderPath.append('span.txt')
+    filename= re.split(r'/', filePath)[-1]
+    textFilePath = FolderPath.append(f'span_{filename}.txt')
     textFilePath = '/'.join(textFilePath)
     
     with open(textFilePath, 'w', encoding='utf-8') as f:
