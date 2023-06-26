@@ -763,8 +763,8 @@ def NormalizeLLVM(String1):
           convertedBasicBlockReferences.append("REF_" + BB_IDs_list[i])
           #convertedBasicBlockReferences.append("REF_BB" + BB_IDs_list[i])
         except:
-            print("ERRRORR")
-            convertedBasicBlockReferences.append("REF_UNK")
+            #print("ERRRORR")
+            convertedBasicBlockReferences.append("REF_BB")
     #print(convertedBasicBlockReferences)
 
     for i in range(len(basicBlockReferences)):
@@ -798,9 +798,14 @@ def TokenizeLLVM(String_After_Normalizing):
     return output
 '''
 
-def tokenizeLLVM (String_After_Normalizing):
+def tokenizeLLVM (String_After_Normalizing, EndOfLineFlag=False):
+    
+    
+    if EndOfLineFlag:
+      String_After_Normalizing = re.sub(r'\n', ' EOL ', String_After_Normalizing)
+    else:
+        String_After_Normalizing = re.sub(r'\n', ' ', String_After_Normalizing)
     StringTemp = re.sub('\s+', ' ', String_After_Normalizing)
-    StringTemp = re.sub(r'\n', ' ', StringTemp)
     output = re.split(r'\b', StringTemp)
     
     final_output = []
@@ -813,14 +818,15 @@ def tokenizeLLVM (String_After_Normalizing):
 
 
 #CALL THIS ONLY
-def Normalize_Tokenize_LLVM(llvmString):
+def Normalize_Tokenize_LLVM(llvmString, EndOfLineFlag = False):
     out1 = NormalizeLLVM(llvmString)
-    out2 = tokenizeLLVM (out1)
+    out2 = tokenizeLLVM (out1, EndOfLineFlag)
     return out2
 
 
 
 
 
-#out1 = NormalizeLLVM(String2)
-#out2 = tokenizeLLVM(out1)
+# out1 = NormalizeLLVM(String2)
+# out2 = tokenizeLLVM(out1, True)
+# print(out2)
