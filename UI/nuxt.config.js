@@ -43,7 +43,7 @@ export default {
     },
   },
   loading: {
-    color: "#CB2A1D",
+    color: "#9d0000",
     height: "3px",
     throttle: 0,
     duration: 6000,
