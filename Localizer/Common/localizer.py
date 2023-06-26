@@ -9,7 +9,9 @@ import Localizer.Common.Winnowing as Winnowing
 import Localizer.Common.graph as graph
 
 
-def main_localizer(llvm_user_file,clf_path, src_path, output_path):
+def main_localizer(compiledFlag, llvm_user_file,clf_path, src_path, output_path):
+    if compiledFlag == "true":
+        return
 
     # ----------------- User functions  --------------------
     preprocessing.functions_preprocessing( llvm_file= llvm_user_file, json_file='UserCode' )
@@ -227,8 +229,9 @@ def main_localizer(llvm_user_file,clf_path, src_path, output_path):
 
 
     #------------------ Highlighter
-    # the GUI should read the file span.txt written inside 'temp' folder <br> to highlight the exact span of the function in the source code
-    # the source code should be inside 'temp/source/'
+    # the GUI should read the file span_{fileNmae}.txt written inside 'output' folder <br> to highlight the exact span of the function in the source code
+    # the source code should be inside 'output/source/'
+    #if the input file srcfile.cpp, then the span file will be called span_srcfile.cpp.txt
 
     # make the cwd be the main directory
     os.chdir("../../")

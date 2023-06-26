@@ -31,6 +31,7 @@
 
 
 $userCodePath = $args[0]
+$ExtensioOfInput = [IO.Path]::GetExtension($userCodePath)
 
 
 #$activate_script_path = $args[1]
@@ -42,8 +43,14 @@ $UserFiles = Get-ChildItem $userCodePath
 
 if (Test-Path -Path "$GuardistaOutputPath/source") { Remove-Item -Recurse "$GuardistaOutputPath/source"}
 New-Item -ItemType Directory "$GuardistaOutputPath/source"
-if($null -eq $UserFiles){ Write-Host "Directory is empty !, please provide a full directory"}
-else{ foreach ($UserFile in $UserFiles) {Copy-Item -Path $userCodePath/$UserFile -Destination "$projPath/$UserFile" }}
+
+if($null -eq $ExtensioOfInput){
+    if($null -eq $UserFiles){ Write-Host "Directory is empty !, please provide a full directory"}
+    else{ foreach ($UserFile in $UserFiles) {Copy-Item -Path $userCodePath/$UserFile -Destination "$projPath/$UserFile" }}
+}
+else {
+    Copy-Item -Path $userCodePath -Destination "$projPath" 
+}
 
 
 $scriptPath = Get-Location
@@ -253,7 +260,7 @@ if($os -eq "Windows_NT")
         else {
 
 
-            $exeFiles = Get-ChildItem "$GuardistaOutputPath/source"
+            $exeFiles = Get-ChildItem "$GuardistaOutputPath/source" | Where-Object {$_.Extension -eq ".exe"}
 
 
             #Move the UserCode.ll into LLfiles directory
