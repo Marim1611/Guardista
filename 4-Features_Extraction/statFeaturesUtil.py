@@ -64,6 +64,7 @@ def statistical_features(data, list_features, features_matrix):
 
 def features_per_graph_per_node(nodes_directory_path):
     features_matrices_list = []
+    nodes_targets_list = []
     i = 0
     for filename in os.listdir(nodes_directory_path):
         f = os.path.join(nodes_directory_path, filename)
@@ -74,19 +75,20 @@ def features_per_graph_per_node(nodes_directory_path):
             features_matrix, list_features = statistical_features(data,list_features, initial_features_matrix)
 
             features_matrices_list.append(features_matrix)
-            print('dimensions before', features_matrix.shape)
+            # print('dimensions before', features_matrix.shape)
 
-            # nodes_targets = []
-            # for key, val in data.items():
-            #     node_target = [key,val[-1]]
-            #     # node_target = val[-1]
-            #     nodes_targets.append(node_target)
-            # SimpleDataFrame=pd.DataFrame(data=nodes_targets, columns=['id','vulnerable'])
-            # # SimpleDataFrame.to_csv('D:/AbeerD/College/4th Year/GP/Feature Extraction/features/vulnerable_target.csv')
-            # SimpleDataFrame.to_csv('targets_folder/vulnerable_target_'+str(i)+'.csv')
+            nodes_targets = []
+            for key, val in data.items():
+                # node_target = [key,val[-1]]
+                node_target = val[-1]
+                if node_target == '1':
+                    print(node_target)
+                nodes_targets.append(node_target)
+            # print(len(nodes_targets))
+            nodes_targets_list.append(nodes_targets)
 
             i+=1
 
-    return features_matrices_list
+    return np.array(features_matrices_list, dtype=object), np.array(nodes_targets_list, dtype=object)
 
 #------------------------------------------------------------------------------------------------------------------------------------
