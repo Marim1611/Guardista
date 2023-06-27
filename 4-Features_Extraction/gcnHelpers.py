@@ -163,6 +163,13 @@ def InferenceGCN (pathToUser_Nodes, pathToUser_Edges, outputPath, multipleFiles)
     multipleFiles: true or false     (IN LOWER CASE)
     true if the folders contain multiple files
     false if the folders contain only 1 file, to be used during production for ease of use
+
+
+    Outputs:
+    1) classification of each node (0, 1, 2, 3, 4)      ---should-be-mapped-to-->    ('121', '191', '401', '457' )
+    2) embedding for each node
+    3) average pooled embedding for the entire graph or a list of embeddings for each graph if we used multiple files
+    4) max pooled embeddings for the entire graph or a list of embeddings for each graph if we used multiple files
     
     '''
 
@@ -179,6 +186,8 @@ def InferenceGCN (pathToUser_Nodes, pathToUser_Edges, outputPath, multipleFiles)
 
         finalClassification = classification.cpu().numpy()
         finalEmbedding = Embedding.cpu().detach().numpy()
+        AvgPooledEmb = np.mean(finalEmbedding, axis=0)
+        MaxPooledEmb = np.amax(finalEmbedding, axis=0)
         
 
         filename=''
@@ -195,7 +204,7 @@ def InferenceGCN (pathToUser_Nodes, pathToUser_Edges, outputPath, multipleFiles)
         with open (outputPath+'/embeddings.npy' , 'wb') as f:
             np.save(f, finalEmbedding)
 
-        return  finalClassification,  finalEmbedding
+        return  finalClassification,  finalEmbedding, AvgPooledEmb, MaxPooledEmb
 
 
 
@@ -209,6 +218,8 @@ def InferenceGCN (pathToUser_Nodes, pathToUser_Edges, outputPath, multipleFiles)
 
         finalClassifications = []
         finalEmbeddings = []
+        AvgPoolEmbeddings = []
+        MaxPoolEmbeddings = []
 
         for (point, nodeFile) in zip(inputPoints, os.listdir(pathToUser_Nodes)):
             _,classification,Embedding = test(model, point[0], device=device)
@@ -219,9 +230,14 @@ def InferenceGCN (pathToUser_Nodes, pathToUser_Edges, outputPath, multipleFiles)
 
             finalEmbeddings.append(emb)
             finalClassifications.append(classification.cpu().numpy())
+
+            AvgPoolEmbeddings.append(np.mean(emb, axis=0))
+            MaxPoolEmbeddings.append(np.mean(emb), axis=0)
+
+            
         
 
         with open (outputPath+'/embeddings.json' , 'wb') as f:
             json.dump(embeddingDict, f, indent=6)
         
-        return finalClassifications, finalEmbeddings
+        return finalClassifications, finalEmbeddings, AvgPoolEmbeddings, MaxPoolEmbeddings
