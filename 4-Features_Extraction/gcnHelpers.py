@@ -2,6 +2,7 @@ from statFeaturesUtil import features_per_graph_per_node
 import pandas as pd
 import numpy as np
 import torch
+import re
 import os, pickle, json
 from torch_geometric.data import Data, Batch
 from torch_geometric.nn import GCNConv, Sequential
@@ -25,7 +26,7 @@ This script contains a lot of helper functions
 #----------------------------------------------------------------------------------------------------------------------------------
 #                                                       Preprocessing
 
-def preProcessingOneDataPoint(pathToUserNodes, pathToUserEdges):
+def preProcessingOneDataPoint(pathToUserNodes, pathToUserEdges, npyPath=None):
     '''
     this function takes a path to the folder containing the UserNodes, and another path to a folder containing the user edges files
     each folder can contain either 1 file or multiple files, just make sure not to put mismatched files in the same...
@@ -34,9 +35,15 @@ def preProcessingOneDataPoint(pathToUserNodes, pathToUserEdges):
     if the folders contains only one file for each folder, the returned value is a list containing only 1 data point, just use it as
     allData[0]          just take care cuz I was falling for this trap
 
+    npyPath is the path of the npy of the statistical features there is any.
+
     '''
     
-    features_matrices_list,_ = features_per_graph_per_node(pathToUserNodes)
+    if(not npyPath):
+        features_matrices_list,_ = features_per_graph_per_node(pathToUserNodes)
+    else:
+        with open (npyPath, 'rb') as f:
+            features_matrices_list = np.load(f,  allow_pickle=True)
 
     
 
@@ -155,7 +162,7 @@ def test(model, data, device='cuda'):
 #                                               Inference
 
 
-def InferenceGCN (pathToUser_Nodes, pathToUser_Edges, outputPath, multipleFiles):
+def InferenceGCN (pathToUser_Nodes, pathToUser_Edges, outputPath, multipleFiles, npyPath=None):
     '''
     pathToUser_Nodes : folder containing json files
     pathToUser_Edges : folder containing csv files
@@ -164,12 +171,18 @@ def InferenceGCN (pathToUser_Nodes, pathToUser_Edges, outputPath, multipleFiles)
     true if the folders contain multiple files
     false if the folders contain only 1 file, to be used during production for ease of use
 
+    npyPath is tha path of the npy of the statistical features, if there are any.
+
 
     Outputs:
     1) classification of each node (0, 1, 2, 3, 4)      ---should-be-mapped-to-->    ('121', '191', '401', '457' )
     2) embedding for each node
     3) average pooled embedding for the entire graph or a list of embeddings for each graph if we used multiple files
     4) max pooled embeddings for the entire graph or a list of embeddings for each graph if we used multiple files
+    5) save a csv file called embeddings.csv in the output path, containing the test case name, its embeddings, and the label
+
+    NOTICE : I PARSE THE LABEL FROM THE FILE NAME, NOT FROM THE NODES_TARGETS
+            DO NOT PUT SAFE FILES IN THE DIRECTORY, OR YOU WILL FIND THEIR LABELS PUT WRONGFULLY
     
     '''
 
@@ -178,7 +191,7 @@ def InferenceGCN (pathToUser_Nodes, pathToUser_Edges, outputPath, multipleFiles)
 
     if(multipleFiles == 'false'):
 
-        inputPoint = preProcessingOneDataPoint(pathToUser_Nodes, pathToUser_Edges)
+        inputPoint = preProcessingOneDataPoint(pathToUser_Nodes, pathToUser_Edges, npyPath)
         with open('GCN.pkl', 'rb') as f:
             model = pickle.load(f).to(device=device)
 
@@ -203,15 +216,21 @@ def InferenceGCN (pathToUser_Nodes, pathToUser_Edges, outputPath, multipleFiles)
 
         with open (outputPath+'/embeddings.npy' , 'wb') as f:
             np.save(f, finalEmbedding)
+        
+        df = pd.DataFrame(data=AvgPooledEmb)
+        df = df.transpose()
+        df.insert(0, len(df.columns), filename)
+        df.columns = range(df.shape[1])
+        df.to_csv(outputPath+'/embeddings.csv', header=False, index=False)
+
 
         return  finalClassification,  finalEmbedding, AvgPooledEmb, MaxPooledEmb
 
 
 
     elif(multipleFiles == 'true'):
-        embeddingDict = dict()
 
-        inputPoints = preProcessingOneDataPoint(pathToUser_Nodes, pathToUser_Edges)
+        inputPoints = preProcessingOneDataPoint(pathToUser_Nodes, pathToUser_Edges, npyPath)
 
         with open('GCN.pkl', 'rb') as f:
             model = pickle.load(f).to(device=device)
@@ -220,24 +239,42 @@ def InferenceGCN (pathToUser_Nodes, pathToUser_Edges, outputPath, multipleFiles)
         finalEmbeddings = []
         AvgPoolEmbeddings = []
         MaxPoolEmbeddings = []
+        filenames = []
+        labels = []
+
+        
 
         for (point, nodeFile) in zip(inputPoints, os.listdir(pathToUser_Nodes)):
-            _,classification,Embedding = test(model, point[0], device=device)
+            _,classification,Embedding = test(model, point, device=device)
 
             emb = Embedding.cpu().detach().numpy()
 
-            embeddingDict[nodeFile[5:-5]] = emb
 
             finalEmbeddings.append(emb)
             finalClassifications.append(classification.cpu().numpy())
 
             AvgPoolEmbeddings.append(np.mean(emb, axis=0))
-            MaxPoolEmbeddings.append(np.mean(emb), axis=0)
+            MaxPoolEmbeddings.append(np.amax(emb, axis=0))
+            filenames.append(nodeFile[5:-5])                    # Storing the filename as it is without json or csv, example: CWE23_relativepath.ll
+
+
+            if(re.findall('[sS][aA][fF][eE]',nodeFile)):            # if the file contains the word 'safe' put the label as 0
+                labels.append('0')
+            elif(re.findall('\d+',nodeFile)[0]):
+                labels.append(re.findall('\d+',nodeFile)[0])        # I am parsing the CVE label from the file name
+            else:
+                labels.append('0')                                  # If the file doesn't follow our naming convention, put the label as 0
+
+        
+        df = pd.DataFrame(data=AvgPoolEmbeddings)
+        df.insert(0, len(df.columns), filenames)
+        df.insert(len(df.columns), len(df.columns), labels)
+        df.columns = range(df.shape[1])
+        
+        df.to_csv(outputPath+'/embeddings.csv', header=False, index=False)
 
             
-        
 
-        with open (outputPath+'/embeddings.json' , 'wb') as f:
-            json.dump(embeddingDict, f, indent=6)
-        
+            
+    
         return finalClassifications, finalEmbeddings, AvgPoolEmbeddings, MaxPoolEmbeddings
