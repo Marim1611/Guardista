@@ -226,7 +226,7 @@ if($os -eq "Windows_NT")
 
             #LINK OBJECTS HERE
             g++ "$outputDir/*.o" -o "$outputDir/binaryex.exe"
-
+            Out-File -FilePath "$outputDir/status.txt" -InputObject "compiled" -Force
 
             Write-Host "--------------COMPILING DONE----------------"
             Write-Host "-------------BUILDING LLVM IR---------------"
@@ -297,7 +297,8 @@ if($os -eq "Windows_NT")
         }
         
 
-        
+        Out-File -FilePath "$outputDir/status.txt" -InputObject "lifted" -Force
+
 
 
 

@@ -5,6 +5,7 @@ import Localizer.Common.localizer as Localizer
 RETDEC_PATH = "D:/ClassWork/GP/RetDec/bin"
 SCRIPT_ROOT_PATH = str(os.getcwd())
 OUTPUT_PATH = SCRIPT_ROOT_PATH+f"/output"
+if (not os.path.exists(OUTPUT_PATH)): os.makedirs(OUTPUT_PATH)
 
 '''
     The main pipeline for the project.
@@ -62,6 +63,9 @@ def pipeline(userFilePath,userFile):
     print(OUTPUT_PATH)
     print(absPathtoRetDec)
     print(CompiledFlag)
+    with open(f'{OUTPUT_PATH}/status.txt', 'w') as f:
+        if(CompiledFlag): f.write('compiled')
+        else: f.write('submitted')
     run(["powershell.exe", absPathtoPreprocessingScript, absPathToUserFile_Inputed, OUTPUT_PATH ,absPathtoRetDec, "true" if CompiledFlag else 'false']) 
     # ----------------------------------------------------------------------------------------
 
