@@ -25,15 +25,15 @@ import sys
 '''
 
 
-pathToUser_Nodes = sys.argv[1]
-pathToUser_Edges = sys.argv[2]
-outputPath = sys.argv[3]
-multipleFiles = sys.argv[4]
-npyPath = sys.argv[5]
 
-npyPath = None if npyPath=='none' else npyPath
+pathToUser_Edges = sys.argv[1]
+outputPath = sys.argv[2]
+cve = sys.argv[3]
 
-gcnHelpers.InferenceGCN(pathToUser_Nodes=pathToUser_Nodes,   pathToUser_Edges=pathToUser_Edges , outputPath=outputPath, multipleFiles=multipleFiles, npyPath=npyPath)
+npyPath = outputPath+'/features_matrices/features_matrices_' + cve + '.npy'
+
+gcnHelpers.InferenceGCN(pathToUser_Edges=pathToUser_Edges , outputPath=outputPath, multipleFiles='true', npyPath=npyPath, cve=cve)
 
 
         
+ 

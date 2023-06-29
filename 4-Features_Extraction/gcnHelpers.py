@@ -2,6 +2,7 @@ from statFeaturesUtil import features_per_graph_per_node
 import pandas as pd
 import numpy as np
 import torch
+from tqdm import tqdm
 import re
 import os, pickle, json
 from torch_geometric.data import Data, Batch
@@ -187,7 +188,7 @@ def inference(model, data_point, device):
 
 
 # Call this function only please
-def InferenceGCN (pathToUser_Nodes, pathToUser_Edges, outputPath, multipleFiles, npyPath=None):
+def InferenceGCN (pathToUser_Edges, outputPath, multipleFiles, cve='test',npyPath=None, pathToUser_Nodes=None):
     '''
     pathToUser_Nodes : folder containing json files
     pathToUser_Edges : folder containing csv files
@@ -259,14 +260,17 @@ def InferenceGCN (pathToUser_Nodes, pathToUser_Edges, outputPath, multipleFiles,
         finalClassifications = []
         finalEmbeddings = []
        
-        filenames = []
+        filenames = os.listdir(pathToUser_Edges)
+        filenames = [i[6:-4] for i in filenames]
+
+
+
         labels = []
 
         
-        i = 0
-        for (point, nodeFile) in zip(inputPoints, os.listdir(pathToUser_Nodes)):
-            print(i)
-            i+=1
+        
+        for point in tqdm(inputPoints):
+           
             classification,Embedding = inference(model, point, device=device)
 
             emb = Embedding.cpu().detach().numpy()
@@ -276,16 +280,7 @@ def InferenceGCN (pathToUser_Nodes, pathToUser_Edges, outputPath, multipleFiles,
             finalClassifications.append(classification)
 
 
-            filenames.append(nodeFile[5:-5])                    # Storing the filename as it is without json or csv, example: CWE23_relativepath.ll
-
-
-            if(re.findall('[sS][aA][fF][eE]',nodeFile)):            # if the file contains the word 'safe' put the label as 0
-                labels.append('0')
-            elif(re.findall('\d+',nodeFile)[0]):
-                CWE_Code = re.findall('\d+',nodeFile)[0]
-                labels.append(f'CWE{CWE_Code}')        # I am parsing the CVE label from the file name
-            else:
-                labels.append('0')                                  # If the file doesn't follow our naming convention, put the label as 0
+            labels.append(f'CWE{cve}')
 
         
         finalEmbeddings = np.array(finalEmbeddings)
@@ -294,7 +289,7 @@ def InferenceGCN (pathToUser_Nodes, pathToUser_Edges, outputPath, multipleFiles,
         df.insert(len(df.columns), len(df.columns), labels)
         df.columns = range(df.shape[1])
         
-        df.to_csv(outputPath+'/embeddings.csv', header=False, index=False)
+        df.to_csv(outputPath+f'/embeddings_{cve}.csv', header=False, index=False)
 
             
 
