@@ -66,6 +66,8 @@
 </template>
 
 <script>
+import axios from "axios";
+import { getUniversalCookies } from 'cookie-universal-nuxt'
 export default {
   data ()
   {
@@ -75,7 +77,6 @@ export default {
       message: "",
       fileInfos: [],
       uploaded: false,
-
     };
   },
   methods:{
@@ -84,13 +85,13 @@ export default {
       this.currentFiles = files;
       console.log(this.currentFiles);
     },
-    upload() {
+    async upload() {
       if (!this.currentFiles) {
         this.message = "Please select a file!";
         return;
       }
       // loop on current files
-    
+      const formData = new FormData()
       for (let i =0 ; i < this.currentFiles.length ; i++ )
       {
         console.log(this.currentFiles[i].name);
@@ -103,31 +104,56 @@ export default {
         this.message = "Only code files or executables are allowed!";
         return;
       }
+        
+      formData.append('files', this.currentFiles[i])
 
       }
       this.message = "";
-      this.uploaded = true;
       console.log(this.currentFiles);
-      
-
-      // UploadService.upload(this.currentFile, (event) => {
-      //   this.progress = Math.round((100 * event.loaded) / event.total);
-      // })
-      //   .then((response) => {
-      //     this.message = response.data.message;
-      //     return UploadService.getFiles();
-      //   })
-      //   .then((files) => {
-      //     this.fileInfos = files.data;
-      //   })
-      //   .catch(() => {
-      //     this.progress = 0;
-      //     this.message = "Could not upload the file!";
-      //     this.currentFile = undefined;
-      //   });
+      console.log("token in upload",this.token)
+      console.log(this.currentFiles)
+      await axios
+        .post("http://localhost:8000/api/upload", formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            'X-CSRFToken': `Bearer ${this.token}`,
+          },
+        })
+        .then((res) => {
+          console.log("response to upload",res);
+          console.log("response to upload",res.Data);
+        })
+        .catch((err) => {
+       
+          console.log("err in upload", err.response);
+        });
+        this.uploaded = true;
     },
+  },
+  computed:{
+    token(){
+      return this.$store.state.token
+    },
+    set_token(){
+    this.$store.commit('setToken',this.$cookies.get('csrftoken'))
   }
-
+  },
+  async created() {
+  await axios
+        .get("http://localhost:8000/api/get")
+        .then((res) => {
+          console.log("$######### get token");
+          console.log(res);
+          console.log( res.headers)
+        })
+        .catch((err) => {
+          console.log("Error in get token");
+          console.log(err);
+        });
+        console.log("token",this.$cookies.get('csrftoken'))
+        this.set_token
+  },
+  
   }
 
 </script>
