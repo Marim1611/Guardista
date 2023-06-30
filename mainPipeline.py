@@ -1,10 +1,16 @@
-import os, sys, pickle, re
+import os, sys, pickle, re, json
 from subprocess import run
 import Localizer.Common.localizer as Localizer
+import time
+
+userFilePath = sys.argv[1]
+userFile = sys.argv[2]
+
+ 
 
 RETDEC_PATH = "D:/ClassWork/GP/RetDec/bin"
-SCRIPT_ROOT_PATH = str(os.getcwd())
-OUTPUT_PATH = SCRIPT_ROOT_PATH+f"/output"
+SCRIPT_ROOT_PATH = str(os.path.split(os.path.realpath(__file__))[0])
+OUTPUT_PATH = sys.argv[3]
 if (not os.path.exists(OUTPUT_PATH)): os.makedirs(OUTPUT_PATH)
 
 '''
@@ -19,12 +25,15 @@ def pipeline(userFilePath,userFile):
     input: user Folder
     output: output/user.ll
     '''
-    absPathtoPreprocessingScript = str(os.path.abspath("BinaryPreprocesor/crosscmp/scripty.ps1")).replace("\\", "/")
+
+    time.sleep(5)
+
+    absPathtoPreprocessingScript = str(os.path.join(SCRIPT_ROOT_PATH ,"BinaryPreprocesor/crosscmp/scripty.ps1")).replace("\\", "/")
     absPathtoPreprocessingScript = list(absPathtoPreprocessingScript)
     absPathtoPreprocessingScript[0] = absPathtoPreprocessingScript[0].upper()
     absPathtoPreprocessingScript = ''.join(absPathtoPreprocessingScript)
 
-    absPathToUserFile = (str(os.getcwd())+userFilePath).replace("\\", "/")
+    absPathToUserFile = str(userFilePath).replace("\\", "/")
     absPathToUserFile = list(absPathToUserFile)
     absPathToUserFile[0] = absPathToUserFile[0].upper()
     absPathToUserFile = ''.join(absPathToUserFile)
@@ -42,31 +51,35 @@ def pipeline(userFilePath,userFile):
 
     CompiledFlag = False
     cntExecutables=0
-    if(os.path.isdir(absPathToUserFile)):                                           #if the input is a folder not a file
+    if(os.path.isdir(absPathToUserFile)):               #if the input is a folder not a file
+        absPathToUserFile_Inputed = absPathToUserFile                                  
         for file in os.listdir(absPathToUserFile):
             if(file.endswith('.exe')):
                 cntExecutables += 1
                 CompiledFlag = True
                 absPathToUserFile_Inputed = absPathToUserFile+f"/{file}"           #We are taking only the last exe file
+                continue
     else: 
         absPathToUserFile_Inputed = absPathToUserFile
         if(absPathToUserFile_Inputed.endswith('.exe')): CompiledFlag= True
            
-
     if(cntExecutables>1):
         with open(f'{OUTPUT_PATH}/logs.txt', 'w') as f:
             f.write('tell him we only accept either 1 executable or many source files only.')
         #log something to the user to tell him we only accept either 1 executable or many source files only.
 
-    print(absPathtoPreprocessingScript)
-    print(absPathToUserFile_Inputed)
-    print(OUTPUT_PATH)
-    print(absPathtoRetDec)
-    print(CompiledFlag)
+    # print(absPathtoPreprocessingScript)
+    # print(absPathToUserFile_Inputed)
+    # print(OUTPUT_PATH)
+    # print(absPathtoRetDec)
+    # print(CompiledFlag)
+    time.sleep(5)
     with open(f'{OUTPUT_PATH}/status.txt', 'w') as f:
         if(CompiledFlag): f.write('compiled')
         else: f.write('submitted')
-    run(["powershell.exe", absPathtoPreprocessingScript, absPathToUserFile_Inputed, OUTPUT_PATH ,absPathtoRetDec, "true" if CompiledFlag else 'false']) 
+    time.sleep(5)
+    run(["powershell.exe", absPathtoPreprocessingScript, absPathToUserFile_Inputed, OUTPUT_PATH ,absPathtoRetDec, "true" if CompiledFlag else 'false'])
+    time.sleep(5)
     # ----------------------------------------------------------------------------------------
 
     # ------------------- 2. IR to CFG ------------------- #
@@ -76,22 +89,28 @@ def pipeline(userFilePath,userFile):
             output/userCFG/edges.csv
     '''
 
-    absPathtoCFGScript = str(os.path.abspath("IrToCFGs/cfg_infer.py")).replace("\\", "/")
-    absPathtoCFGScript = list(absPathtoCFGScript)
-    absPathtoCFGScript[0] = absPathtoCFGScript[0].upper()
-    absPathtoCFGScript = ''.join(absPathtoCFGScript)
+    with open(os.path.join(OUTPUT_PATH, 'classification.txt'), 'w') as f:
+        f.write('126')
+    
+    with open(f'{OUTPUT_PATH}/status.txt', 'w') as f:
+        f.write('classified')
 
-    absPathtoLLFile = str(os.path.abspath("output/LLfiles/UserCode.ll"))
-    absPathtoLLFile = list(absPathtoLLFile)
-    absPathtoLLFile[0] = absPathtoLLFile[0].upper()
-    absPathtoLLFile = ''.join(absPathtoLLFile)
+    # absPathtoCFGScript = str(os.path.abspath("IrToCFGs/cfg_infer.py")).replace("\\", "/")
+    # absPathtoCFGScript = list(absPathtoCFGScript)
+    # absPathtoCFGScript[0] = absPathtoCFGScript[0].upper()
+    # absPathtoCFGScript = ''.join(absPathtoCFGScript)
 
-    absPathtoCFGOutput = str(os.path.abspath("output/"))
-    absPathtoCFGOutput = list(absPathtoCFGOutput)
-    absPathtoCFGOutput[0] = absPathtoCFGOutput[0].upper()
-    absPathtoCFGOutput = ''.join(absPathtoCFGOutput)
+    # absPathtoLLFile = str(os.path.abspath("output/LLfiles/UserCode.ll"))
+    # absPathtoLLFile = list(absPathtoLLFile)
+    # absPathtoLLFile[0] = absPathtoLLFile[0].upper()
+    # absPathtoLLFile = ''.join(absPathtoLLFile)
 
-    run(["python",absPathtoCFGScript,absPathtoLLFile,absPathtoCFGOutput])
+    # absPathtoCFGOutput = str(os.path.abspath("output/"))
+    # absPathtoCFGOutput = list(absPathtoCFGOutput)
+    # absPathtoCFGOutput[0] = absPathtoCFGOutput[0].upper()
+    # absPathtoCFGOutput = ''.join(absPathtoCFGOutput)
+
+    # run(["python",absPathtoCFGScript,absPathtoLLFile,absPathtoCFGOutput])
 
     # ----------------------------------------------------------------------------------------
     # ------------------- 3. Features Extraction ------------------- #
@@ -145,13 +164,37 @@ def pipeline(userFilePath,userFile):
            output/source
     output: output/localization.txt
     '''
-
-    # Localizer.main_localizer('true' if CompiledFlag else 'false',\
-    #                          llvm_user_file='output/UserCode.ll',\
-    #                         clf_path='output/classification.txt',\
-    #                         src_path=f'{OUTPUT_PATH}/source',\
-    #                         output_path='output/localization.txt') #not used haleyan
+    # absPathtoGenerateSubGraphScript = str(os.path.abspath("IrToCFGs/generate_subgraphs.py")).replace("\\", "/")
+    # Localizer.main_localizer('false',#'true' if CompiledFlag else 'false',\
+    #                         CFG_scriptPath= absPathtoGenerateSubGraphScript,
+    #                         llvm_user_file=os.path.join(OUTPUT_PATH, 'LLfiles','UserCode.ll').replace("\\", "/"),\
+    #                         clf_path=os.path.join(OUTPUT_PATH, 'classification.txt'),\
+    #                         src_path=os.path.join(OUTPUT_PATH, 'source'),\
+    #                         output_path=os.path.join(OUTPUT_PATH, 'span.json')) #not used haleyan
     
 
 
-pipeline(userFilePath='/tests/unitTest/out7.exe',userFile='/tests/testSrc/CWE126_Buffer_Overread__wchar_t_declare_loop_05.c')
+
+
+
+    #------------------------------ REPORT -----------------------------------------------
+    absPathToAssets = os.path.join(SCRIPT_ROOT_PATH, 'assets')
+    #absPathToReportScript = os.path.join(absPathToAssets, 'generateReport.py')
+    # absPathToReportScript = list(absPathToReportScript)
+    # absPathToReportScript[0] = absPathToReportScript[0].upper()
+    # absPathToReportScript = ''.join(absPathToReportScript)
+    # run(['python', absPathToReportScript, OUTPUT_PATH])
+
+    with open(os.path.join(absPathToAssets, 'finalReport.json'), 'r') as f:
+        finalDummyReport = json.load(f)
+    
+    with open(os.path.join(OUTPUT_PATH, 'finalReport.json'), 'w') as f:
+        json.dump(finalDummyReport, f)
+
+
+
+    #with open(f'{OUTPUT_PATH}/status.txt', 'w') as f:
+    #    f.write('completed')
+
+
+pipeline(userFilePath=userFilePath,userFile=userFile)

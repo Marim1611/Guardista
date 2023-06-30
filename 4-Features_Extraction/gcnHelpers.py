@@ -122,6 +122,8 @@ class GCN(torch.nn.Module):
         self.conv1 = GCNConv(numFeatures, hidden_channels)
         self.conv2 = GCNConv(hidden_channels, hidden_channels)
         self.conv3 = GCNConv(hidden_channels, hidden_channels)
+        self.conv4 = GCNConv(hidden_channels, hidden_channels)
+        self.conv5 = GCNConv(hidden_channels, hidden_channels)
         self.lin = Linear(hidden_channels, numClasses)
 
     def forward(self, x, edge_index, batch):
@@ -131,6 +133,10 @@ class GCN(torch.nn.Module):
         x = self.conv2(x, edge_index)
         x = x.relu()
         x = self.conv3(x, edge_index)
+        x = x.relu()
+        x = self.conv4(x, edge_index)
+        x = x.relu()
+        x = self.conv5(x, edge_index)
 
         # 2. Readout layer
         x = global_mean_pool(x, batch)  # [batch_size, hidden_channels]
@@ -158,6 +164,7 @@ def train(model, loader, device, optimizer, criterion):
          loss.backward()  # Derive gradients.
          optimizer.step()  # Update parameters based on gradients.
          optimizer.zero_grad()  # Clear gradients.
+         torch.cuda.empty_cache()
 
 
 
@@ -188,7 +195,7 @@ def inference(model, data_point, device):
 
 
 # Call this function only please
-def InferenceGCN (pathToUser_Edges, outputPath, multipleFiles, cve='test',npyPath=None, pathToUser_Nodes=None):
+def InferenceGCN (model, pathToUser_Edges, outputPath, multipleFiles, cve='test',npyPath=None, pathToUser_Nodes=None):
     '''
     pathToUser_Nodes : folder containing json files
     pathToUser_Edges : folder containing csv files
@@ -218,7 +225,7 @@ def InferenceGCN (pathToUser_Edges, outputPath, multipleFiles, cve='test',npyPat
     if(multipleFiles == 'false'):
 
         inputPoint = PreprocessingFolder_GraphClassification(pathToUser_Nodes, pathToUser_Edges, npyPath)
-        with open('GCN.pkl', 'rb') as f:
+        with open(model, 'rb') as f:
             model = pickle.load(f).to(device=device)
 
         classification,Embedding = inference(model, inputPoint[0], device=device)
@@ -254,7 +261,7 @@ def InferenceGCN (pathToUser_Edges, outputPath, multipleFiles, cve='test',npyPat
 
         inputPoints = PreprocessingFolder_GraphClassification(pathToUser_Nodes, pathToUser_Edges, npyPath)
 
-        with open('GCN.pkl', 'rb') as f:
+        with open(model, 'rb') as f:
             model = pickle.load(f).to(device=device)
 
         finalClassifications = []
@@ -295,7 +302,7 @@ def InferenceGCN (pathToUser_Edges, outputPath, multipleFiles, cve='test',npyPat
 
             
     
-        return finalClassifications, finalEmbeddings
+        return finalClassifications, df
 
 
 
