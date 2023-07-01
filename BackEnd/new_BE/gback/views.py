@@ -162,11 +162,11 @@ class CheckStatusView(APIView):
             num_case  = request.COOKIES.get('num_case')
         except:
             response = HttpResponse({f"invalid {num_case}num_case": 'cookie not set'}) 
-            response.status_code = 400
+            response.status_code = 401
             return response
         if (num_case == ''):
             response = HttpResponse({f"invalid {num_case}num_case": 'cookie not set'}) 
-            response.status_code = 400
+            response.status_code = 402
             return response
        
         if(num_case):
@@ -177,14 +177,15 @@ class CheckStatusView(APIView):
                 try:
                     with open (StatusFile, 'r') as f:
                         content = f.read()
+                    content = re.sub('\n', '',content)
+                    content = re.sub('\s', '',content)
                 except:
                     return Response({'invalid_mode': f'no file submitted, num_case {num_case} not found'}, status=status.HTTP_404_NOT_FOUND)
                 
                 if(content == 'completed'):
-                    respBody = {'waiting_status':content}
-                    return JsonResponse(respBody, status=status.HTTP_200_OK, safe=False)
-                elif(content == 'classified'):
-                    respBody = {'waiting_status':content}
+                    
+                    respBody = {"waiting_status": 4}
+                    jsonResp = json.dumps(respBody)
 
                     ReportFile =  str(os.path.join(OutputDir, 'finalReport.json')).replace('\\', '/')
                     with open (ReportFile, 'r') as f:
@@ -192,15 +193,41 @@ class CheckStatusView(APIView):
                     
                     respBody['report'] = report_content
 
-                    return JsonResponse(respBody, status=status.HTTP_200_OK, safe=False)
+                    return HttpResponse(jsonResp, status=status.HTTP_200_OK,content_type='application/json')
+                elif(content == 'classified'):
+        
+
+                    respBody = {"waiting_status": 3}
+                    jsonResp = json.dumps(respBody)
+
+                    ReportFile =  str(os.path.join(OutputDir, 'finalReport.json')).replace('\\', '/')
+                    with open (ReportFile, 'r') as f:
+                        report_content = json.load(f)
+                    
+                    respBody['report'] = report_content
+
+                    return HttpResponse(jsonResp, status=status.HTTP_200_OK,content_type='application/json')
+                elif(content == 'submitted'):
+                    respBody = {"waiting_status": 0}
+                    jsonResp = json.dumps(respBody)
+                    return HttpResponse(jsonResp, status=status.HTTP_200_OK,content_type='application/json')
+                elif(re.findall('.*c.*o.*m.*p.*', content)):
+                    respBody = {"waiting_status": 1}
+                    jsonResp = json.dumps(respBody)
+                    return HttpResponse(jsonResp, status=status.HTTP_200_OK,content_type='application/json')
+                elif(re.findall('.*l.*i.*f.*t.*', content)):
+                    respBody = {"waiting_status": 2}
+                    jsonResp = json.dumps(respBody)
+                    return HttpResponse(jsonResp, status=status.HTTP_200_OK,content_type='application/json')
                 else:
-                    respBody = {'waiting_status':content}
-                    return JsonResponse(respBody, status=status.HTTP_200_OK, safe=False)
+                    respBody = {"waiting_status": content}
+                    jsonResp = json.dumps(respBody)
+                    return HttpResponse(jsonResp, status=status.HTTP_200_OK,content_type='application/json')
             else:
                 return Response({'invalid_mode': f'no file submitted, num_case {num_case} not found'}, status=status.HTTP_400_BAD_REQUEST)
         
         response = HttpResponse({"invalid num_case": 'cookie not set'}) 
-        response.status_code = 400
+        response.status_code = 404
         return response
 
 
@@ -234,7 +261,7 @@ class CheckStatusView(APIView):
 class GetCSRFToken(APIView):
     def get(self, request):
         csrf_token = request.COOKIES.get('csrftoken')
-        response = JsonResponse({'x-csrftoken': csrf_token}, safe=False)
+        response = JsonResponse(json.dumps({'x-csrftoken': csrf_token}, ensure_ascii=False), safe=False)
         response['x-csrftoken'] = csrf_token
         return response
      
@@ -268,13 +295,13 @@ class CheckReportView(APIView):
                     with open (StatusFile, 'r') as f:
                         status_content = f.read()
                 except:
-                    return JsonResponse({f"invalid {num_case}num_case, no corresponding json report": 'cookie not set'}, status=status.HTTP_400_BAD_REQUEST, safe=False)
+                    return JsonResponse(json.dumps({f"invalid {num_case}num_case, no corresponding json report": 'cookie not set'}, ensure_ascii=False), status=status.HTTP_400_BAD_REQUEST, safe=False)
                 
                 respBody = {'waiting_status' : status_content}
                 respBody['report'] = content
-                return JsonResponse(respBody, status=status.HTTP_200_OK, safe=False)
+                return JsonResponse(json.dumps(respBody, ensure_ascii=False), status=status.HTTP_200_OK, safe=False)
             else:
-                return JsonResponse({f"invalid {num_case}num_case, no corresponding json report": 'cookie not set'}, status=status.HTTP_400_BAD_REQUEST, safe=False)
+                return JsonResponse(json.dumps({f"invalid {num_case}num_case, no corresponding json report": 'cookie not set'}, ensure_ascii=False), status=status.HTTP_400_BAD_REQUEST, safe=False)
         
         response = HttpResponse({f"invalid {num_case}num_case, no corresponding json report": 'cookie not set'}) 
         response.status_code = 400

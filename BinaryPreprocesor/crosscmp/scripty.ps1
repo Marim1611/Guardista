@@ -229,7 +229,10 @@ if($os -eq "Windows_NT")
             g++ "*.o" -o "binaryex.exe"
             Set-Location $loc
 
-            Out-File -FilePath "$GuardistaOutputPath/status.txt" -InputObject "compiled" -Force
+            Write-Host "$GuardistaOutputPath\status.txt"
+            Set-Content -Path "$GuardistaOutputPath\status.txt" -Value "compiled"
+            $printe = Get-Content -Path "$GuardistaOutputPath\status.txt"
+            Write-Host $printe
 
             Write-Host "--------------COMPILING DONE----------------"
             Write-Host "-------------BUILDING LLVM IR---------------"
@@ -300,7 +303,10 @@ if($os -eq "Windows_NT")
         }
         
 
-        Out-File -FilePath "$GuardistaOutputPath/status.txt" -InputObject "lifted" -Force
+        Write-Host "$GuardistaOutputPath\status.txt"
+        Set-Content -Path "$GuardistaOutputPath\status.txt" -Value "lifted"
+        $printe = Get-Content -Path "$GuardistaOutputPath\status.txt"
+        Write-Host $printe
 
 
 

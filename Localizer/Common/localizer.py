@@ -177,7 +177,7 @@ def main_localizer(compiledFlag, CFG_scriptPath,llvm_user_file,clf_path, src_pat
     absPathtoPairsFolder = ''.join(absPathtoPairsFolder)
 
     #run CFG script on all subfolders inside pairs folder
-    run(["python",CFG_scriptPath, "0", absPathtoPairsFolder+'/ourVulnCodes' , absPathtoPairsFolder])
+    #run(["python",CFG_scriptPath, "0", absPathtoPairsFolder+'/ourVulnCodes' , absPathtoPairsFolder])
     run(["python",CFG_scriptPath, "0", absPathtoPairsFolder+'/UserCode' , absPathtoPairsFolder])
 
     #Prepare graphs for Vulnerable code, precompute them and store them in a list
@@ -190,6 +190,9 @@ def main_localizer(compiledFlag, CFG_scriptPath,llvm_user_file,clf_path, src_pat
 
     for llfileCFGFolder in PairsFolder:
         if (llfileCFGFolder[0:7] != 'llfiles'):
+            continue
+
+        if(not re.findall(classes[0], llfileCFGFolder)):
             continue
 
         subFamilyFolders = os.listdir(f"pairs/{llfileCFGFolder}")
@@ -258,10 +261,11 @@ def main_localizer(compiledFlag, CFG_scriptPath,llvm_user_file,clf_path, src_pat
             _,fileReport = highlighter.getMatchingLines(srcFilePath, func)
             LocalizerReport.update(fileReport)
     
+    classAndLocationReport = {classes[0] : LocalizerReport}
 
 
-
-    print('report finished')
+    print('report finished\n\n\n')
+    print(classAndLocationReport)
     with open(output_path, 'w') as f:
-        json.dump(LocalizerReport, f)
+        json.dump(classAndLocationReport, f)
     
