@@ -236,14 +236,17 @@ def main_localizer(compiledFlag, CFG_scriptPath,llvm_user_file,clf_path, src_pat
         allFiles = os.listdir(UserCodeSubgraphsFolder)
         for jsonfile in tqdm(allFiles, desc='graph matching with each vulnerable code'):
             fulljsonFilePath = os.path.join(UserCodeSubgraphsFolder, jsonfile)
+            print('here')
             if(pathlib.Path(jsonfile).suffix != ".json"):
                 continue
             with open(fulljsonFilePath) as f:
                 jsonDict = json.load(f)
             functionName = jsonDict["function_name"].replace('\\', '')
             
+            
 
             if(functionName in [i[0] for i in Candidate_Functions]):              #check if the function name is inside Candidate Functions
+                print('\n\naym')
                 #Construct User Graph and Perform Matching
                 UserCodeGraph = graph.Graph()
                 UserCodeGraph.readGraphFromJSON(fulljsonFilePath)
@@ -252,6 +255,7 @@ def main_localizer(compiledFlag, CFG_scriptPath,llvm_user_file,clf_path, src_pat
                 #MatchPairs is a list of Tuples, each Tuples contains the UserFunction Name and the Function Name stored in our Database
                 if(MatchPairs):
                     final_Matched_Functions.append(MatchPairs)
+                    print(MatchPairs)
 
         print('graph matching finished')
         #------------------ Clean up

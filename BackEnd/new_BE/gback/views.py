@@ -199,13 +199,14 @@ class CheckStatusView(APIView):
         
 
                     respBody = {"waiting_status": 3}
-                    jsonResp = json.dumps(respBody)
+                    
 
                     ReportFile =  str(os.path.join(OutputDir, 'finalReport.json')).replace('\\', '/')
                     with open (ReportFile, 'r') as f:
                         report_content = json.load(f)
                     
                     respBody['report'] = report_content
+                    jsonResp = json.dumps(respBody)
 
                     return HttpResponse(jsonResp, status=status.HTTP_200_OK,content_type='application/json')
                 elif(content == 'submitted'):
