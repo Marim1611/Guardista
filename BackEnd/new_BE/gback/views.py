@@ -191,7 +191,7 @@ class CheckStatusView(APIView):
                     return classification_response
                 else:
                     respBody = {'waiting_status':content.encode()}
-                    return Response(respBody, status=status.HTTP_200_OK)
+                    return JsonResponse(respBody, status=status.HTTP_200_OK)
             else:
                 return Response({'invalid_mode': f'no file submitted, num_case {num_case} not found'}, status=status.HTTP_400_BAD_REQUEST)
         
