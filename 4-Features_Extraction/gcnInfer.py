@@ -38,20 +38,20 @@ classification_1, embeddings_df_1 = gcnHelpers.InferenceGCN( 'GCN_1.pkl' , pathT
 
 
 classification_2, embeddings_df_2 = gcnHelpers.InferenceGCN( 'GCN_2.pkl' , pathToUser_Edges=pathToUser_Edges , outputPath=outputPath, multipleFiles='true', npyPath=npyPath, cve=cve)
-embeddings_df_2.drop(list(embeddings_df_2.columns)[0], inplace=True)
-embeddings_df_2.drop(list(embeddings_df_2.columns)[-1], inplace=True)
+embeddings_df_2.drop(columns=list(embeddings_df_2.columns)[0], inplace=True)
+embeddings_df_2.drop(columns=list(embeddings_df_2.columns)[-1], inplace=True)
 '''
 
 classification_3, embeddings_df_3 = gcnHelpers.InferenceGCN( 'GCN3.pkl' , pathToUser_Edges=pathToUser_Edges , outputPath=outputPath, multipleFiles='true', npyPath=npyPath, cve=cve)
-embeddings_df_3.drop(list(embeddings_df_3.columns)[0], inplace=True)
-embeddings_df_3.drop(list(embeddings_df_3.columns)[-1], inplace=True)
+embeddings_df_3.drop(columns=list(embeddings_df_3.columns)[0], inplace=True)
+embeddings_df_3.drop(columns=list(embeddings_df_3.columns)[-1], inplace=True)
 
 '''
 classification_4, embeddings_df_4 = gcnHelpers.InferenceGCN( 'GCN_4.pkl' , pathToUser_Edges=pathToUser_Edges , outputPath=outputPath, multipleFiles='true', npyPath=npyPath, cve=cve)
-embeddings_df_4.drop(list(embeddings_df_4.columns)[0], inplace=True)
-embeddings_df_4.drop(list(embeddings_df_4.columns)[-1], inplace=True)
+embeddings_df_4.drop(columns=list(embeddings_df_4.columns)[0], inplace=True)
+embeddings_df_4.drop(columns=list(embeddings_df_4.columns)[-1], inplace=True)
 
-finalDF = pd.concat([embeddings_df_1, classification_2, classification_4], axis=1)
+finalDF = pd.concat([embeddings_df_1, embeddings_df_2, embeddings_df_4], axis=1)
 finalDF.to_csv(outputPath+'/concatEmbeddings.csv')
 
         

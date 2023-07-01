@@ -165,13 +165,13 @@ def pipeline(userFilePath,userFile):
            output/source
     output: output/localization.txt
     '''
-    absPathtoGenerateSubGraphScript = os.path.join(SCRIPT_ROOT_PATH, "IrToCFGs", "generate_subgraphs.py")
-    Localizer.main_localizer('false',#'true' if CompiledFlag else 'false',\
-                            CFG_scriptPath= absPathtoGenerateSubGraphScript,
-                            llvm_user_file=os.path.join(OUTPUT_PATH, 'LLfiles','UserCode.ll').replace("\\", "/"),\
-                            clf_path=os.path.join(OUTPUT_PATH, 'classification.txt'),\
-                            src_path=os.path.join(OUTPUT_PATH, 'source'),\
-                            output_path=os.path.join(OUTPUT_PATH, 'span.json')) #not used haleyan
+    # absPathtoGenerateSubGraphScript = os.path.join(SCRIPT_ROOT_PATH, "IrToCFGs", "generate_subgraphs.py")
+    # Localizer.main_localizer('false',#'true' if CompiledFlag else 'false',\
+    #                         CFG_scriptPath= absPathtoGenerateSubGraphScript,
+    #                         llvm_user_file=os.path.join(OUTPUT_PATH, 'LLfiles','UserCode.ll').replace("\\", "/"),\
+    #                         clf_path=os.path.join(OUTPUT_PATH, 'classification.txt'),\
+    #                         src_path=os.path.join(OUTPUT_PATH, 'source'),\
+    #                         output_path=os.path.join(OUTPUT_PATH, 'span.json')) #not used haleyan
     
 
 
