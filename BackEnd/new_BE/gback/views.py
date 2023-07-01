@@ -181,10 +181,10 @@ class CheckStatusView(APIView):
                     return Response({'invalid_mode': f'no file submitted, num_case {num_case} not found'}, status=status.HTTP_404_NOT_FOUND)
                 
                 if(content == 'completed'):
-                    respBody = {'waiting_status':content.encode()}
+                    respBody = {'waiting_status':content}
                     return JsonResponse(respBody, status=status.HTTP_200_OK, safe=False)
                 elif(content == 'classified'):
-                    respBody = {'waiting_status':content.encode()}
+                    respBody = {'waiting_status':content}
 
                     ReportFile =  str(os.path.join(OutputDir, 'finalReport.json')).replace('\\', '/')
                     with open (ReportFile, 'r') as f:
@@ -194,7 +194,7 @@ class CheckStatusView(APIView):
 
                     return JsonResponse(respBody, status=status.HTTP_200_OK, safe=False)
                 else:
-                    respBody = {'waiting_status':content.encode()}
+                    respBody = {'waiting_status':content}
                     return JsonResponse(respBody, status=status.HTTP_200_OK, safe=False)
             else:
                 return Response({'invalid_mode': f'no file submitted, num_case {num_case} not found'}, status=status.HTTP_400_BAD_REQUEST)
