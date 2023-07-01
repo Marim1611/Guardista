@@ -9,7 +9,6 @@ import os
 
 
 '''
-
 in case of classified:
 
 {'waiting_status' : classified,
@@ -39,8 +38,6 @@ in case of localized:
              location: not localized
              }]
 }
-
-
 
 '''
 

@@ -118,6 +118,7 @@ def getMatchingLines(filePath, functionLLVM):
     # with open(textFilePath, 'w', encoding='utf-8') as f:
     #     f.write('\n'.join(outputLines))
     LocalizerReport = {filename : outputLines}
+    print(LocalizerReport)
     
     return outputLines, LocalizerReport
 
