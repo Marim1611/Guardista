@@ -217,7 +217,7 @@ class CheckStatusView(APIView):
                     respBody = {"waiting_status": 1}
                     jsonResp = json.dumps(respBody)
                     return HttpResponse(jsonResp, status=status.HTTP_200_OK,content_type='application/json')
-                elif(re.findall('.*l.*i.*f.*t.*', content)):
+                elif(re.findall('.*i.*f.*t.*e.*', content)):
                     respBody = {"waiting_status": 2}
                     jsonResp = json.dumps(respBody)
                     return HttpResponse(jsonResp, status=status.HTTP_200_OK,content_type='application/json')
