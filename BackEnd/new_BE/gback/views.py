@@ -184,27 +184,12 @@ class CheckStatusView(APIView):
                 
                 if(content == 'completed'):
                     
-                    respBody = {"waiting_status": 4}
-                    ReportFile =  str(os.path.join(OutputDir, 'finalReport.json')).replace('\\', '/')
-                    with open (ReportFile, 'r') as f:
-                        report_content = json.load(f)
-                    
-                    respBody['report'] = report_content
-                    jsonResp = json.dumps(respBody)
 
-                    return HttpResponse(jsonResp, status=status.HTTP_200_OK,content_type='application/json')
+                    return HttpResponse({"waiting_status": 4}, status=status.HTTP_200_OK,content_type='application/json')
                 elif(content == 'classified'):
-        
+    
 
-                    respBody = {"waiting_status": 3}
-                    ReportFile =  str(os.path.join(OutputDir, 'finalReport.json')).replace('\\', '/')
-                    with open (ReportFile, 'r') as f:
-                        report_content = json.load(f)
-                    
-                    respBody['report'] = report_content
-                    jsonResp = json.dumps(respBody)
-
-                    return HttpResponse(jsonResp, status=status.HTTP_200_OK,content_type='application/json')
+                    return HttpResponse({"waiting_status": 3}, status=status.HTTP_200_OK,content_type='application/json')
                 elif(content == 'submitted'):
                     respBody = {"waiting_status": 0}
                     jsonResp = json.dumps(respBody)
@@ -295,9 +280,14 @@ class CheckReportView(APIView):
                 except:
                     return JsonResponse(json.dumps({f"invalid {num_case}num_case, no corresponding json report": 'cookie not set'}, ensure_ascii=False), status=status.HTTP_400_BAD_REQUEST, safe=False)
                 
-                respBody = {'waiting_status' : status_content}
+                respBody = dict()#{'waiting_status' : status_content}
                 respBody['report'] = content
-                return JsonResponse(json.dumps(respBody, ensure_ascii=False), status=status.HTTP_200_OK, safe=False)
+
+
+                jsonResp = json.dumps(respBody)
+
+
+                return HttpResponse(jsonResp, status=status.HTTP_200_OK, content_type='application/json')
             else:
                 return JsonResponse(json.dumps({f"invalid {num_case}num_case, no corresponding json report": 'cookie not set'}, ensure_ascii=False), status=status.HTTP_400_BAD_REQUEST, safe=False)
         
