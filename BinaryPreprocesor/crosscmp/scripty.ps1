@@ -300,7 +300,7 @@ if($os -eq "Windows_NT")
         }
         
 
-        Out-File -FilePath "$outputDir/status.txt" -InputObject "lifted" -Force
+        Out-File -FilePath "$GuardistaOutputPath/status.txt" -InputObject "lifted" -Force
 
 
 
