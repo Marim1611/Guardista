@@ -1,6 +1,7 @@
 from Localizer.Common.matchers import levenshtein_similarity
 import re
 import sys
+import os
 
 '''
 This script takes the path of the source code file, and the name of the function in LLVM we are trying to localize.
@@ -111,15 +112,14 @@ def getMatchingLines(filePath, functionLLVM):
     if(not outputLines):
         return outputLines
 
-    FolderPath = re.split(r"/" ,filePath)[:-2]
-    filename= re.split(r'/', filePath)[-1]
-    textFilePath = FolderPath.append(f'span_{filename}.txt')
-    textFilePath = '/'.join(textFilePath)
+    FolderPath = os.path.split(filePath)[0]
+    filename= os.path.split(filePath)[1]
+
+    # with open(textFilePath, 'w', encoding='utf-8') as f:
+    #     f.write('\n'.join(outputLines))
+    LocalizerReport = {filename : outputLines}
     
-    with open(textFilePath, 'w', encoding='utf-8') as f:
-        f.write('\n'.join(outputLines))
-    
-    return outputLines
+    return outputLines, LocalizerReport
 
 
 '''

@@ -9,9 +9,28 @@ import Localizer.Common.Winnowing as Winnowing
 import Localizer.Common.graph as graph
 
 
-def main_localizer(compiledFlag, llvm_user_file,clf_path, src_path, output_path):
+def main_localizer(compiledFlag, CFG_scriptPath,llvm_user_file,clf_path, src_path, output_path):
     if compiledFlag == "true":
         return
+    LocalizerReport = {}
+
+    
+
+    print('enter')
+
+    #------------------ Input Classification from previous module
+    
+    os.chdir("../../")
+    print('here')
+
+    with open (clf_path, 'r') as f:
+        content = f.read()
+    classes = re.split('\b', content)
+
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
+    print('read classification')
+
+   
 
     # ----------------- User functions  --------------------
     preprocessing.functions_preprocessing( llvm_file= llvm_user_file, json_file='UserCode' )
@@ -25,6 +44,7 @@ def main_localizer(compiledFlag, llvm_user_file,clf_path, src_path, output_path)
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 
+    print('here')
     # # ----------------- Vulnerable functions ------------------
     # # ----------------- Reading all vulnerable codes from the LLVM files
 
@@ -35,9 +55,11 @@ def main_localizer(compiledFlag, llvm_user_file,clf_path, src_path, output_path)
 
         if not os.path.exists(vuln_codes_path+folder+'/jsons'):
             os.makedirs(vuln_codes_path+folder+'/jsons')
+        else:
+            continue
 
         # loop on each file in the folder
-        for file in os.listdir(vuln_codes_path+folder):
+        for file in tqdm(os.listdir(vuln_codes_path+folder)):
             if file.endswith(".ll"):
                 file_name= file.split('.')[0]
                 preprocessing.functions_preprocessing( llvm_file=vuln_codes_path+folder+'/'+file, json_file=vuln_codes_path+folder+'/jsons/'+file_name )
@@ -46,26 +68,19 @@ def main_localizer(compiledFlag, llvm_user_file,clf_path, src_path, output_path)
     # ----------------- Reading all vulnerable codes from the JSON files and save it in a dictionary
     vulnerable_code= dict()
 
-    for folder in os.listdir(vuln_codes_path):
+    for folder in tqdm(os.listdir(vuln_codes_path)):
+        if(not re.findall (classes[0], folder)):               #skip CVEs we are not finding now
+            continue
 
         # make dictionary for the folder with its name as the key 
         vulnerable_code[folder]= dict()
         
-        for file in os.listdir(vuln_codes_path+folder+'/jsons'):
+        for file in tqdm(os.listdir(vuln_codes_path+folder+'/jsons')):
             if file.endswith(".json"):
                 with open( vuln_codes_path+folder+'/jsons/'+file, 'r' ) as f:
                     vulnerable_code[folder].update(json.load(f)) 
 
 
-    #------------------ Input Classification from previous module
-    
-    os.chdir("../../")
-
-    with open (clf_path, 'r') as f:
-        content = f.read()
-    classes = re.split('\b', content)
-
-    os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 
     # ----------------- Matching the user code with the vulnerable codes
@@ -117,6 +132,8 @@ def main_localizer(compiledFlag, llvm_user_file,clf_path, src_path, output_path)
 
     with open('code_scores.pkl', 'wb') as f:
         pickle.dump(Vulnerable_Matches, f)
+    
+    print('String matching finished')
 
 
     # -------- MOSS
@@ -147,25 +164,21 @@ def main_localizer(compiledFlag, llvm_user_file,clf_path, src_path, output_path)
             Candidate_Functions.append((re.findall('(@.*)\(', UserFuncHead)[0]  ,  re.findall('(@.*)\(', VulnFuncHead)[0]))
     
 
+    print('MOSS finished')
     #------------------ Graph Matching
 
 
-    #Path to generate_subgraphs.py
-    absPathtoCFGScript = str(os.path.abspath("../../IrToCFGs/generate_subgraphs.py")).replace("\\", "/")
-    absPathtoCFGScript = list(absPathtoCFGScript)
-    absPathtoCFGScript[0] = absPathtoCFGScript[0].upper()
-    absPathtoCFGScript = ''.join(absPathtoCFGScript)
-
+    SCRIPT_ROOT_folder = str(os.path.split(os.path.realpath(__file__))[0])
 
     #Path to the pairs folder in this directory
-    absPathtoPairsFolder = (str(os.getcwd())+"/pairs").replace("\\", "/")
+    absPathtoPairsFolder = os.path.join(SCRIPT_ROOT_folder, 'pairs').replace("\\", "/")
     absPathtoPairsFolder = list(absPathtoPairsFolder)
     absPathtoPairsFolder[0] = absPathtoPairsFolder[0].upper()
     absPathtoPairsFolder = ''.join(absPathtoPairsFolder)
 
     #run CFG script on all subfolders inside pairs folder
-    run(["python",absPathtoCFGScript, "0", absPathtoPairsFolder+'/ourVulnCodes' , absPathtoPairsFolder])
-    run(["python",absPathtoCFGScript, "0", absPathtoPairsFolder+'/UserCode' , absPathtoPairsFolder])
+    run(["python",CFG_scriptPath, "0", absPathtoPairsFolder+'/ourVulnCodes' , absPathtoPairsFolder])
+    run(["python",CFG_scriptPath, "0", absPathtoPairsFolder+'/UserCode' , absPathtoPairsFolder])
 
     #Prepare graphs for Vulnerable code, precompute them and store them in a list
     #Vulnerable code (we are storing) is put inside a folder called ourVulnCodes, and the corresponding CFGs is inside a folder called ourVulnCodes_subgraphs/VulnerableCode_subgraphs
@@ -180,8 +193,9 @@ def main_localizer(compiledFlag, llvm_user_file,clf_path, src_path, output_path)
             continue
 
         subFamilyFolders = os.listdir(f"pairs/{llfileCFGFolder}")
-        for subFamFolder in subFamilyFolders:
+        for subFamFolder in tqdm(subFamilyFolders, desc='Constructing subgraphs of representatives'):
             allJsons = os.listdir(f'pairs/{llfileCFGFolder}/{subFamFolder}')
+        
             for jsonFile in allJsons:
                 fulljsonFilePath = f'pairs/{llfileCFGFolder}/{subFamFolder}/{jsonFile}'
                 newGraph = graph.Graph()
@@ -201,7 +215,7 @@ def main_localizer(compiledFlag, llvm_user_file,clf_path, src_path, output_path)
     VulnFunctionNames = [i[1] for i in Candidate_Functions]
 
     allFiles = os.listdir(UserCodeSubgraphsFolder)
-    for jsonfile in tqdm(allFiles):
+    for jsonfile in tqdm(allFiles, desc='graph matching with each vulnerable code'):
         fulljsonFilePath = UserCodeSubgraphsFolder+'/'+jsonfile
         if(pathlib.Path(jsonfile).suffix != ".json"):
             continue
@@ -220,12 +234,12 @@ def main_localizer(compiledFlag, llvm_user_file,clf_path, src_path, output_path)
             if(MatchPairs):
                 final_Matched_Functions.append(MatchPairs)
 
-
+    print('graph matching finished')
     #------------------ Clean up
-    files = os.listdir('./')
-    files = [ fi for fi in files if fi.endswith(".json")]
-    for f in files:
-        os.remove(f)
+    # files = os.listdir('./')
+    # files = [ fi for fi in files if fi.endswith(".json")]
+    # for f in files:
+    #     os.remove(f)
 
 
     #------------------ Highlighter
@@ -237,10 +251,17 @@ def main_localizer(compiledFlag, llvm_user_file,clf_path, src_path, output_path)
     os.chdir("../../")
 
     srcFiles = os.listdir(src_path)
+   
     for src in srcFiles:
-        currentPath = str(os.getcwd()).replace('\\', '/')
-        currentPath = re.split(r"/" ,currentPath)[:-2]
-        srcFilePath = currentPath+ ['output','source',src]
-        srcFilePath = '/'.join(srcFilePath)
+        srcFilePath = os.path.join(src_path, src)
         for func,_ in final_Matched_Functions:
-            highlighter.getMatchingLines(srcFilePath, func)
+            _,fileReport = highlighter.getMatchingLines(srcFilePath, func)
+            LocalizerReport.update(fileReport)
+    
+
+
+
+    print('report finished')
+    with open(output_path, 'w') as f:
+        json.dump(LocalizerReport, f)
+    
