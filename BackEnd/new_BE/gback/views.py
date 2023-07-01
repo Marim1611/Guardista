@@ -185,6 +185,16 @@ class CheckStatusView(APIView):
                     return JsonResponse(respBody, status=status.HTTP_200_OK)
                 elif(content == 'classified'):
                     respBody = {'waiting_status':content.encode()}
+
+                    ReportFile =  str(os.path.join(OutputDir, 'finalReport.json')).replace('\\', '/')
+                    with open (ReportFile, 'r') as f:
+                        report_content = json.load(f)
+                    
+                    respBody['report'] = report_content
+
+
+
+
                     return JsonResponse(respBody, status=status.HTTP_200_OK)
                 else:
                     respBody = {'waiting_status':content.encode()}
