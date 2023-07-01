@@ -3,7 +3,7 @@
     <v-row >
       <v-col :space="9">
         <img src="~assets/icons/infected.svg" />
-        <h3>"Knowing your weaknesses is the first step to becoming stronger"</h3>
+        <h3>"Knowing your weaknesses is the first step to become stronger"</h3>
 
       </v-col>
       <v-col>
@@ -85,6 +85,7 @@ data ()
     uploaded: false,
     showStatus: false,
     currentCase:-1,
+    intervalId: null,
   };
 },
   methods:{
@@ -98,18 +99,24 @@ data ()
         withCredentials: true,
       })
       .then((res) => {
-        if (res.data.waiting_status == "compiled")
+        console.log("********get status")
+        console.log(res.data);
+        if (res.data.waiting_status == 1)
         {
+          console.log("&&&&&&&&&&&&& compiled")
           this.done[1]  = true;
         }
-        else if (res.data.waiting_status == "lifted")
+        else if (res.data.waiting_status == 2)
         {
           this.done[2]  = true;
+          console.log("&&&&&&&&&&&&& lifted")
         }
-        else if (res.data.waiting_status == "analyzed")
+        else if (res.data.waiting_status == 3)
         {
           this.done[3]  = true;
-          stopInterval()
+          console.log("&&&&&&&&&&&&& classified")
+          clearInterval(this.intervalId);
+
         }
       })
       .catch((err) => {
@@ -168,7 +175,7 @@ data ()
         console.log("num_case",this.$cookies.get('num_case'))
         this.$cookies.set('num_case',res.data)
         console.log("num_caseww",this.$cookies.get('num_case'))
-        setInterval(this.fetchStatus, 1000);
+        this.intervalId=setInterval(this.fetchStatus, 1000);
       })
       .catch((err) => {
         console.log("err in upload", err.response);
