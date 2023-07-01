@@ -1,6 +1,6 @@
 import os, sys, pickle, re, json
 from subprocess import run
-import Localizer.Common.localizer as Localizer
+# import Localizer.Common.localizer as Localizer
 import time
 
 userFilePath = sys.argv[1]
@@ -8,7 +8,7 @@ userFile = sys.argv[2]
 
  
 
-RETDEC_PATH = "D:/ClassWork/GP/RetDec/bin"
+RETDEC_PATH = "E:\GP\IR TO CF\retdec\bin"
 SCRIPT_ROOT_PATH = str(os.path.split(os.path.realpath(__file__))[0])
 OUTPUT_PATH = sys.argv[3]
 if (not os.path.exists(OUTPUT_PATH)): os.makedirs(OUTPUT_PATH)
