@@ -32,13 +32,16 @@
           <v-icon right dark>mdi-cloud-upload</v-icon>
         </v-btn>
         </div>   
-     
+
         <v-alert ma-6 v-if="message" border="left" color="error" dark>
           {{ message }}
         </v-alert>
 
         <div v-if="showStatus" class="stats_bar">
-          <p class="stat"  v-for="(ele,i) in cases" :key="i" color="#6e1131" :class="{checked:done[i]}">{{ele}}</p>
+          <div v-for="(ele,i) in cases" :key="i"  class="btn">
+            <v-icon :class="{iconColor:done[i]}" >{{icons[i]}}</v-icon>
+            <p class="stat"  color="#6e1131" :class="{checked:done[i]}">{{ele}}</p> 
+          </div>
 
         </div>
 
@@ -82,6 +85,7 @@ data ()
     message: "",
     cases: ['submitted','compiled','lifted','analyzed'],
     done:[false,false,false,false],
+    icons:['mdi-loading','mdi-loading','mdi-loading','mdi-loading'],
     uploaded: false,
     showStatus: false,
     currentCase:-1,
@@ -104,16 +108,23 @@ data ()
         if (res.data.waiting_status == 1)
         {
           console.log("&&&&&&&&&&&&& compiled")
-          this.done[1]  = true;
+          // this.done1  = true;
+          this.$set(this.done,1, true);
+          this.$set(this.icons,1, 'mdi-check-circle');
+
         }
         else if (res.data.waiting_status == 2)
         {
-          this.done[2]  = true;
+          this.$set(this.done,2, true);
+          this.$set(this.icons,2, 'mdi-check-circle');
+
           console.log("&&&&&&&&&&&&& lifted")
         }
         else if (res.data.waiting_status == 3)
         {
-          this.done[3]  = true;
+          this.$set(this.done,3, true);
+          this.$set(this.icons,3, 'mdi-check-circle');
+
           console.log("&&&&&&&&&&&&& classified")
           clearInterval(this.intervalId);
 
@@ -169,13 +180,14 @@ data ()
       })
       .then((res) => {
         this.done[0]=true;
+        this.icons[0]='mdi-check-circle';
         console.log("response to upload",res);
         console.log("response to upload",res.data);
         console.log("progress",this.progress);
         console.log("num_case",this.$cookies.get('num_case'))
         this.$cookies.set('num_case',res.data)
         console.log("num_caseww",this.$cookies.get('num_case'))
-        this.intervalId=setInterval(this.fetchStatus, 1000);
+        this.intervalId =setInterval(this.fetchStatus, 1000);
       })
       .catch((err) => {
         console.log("err in upload", err.response);
@@ -190,8 +202,17 @@ computed:{
   },
   set_token(){
   this.$store.commit('setToken',this.$cookies.get('csrftoken'))
-}
 },
+//  is_done()
+//  {
+//   return this.done1
+//  }
+},
+// watch: {
+//   done(newValue) {
+//     this.done2 = newValue;
+//   }
+// },
 async created() {
 await axios
       .get("http://localhost:8000/api/get")
@@ -246,7 +267,9 @@ align-items: center;
 margin-top: 20px;
 margin-bottom: 20px;
 }
-
+.iconColor{
+  color: #9d0000;
+}
 .con {
 display: flex;
 flex-direction: row;
