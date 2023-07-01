@@ -95,7 +95,7 @@ data ()
   methods:{
    async fetchStatus() {
     await axios
-      .get("http://localhost:8000/api/status",
+      .get(this.baseURL+"/api/status",
       {
         headers: {
           'X-CSRFToken': `Bearer ${this.token}`,
@@ -108,7 +108,6 @@ data ()
         if (res.data.waiting_status == 1)
         {
           console.log("&&&&&&&&&&&&& compiled")
-          // this.done1  = true;
           this.$set(this.done,1, true);
           this.$set(this.icons,1, 'mdi-check-circle');
 
@@ -167,12 +166,8 @@ data ()
     console.log("token in upload",this.token)
     console.log(this.currentFiles)
     this.showStatus=true
-    // config:(event) => {
-    //   this.progress = Math.round((100 * event.loaded) / event.total);
-    //   console.log("progresssssssssss",this.progress);
-    // }
     await axios
-      .post("http://localhost:8000/api/upload", formData,  {
+      .post(this.baseURL+"/api/upload", formData,  {
         headers: {
           'Content-Type': 'multipart/form-data',
           'X-CSRFToken': `Bearer ${this.token}`,
@@ -197,38 +192,27 @@ data ()
   },
 },
 computed:{
-  token(){
+  token() {
     return this.$store.state.token
   },
-  set_token(){
+  set_token() {
   this.$store.commit('setToken',this.$cookies.get('csrftoken'))
 },
-//  is_done()
-//  {
-//   return this.done1
-//  }
+  baseURL() {
+    return this.$store.state.baseURL
+  }
 },
-// watch: {
-//   done(newValue) {
-//     this.done2 = newValue;
-//   }
-// },
 async created() {
 await axios
-      .get("http://localhost:8000/api/get")
+      .get(this.baseURL+"/api/get")
       .then((res) => {
         console.log("$######### get token");
-        console.log(res);
-        console.log( res.headers)
       })
       .catch((err) => {
         console.log("Error in get token");
-        console.log(err);
       });
-      console.log("token",this.$cookies.get('csrftoken'))
       this.set_token
 },
-
 }
 
 </script>
