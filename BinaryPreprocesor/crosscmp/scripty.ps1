@@ -305,8 +305,6 @@ if($os -eq "Windows_NT")
 
 
 
-        Start-Sleep -Seconds 5
-
     }
     catch {
         throw

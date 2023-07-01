@@ -110,6 +110,11 @@ def runOnFolder(folderPath):
 
 
 def asynchronousRunOnFolder(folderPath):
+
+    OUTputPath = os.path.join(folderPath,'output')
+    statusPath = str(os.path.join(folderPath, 'status.txt')).replace('\\', '/')
+    with open(statusPath, 'w') as f:
+        f.write('submitted')
     absPathtoMainPipeline = os.path.join(GUARDISTA_PATH, 'mainPipeline.py')
 
     p = Popen(['python', absPathtoMainPipeline, folderPath, 'false', os.path.join(folderPath,'output')])
@@ -138,7 +143,7 @@ class MulFileUploadView(APIView):
                     file_paths.append(file_path)
 
                 asynchronousRunOnFolder(new_working_folder)
-                response = HttpResponse({"num_case": num_case.encode()})
+                response = HttpResponse({f"{num_case}": int(num_case)})
                 response.set_cookie('num_case', num_case)
                 response.status_code = 201
                 return response #, render(request, 'Loading.html')#, 
@@ -152,26 +157,28 @@ class MulFileUploadView(APIView):
 
 
 class CheckStatusView(APIView):
-
     def get(self, request):
         try:
-            num_case  = request.COOKIES['num_case']  
+            num_case  = request.COOKIES.get('num_case')
         except:
-            response = HttpResponse({"invalid num_case": 'cookie not set'}) 
+            response = HttpResponse({f"invalid {num_case}num_case": 'cookie not set'}) 
             response.status_code = 400
             return response
-        if (not num_case):
-            response = HttpResponse({"invalid num_case": 'cookie not set'}) 
+        if (num_case == ''):
+            response = HttpResponse({f"invalid {num_case}num_case": 'cookie not set'}) 
             response.status_code = 400
             return response
        
         if(num_case):
             script_parent_folder_path = '/'.join(re.split(r'\\',os.path.realpath(__file__))[:-2])
             OutputDir = os.path.join(script_parent_folder_path, 'tmp', f'tmp{num_case}', 'output')
-            StatusFile = os.path.join(OutputDir, 'status.txt')
+            StatusFile = str(os.path.join(OutputDir, 'status.txt')).replace('\\', '/')
             if(os.path.isdir(OutputDir)):
-                with open (StatusFile, 'r') as f:
-                    content = f.read()
+                try:
+                    with open (StatusFile, 'r') as f:
+                        content = f.read()
+                except:
+                    return Response({'invalid_mode': f'no file submitted, num_case {num_case} not found'}, status=status.HTTP_404_NOT_FOUND)
                 
                 if(content == 'completed'):
                     parent_path = str(os.path.split(os.path.realpath(__file__))[0])
@@ -180,7 +187,7 @@ class CheckStatusView(APIView):
                 elif(content == 'classified'):
                     with open(os.path.join(OutputDir, 'finalReport.json'), 'r') as f:
                         classification_report = json.load(f)
-                    classification_response = JsonResponse(classification_report)
+                    classification_response = JsonResponse(classification_report, safe=False)
                     return classification_response
                 else:
                     respBody = {'waiting_status':content.encode()}

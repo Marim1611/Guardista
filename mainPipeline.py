@@ -26,7 +26,8 @@ def pipeline(userFilePath,userFile):
     output: output/user.ll
     '''
 
-    time.sleep(5)
+    with open(f'{OUTPUT_PATH}/status.txt', 'w') as f:
+        f.write('submitted')
 
     absPathtoPreprocessingScript = str(os.path.join(SCRIPT_ROOT_PATH ,"BinaryPreprocesor/crosscmp/scripty.ps1")).replace("\\", "/")
     absPathtoPreprocessingScript = list(absPathtoPreprocessingScript)
@@ -77,9 +78,9 @@ def pipeline(userFilePath,userFile):
     with open(f'{OUTPUT_PATH}/status.txt', 'w') as f:
         if(CompiledFlag): f.write('compiled')
         else: f.write('submitted')
-    time.sleep(5)
+    
     run(["powershell.exe", absPathtoPreprocessingScript, absPathToUserFile_Inputed, OUTPUT_PATH ,absPathtoRetDec, "true" if CompiledFlag else 'false'])
-    time.sleep(5)
+    
     # ----------------------------------------------------------------------------------------
 
     # ------------------- 2. IR to CFG ------------------- #
@@ -164,13 +165,13 @@ def pipeline(userFilePath,userFile):
            output/source
     output: output/localization.txt
     '''
-    # absPathtoGenerateSubGraphScript = str(os.path.abspath("IrToCFGs/generate_subgraphs.py")).replace("\\", "/")
-    # Localizer.main_localizer('false',#'true' if CompiledFlag else 'false',\
-    #                         CFG_scriptPath= absPathtoGenerateSubGraphScript,
-    #                         llvm_user_file=os.path.join(OUTPUT_PATH, 'LLfiles','UserCode.ll').replace("\\", "/"),\
-    #                         clf_path=os.path.join(OUTPUT_PATH, 'classification.txt'),\
-    #                         src_path=os.path.join(OUTPUT_PATH, 'source'),\
-    #                         output_path=os.path.join(OUTPUT_PATH, 'span.json')) #not used haleyan
+    absPathtoGenerateSubGraphScript = os.path.join(SCRIPT_ROOT_PATH, "IrToCFGs", "generate_subgraphs.py")
+    Localizer.main_localizer('false',#'true' if CompiledFlag else 'false',\
+                            CFG_scriptPath= absPathtoGenerateSubGraphScript,
+                            llvm_user_file=os.path.join(OUTPUT_PATH, 'LLfiles','UserCode.ll').replace("\\", "/"),\
+                            clf_path=os.path.join(OUTPUT_PATH, 'classification.txt'),\
+                            src_path=os.path.join(OUTPUT_PATH, 'source'),\
+                            output_path=os.path.join(OUTPUT_PATH, 'span.json')) #not used haleyan
     
 
 
