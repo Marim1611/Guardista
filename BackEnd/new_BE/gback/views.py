@@ -185,7 +185,7 @@ class CheckStatusView(APIView):
                 if(content == 'completed'):
                     
 
-                    JsonResponse({"waiting_status": 4})
+                    return JsonResponse({"waiting_status": 4})
                 elif(content == 'classified'):
     
 
