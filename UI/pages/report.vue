@@ -2,7 +2,7 @@
   <v-container class="mt-10 pt-16" fluid>
     <v-row class="text-center pb-10">
       <v-col>
-        <h1><v-icon left>mdi-code-tags</v-icon> filename</h1></v-col
+        <h1><v-icon left>mdi-code-tags</v-icon> {{filename}}</h1></v-col
       >
     </v-row>
     <v-row>
@@ -47,9 +47,11 @@ export default {
     title: "Report",
     meta: [{ hid: "description", name: "description", content: "Output" }],
   },
-  // props: {
-  //   filename: String,
-  // },
+  computed: {
+    filename() {
+      return this.$route.params.filename
+    }
+  },
   data() {
     return {
       userCode:

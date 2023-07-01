@@ -72,7 +72,7 @@
 
 <script>
 import axios from "axios";
-import { getUniversalCookies } from 'cookie-universal-nuxt'
+import { getUniversalCookies } from "cookie-universal-nuxt";
 export default {
 data ()
 {
@@ -206,7 +206,6 @@ await axios
 </script>
 
 <style scoped>
-
 .parent {
 display: flex;
 flex-direction: column;
