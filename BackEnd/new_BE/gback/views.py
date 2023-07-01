@@ -279,15 +279,13 @@ class CheckReportView(APIView):
                         status_content = f.read()
                 except:
                     return JsonResponse(json.dumps({f"invalid {num_case}num_case, no corresponding json report": 'cookie not set'}, ensure_ascii=False), status=status.HTTP_400_BAD_REQUEST, safe=False)
-                
-                respBody = dict()#{'waiting_status' : status_content}
-                respBody['report'] = content
 
 
-                jsonResp = json.dumps(respBody)
+
+                jsonResp = json.dumps(content)
 
 
-                return HttpResponse(jsonResp, status=status.HTTP_200_OK, content_type='application/json')
+                return JsonResponse(content)
             else:
                 return JsonResponse(json.dumps({f"invalid {num_case}num_case, no corresponding json report": 'cookie not set'}, ensure_ascii=False), status=status.HTTP_400_BAD_REQUEST, safe=False)
         
