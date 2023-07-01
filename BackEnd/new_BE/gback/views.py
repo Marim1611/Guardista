@@ -185,11 +185,11 @@ class CheckStatusView(APIView):
                 if(content == 'completed'):
                     
 
-                    return HttpResponse({"waiting_status": 4}, status=status.HTTP_200_OK,content_type='application/json')
+                    JsonResponse({"waiting_status": 4})
                 elif(content == 'classified'):
     
 
-                    return HttpResponse({"waiting_status": 3}, status=status.HTTP_200_OK,content_type='application/json')
+                    return JsonResponse({"waiting_status": 3})
                 elif(content == 'submitted'):
                     respBody = {"waiting_status": 0}
                     jsonResp = json.dumps(respBody)
