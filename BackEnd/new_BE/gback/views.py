@@ -185,8 +185,6 @@ class CheckStatusView(APIView):
                 if(content == 'completed'):
                     
                     respBody = {"waiting_status": 4}
-                    
-
                     ReportFile =  str(os.path.join(OutputDir, 'finalReport.json')).replace('\\', '/')
                     with open (ReportFile, 'r') as f:
                         report_content = json.load(f)
@@ -199,8 +197,6 @@ class CheckStatusView(APIView):
         
 
                     respBody = {"waiting_status": 3}
-                    
-
                     ReportFile =  str(os.path.join(OutputDir, 'finalReport.json')).replace('\\', '/')
                     with open (ReportFile, 'r') as f:
                         report_content = json.load(f)
