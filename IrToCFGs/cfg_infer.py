@@ -58,9 +58,10 @@ def generate_graph(path_in,path_out):
         #----- create new dict with keys are number IDs not string labels
         new_nodes=convert_labels_to_IDs(nodes)   
         #-------- create new folder for the testcase
+        filename = filename.split('.')[0]
         if not os.path.exists(path_out+'/CFG_'+filename):
             os.mkdir(path_out+'/CFG_'+filename)
-
+        filename = filename.split('.')[0]
         prepare_json(new_nodes,file_name= filename, path=path_out+'/CFG_'+filename)
         #----- store edges in csv file
         create_dataFrame(edges,filename,new_nodes,path=path_out+'/CFG_'+filename) 

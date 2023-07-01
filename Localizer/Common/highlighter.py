@@ -1,6 +1,7 @@
 from Localizer.Common.matchers import levenshtein_similarity
 import re
 import sys
+import os
 
 '''
 This script takes the path of the source code file, and the name of the function in LLVM we are trying to localize.
@@ -20,6 +21,7 @@ string1 = '@"CWE23_Relative_Path_Traversal__char_connect_socket_fopen_01::bad"'
 def cleanseFunctionName(funcName):
     funcName = re.sub('"', '', funcName)
     funcName = re.sub('@', '', funcName)
+    funcName = re.sub('^(_\w+?\d+)', '', funcName)
     functionNamesSplitted = re.split('::', funcName)
     return functionNamesSplitted
 
@@ -42,6 +44,10 @@ def findFunctionNameUsingRegex(ListOfFuncNames, fileContents, outputLines):
             functionDefinitionString = ''
             regexScript = r'\b' + funcName + r'\b'+'\([\s\S]*?\)[\s\S]*?\{'
             matches = re.search(regexScript, fileContents, re.MULTILINE)
+            while(not matches):
+                funcName = funcName[:-1]
+                regexScript = r'\b' + funcName + r'\b'+'\([\s\S]*?\)[\s\S]*?\{'
+                matches = re.search(regexScript, fileContents, re.MULTILINE)
             if(matches):
                 #outputLines.append(matches.span())
                 
@@ -102,16 +108,18 @@ def getMatchingLines(filePath, functionLLVM):
     if(not outputLines):
         print(f"\nExact Matching for Function name in source code Failed, Trying Similarity Matching...\n")
         #perform similarity matching
-        findFunctionNameUsingSimilarity(functionNamesSplitted, contents, outputLines)
+        outputLines = findFunctionNameUsingSimilarity(functionNamesSplitted, contents, outputLines)
+    if(not outputLines):
+        return outputLines
 
-    FolderPath = re.split(r"/" ,filePath)[:-2]
-    textFilePath = FolderPath.append('span.txt')
-    textFilePath = '/'.join(textFilePath)
+    FolderPath = os.path.split(filePath)[0]
+    filename= os.path.split(filePath)[1]
+
+    # with open(textFilePath, 'w', encoding='utf-8') as f:
+    #     f.write('\n'.join(outputLines))
+    LocalizerReport = {filename : outputLines}
     
-    with open(textFilePath, 'w', encoding='utf-8') as f:
-        f.write('\n'.join(outputLines))
-    
-    return outputLines
+    return outputLines, LocalizerReport
 
 
 '''

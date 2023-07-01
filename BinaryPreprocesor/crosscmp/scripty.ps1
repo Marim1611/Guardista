@@ -31,7 +31,7 @@
 
 
 $userCodePath = $args[0]
-
+$ifFolder = Test-Path -Path $userCodePath -PathType Container
 
 #$activate_script_path = $args[1]
 $GuardistaOutputPath = $args[1]
@@ -42,8 +42,14 @@ $UserFiles = Get-ChildItem $userCodePath
 
 if (Test-Path -Path "$GuardistaOutputPath/source") { Remove-Item -Recurse "$GuardistaOutputPath/source"}
 New-Item -ItemType Directory "$GuardistaOutputPath/source"
-if($null -eq $UserFiles){ Write-Host "Directory is empty !, please provide a full directory"}
-else{ foreach ($UserFile in $UserFiles) {Copy-Item -Path $userCodePath/$UserFile -Destination "$projPath/$UserFile" }}
+
+if($ifFolder){
+    if($null -eq $UserFiles){ Write-Host "Directory is empty !, please provide a full directory"}
+    else{ foreach ($UserFile in $UserFiles) {Copy-Item -Path $userCodePath/$UserFile -Destination "$projPath/$UserFile" }}
+}
+else {
+    Copy-Item -Path $userCodePath -Destination "$projPath" 
+}
 
 
 $scriptPath = Get-Location
@@ -218,8 +224,12 @@ if($os -eq "Windows_NT")
 
 
             #LINK OBJECTS HERE
-            g++ "$outputDir/*.o" -o "$outputDir/binaryex.exe"
+            $loc = Get-Location
+            Set-Location $outputDir
+            g++ "*.o" -o "binaryex.exe"
+            Set-Location $loc
 
+            Out-File -FilePath "$GuardistaOutputPath/status.txt" -InputObject "compiled" -Force
 
             Write-Host "--------------COMPILING DONE----------------"
             Write-Host "-------------BUILDING LLVM IR---------------"
@@ -244,7 +254,7 @@ if($os -eq "Windows_NT")
             if (Test-Path -Path "$GuardistaOutputPath/LLfiles") { Remove-Item -Recurse "$GuardistaOutputPath/LLfiles"}
             New-Item -ItemType Directory "$GuardistaOutputPath/LLfiles"
 
-            Move-Item -Path "$GuardistaOutputPath/artifacts/UserCode.ll" -Destination "$GuardistaOutputPath/LLfiles/UserCode.ll"
+            Move-Item -Path "$GuardistaOutputPath/artifacts/UserCode.ll" -Destination "$GuardistaOutputPath/LLfiles/UserCode.ll" -ErrorAction SilentlyContinue
 
             Set-Location $scriptPath
 
@@ -253,7 +263,7 @@ if($os -eq "Windows_NT")
         else {
 
 
-            $exeFiles = Get-ChildItem "$GuardistaOutputPath/source"
+            $exeFiles = Get-ChildItem "$GuardistaOutputPath/source" | Where-Object {$_.Extension -eq ".exe"}
 
 
             #Move the UserCode.ll into LLfiles directory
@@ -267,9 +277,11 @@ if($os -eq "Windows_NT")
             }
             
             else{
+                $cnt = 0
                 foreach ($exe in $exeFiles)
                 {
-                    python $retdecPath/retdec-decompiler.py "$GuardistaOutputPath/source/$exe" -o "$GuardistaOutputPath/LLfiles/$exe" --stop-after bin2llvmir --backend-no-opts --backend-no-symbolic-names --backend-strict-fpu-semantics --backend-no-var-renaming --backend-no-compound-operators --backend-no-time-varying-info -k
+                    python $retdecPath/retdec-decompiler.py "$GuardistaOutputPath/source/$exe" -o "$GuardistaOutputPath/LLfiles/UserCode$cnt" --stop-after bin2llvmir --backend-no-opts --backend-no-symbolic-names --backend-strict-fpu-semantics --backend-no-var-renaming --backend-no-compound-operators --backend-no-time-varying-info -k
+                    $cnt = $cnt + 1
                 }
             }
             
@@ -277,10 +289,18 @@ if($os -eq "Windows_NT")
             Set-Location $scriptPath
             
         }
+
+
+        #Cleaning the LLfiles folder
+        $FilesInLLfiles = Get-ChildItem "$GuardistaOutputPath/LLfiles"
+        $uselessFiles = $FilesInLLfiles | Where-Object {$_.Extension -ne ".ll"}
+        foreach($useless in $uselessFiles)
+        {
+            Remove-Item "$GuardistaOutputPath/LLfiles/$useless"
+        }
         
 
-        
-
+        Out-File -FilePath "$GuardistaOutputPath/status.txt" -InputObject "lifted" -Force
 
 
 

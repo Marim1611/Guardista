@@ -4,6 +4,7 @@ import numpy as np
 import json
 import os
 import sys
+from tqdm import tqdm
 
 def prepare(fi):
     f = open(fi)
@@ -66,7 +67,7 @@ def features_per_graph_per_node(nodes_directory_path):
     features_matrices_list = []
     nodes_targets_list = []
     i = 0
-    for filename in os.listdir(nodes_directory_path):
+    for filename in tqdm(os.listdir(nodes_directory_path)):
         f = os.path.join(nodes_directory_path, filename)
 
         if os.path.isfile(f) and f.endswith('.json'):

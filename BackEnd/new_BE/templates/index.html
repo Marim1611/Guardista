@@ -1,0 +1,11 @@
+<html>
+    <head>
+        <title>Redirecting using Anchor Tags</title>
+      </head>
+    <body> 
+     <a href="{% url 'upload' %}">
+          {% csrf_token %}
+         Click Here to Redirect
+    </a>
+    </body>
+</html>

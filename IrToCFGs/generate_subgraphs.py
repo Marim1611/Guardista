@@ -23,6 +23,7 @@ from Classes.CFG import CFG
 from generate_files import *
 from construct_graph import *
 from utils import *
+from tqdm import tqdm
 
 sys.stdin.reconfigure(encoding='utf-8')
 sys.stdout.reconfigure(encoding='utf-8')
@@ -41,7 +42,7 @@ def generate_subgraphs(directory,path_out,testcase_name):
     edges=[]
     objects_dict=dict()
     # for each file in the directory
-    for filename in os.listdir(directory):
+    for filename in tqdm(os.listdir(directory)):
         #----- check if the file is IR file
         if not filename.endswith(".ll"):
             continue
@@ -111,7 +112,7 @@ if one_folder == "1":
     generate_subgraphs(path_in, path_out,folder_name)
 # folder contains sub folders of IR files
 elif one_folder == "0":
-    for subfolder in os.listdir(path_in):
+    for subfolder in tqdm(os.listdir(path_in)):
         generate_subgraphs(path_in+"/"+subfolder, path_out, subfolder)
 
 
