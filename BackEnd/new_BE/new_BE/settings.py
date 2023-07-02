@@ -52,7 +52,6 @@ INSTALLED_APPS = [
     'corsheaders',
     'torch',
     'torch_geometric',
-    'Levenstein',
     'gback'
 ]
 

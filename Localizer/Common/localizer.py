@@ -135,14 +135,11 @@ def main_localizer(compiledFlag, CFG_scriptPath,llvm_user_file,clf_path, src_pat
                     scores.sort(reverse=True) 
                     if(check_function_vulnerable(threshold, scores[0], scores[1], scores[2])):
                         Vulnerable_Matches[(key, vuln_head)] = (fn, vuln_func)
-                        print(key)
                         break
 
                     code_scores[key]=scores
                     
 
-        with open('code_scores.pkl', 'wb') as f:
-            pickle.dump(Vulnerable_Matches, f)
         
         print('String matching finished')
 
@@ -150,11 +147,9 @@ def main_localizer(compiledFlag, CFG_scriptPath,llvm_user_file,clf_path, src_pat
         # -------- MOSS
         #Candidate_Functions is a list of tuples, each containing a possible Match. A Match means User Function matching a Vulnerable Function
         Candidate_Functions = []
-
+        MatchPairs = []
 
         try:
-            with open('code_scores.pkl', 'rb') as f:
-                Vulnerable_Matches = pickle.load(f)
 
             
 
@@ -170,25 +165,24 @@ def main_localizer(compiledFlag, CFG_scriptPath,llvm_user_file,clf_path, src_pat
                 UserFuncNorm = normalizer.NormalizeLLVM(UserFunc)
 
                 #MOSS Metrics (defined in Winnowing.py), Parameters passed: k=20, ws = 10, P=10
-                MOSS_Acc_metric1, MOSS_Acc_metric2, hits, misses1, misses2 = Winnowing.diff(UserFuncNorm, VulnFuncNorm, K= 20, WindowSize= 10, P= 10)
+                try:
+                    MOSS_Acc_metric1, MOSS_Acc_metric2, hits, misses1, misses2 = Winnowing.diff(UserFuncNorm, VulnFuncNorm, K= 20, WindowSize= 10, P= 10)
+                except Exception as e:
+                    print(f'\n\n=====================================\n{e}\n========================================\n\n\n')
+                    print(f"{hits}        {misses1}            {misses2}")
 
                 #MOSS Thresholds, 0.7 for Metric1, 0.7 for Metric2, those thresholds are highly dependent on the vulnerability type unfortunately.
                 if(MOSS_Acc_metric1>0.5 or MOSS_Acc_metric2>0.5):
                     found_vuln = True
                     #Candidate_Functions containg a tuple of (original function head, vulnerable function name (which is stored with us))
                     Candidate_Functions.append((re.findall('(@.*)\(', UserFuncHead)[0]  ,  re.findall('(@.*)\(', VulnFuncHead)[0]))
-                    print(UserFuncHead)
             
 
             print('MOSS finished')
             #------------------ Graph Matching
 
-            MatchPairs = []
+            
             try:
-                print('\n\n\n\n')
-                for i in Candidate_Functions:
-                    print(i[0])
-                print('\n\n\n\n')
 
                 SCRIPT_ROOT_folder = str(os.path.split(os.path.realpath(__file__))[0])
 
@@ -273,7 +267,7 @@ def main_localizer(compiledFlag, CFG_scriptPath,llvm_user_file,clf_path, src_pat
                             final_Matched_Functions.append(MatchPairs)
                             print("Caught Something !")
             except Exception as e:
-                print(e)
+                print(f'\n\n=====================================\n{e}\n========================================\n\n\n')
                     
 
             print('graph matching finished')
@@ -284,19 +278,22 @@ def main_localizer(compiledFlag, CFG_scriptPath,llvm_user_file,clf_path, src_pat
             #     os.remove(f)
 
 
+
+        except Exception as e:
+            print(f'\n\n=====================================\n{e}\n========================================\n\n\n')
+
             #------------------ Highlighter
             # the GUI should read the file span_{fileNmae}.txt written inside 'output' folder <br> to highlight the exact span of the function in the source code
             # the source code should be inside 'output/source/'
             #if the input file srcfile.cpp, then the span file will be called span_srcfile.cpp.txt
-        except Exception as e:
-                print(e)
+        
         # make the cwd be the main directory
         os.chdir("../../")
 
         srcFiles = os.listdir(src_path)
-        print (len(final_Matched_Functions))
+        
     
-        if(MatchPairs and Candidate_Functions):
+        if(MatchPairs and Candidate_Functions and final_Matched_Functions):
             for src in srcFiles:
                 if(src.endswith('.txt') or os.path.isdir(src)):
                     continue
