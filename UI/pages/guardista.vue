@@ -64,10 +64,17 @@
                     <p> 0 issues </p>
                   </v-col>
                   <v-col> 
-                    <v-btn color="success" dark small to="/about">
+                    <nuxt-link
+                      :to="{
+                        name: 'report',
+                        params: { filename: file.name, filecode: '' },
+                      }"
+                    >
+                    <v-btn color="success" dark small >
                       See Report
                       <v-icon right dark>mdi-feature-search</v-icon>
                     </v-btn>
+                    </nuxt-link>  
                   </v-col>
                 </v-row>
               </v-list-item>
