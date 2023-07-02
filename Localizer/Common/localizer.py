@@ -167,15 +167,17 @@ def main_localizer(compiledFlag, CFG_scriptPath,llvm_user_file,clf_path, src_pat
                 #MOSS Metrics (defined in Winnowing.py), Parameters passed: k=20, ws = 10, P=10
                 try:
                     MOSS_Acc_metric1, MOSS_Acc_metric2, hits, misses1, misses2 = Winnowing.diff(UserFuncNorm, VulnFuncNorm, K= 20, WindowSize= 10, P= 10)
+                
+
+                    #MOSS Thresholds, 0.7 for Metric1, 0.7 for Metric2, those thresholds are highly dependent on the vulnerability type unfortunately.
+                    if(MOSS_Acc_metric1>0.5 or MOSS_Acc_metric2>0.5):
+                        found_vuln = True
+                        #Candidate_Functions containg a tuple of (original function head, vulnerable function name (which is stored with us))
+                        Candidate_Functions.append((re.findall('(@.*)\(', UserFuncHead)[0]  ,  re.findall('(@.*)\(', VulnFuncHead)[0]))
+                
                 except Exception as e:
                     print(f'\n\n=====================================\n{e}\n========================================\n\n\n')
-                    print(f"{hits}        {misses1}            {misses2}")
-
-                #MOSS Thresholds, 0.7 for Metric1, 0.7 for Metric2, those thresholds are highly dependent on the vulnerability type unfortunately.
-                if(MOSS_Acc_metric1>0.5 or MOSS_Acc_metric2>0.5):
-                    found_vuln = True
-                    #Candidate_Functions containg a tuple of (original function head, vulnerable function name (which is stored with us))
-                    Candidate_Functions.append((re.findall('(@.*)\(', UserFuncHead)[0]  ,  re.findall('(@.*)\(', VulnFuncHead)[0]))
+                    #print(f"{hits}        {misses1}            {misses2}")
             
 
             print('MOSS finished')

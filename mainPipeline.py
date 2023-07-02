@@ -191,8 +191,8 @@ def pipeline(userFilePath,userFile):
     # print(f"\n\n\nI CLASSIFIED : \n{classification_preds}")
     
     
-    # with open(f'{OUTPUT_PATH}/status.txt', 'w') as f:
-    #     f.write('classified')
+    with open(f'{OUTPUT_PATH}/status.txt', 'w') as f:
+        f.write('classified')
 
 
     # # # check if the classification.txt file is empty, then user code is safe
@@ -204,7 +204,7 @@ def pipeline(userFilePath,userFile):
 
     # ----------------------------------------------------------------------------------------
     with open(os.path.join(OUTPUT_PATH, 'classification.txt'), 'w') as f:
-        f.write('126')
+        f.write('121')
 
     #------------------------------ CLASSIFICATION REPORT -----------------------------------------------
     absPathToAssets = os.path.join(SCRIPT_ROOT_PATH, 'assets')
