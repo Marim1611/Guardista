@@ -54,7 +54,6 @@ def PreprocessingFolder_GraphClassification(pathToUserNodes, pathToUserEdges, np
         with open (npyPath, 'rb') as f:
             features_matrices_list = np.load(f,  allow_pickle=True)
 
-    
 
     # Reading the adjacency list of each graph
     adj_Lists = []
@@ -307,6 +306,47 @@ def InferenceGCN (model, pathToUser_Edges, outputPath, multipleFiles, cve='test'
 
 
 
+def mergeEmbeddings(pathToModels,pathToUser_Edges, outputPath, cve, csvPath=None):
+
+    folderContents = os.listdir(pathToModels)
+    gcnModelNames = []
+    for fi in folderContents:
+        if re.findall('GCN_\d.pkl', fi):
+            gcnModelNames.append(os.path.join(pathToModels, fi))
+    
+
+    
+    npyPath = outputPath+'/features_matrices/features_matrices_' + cve + '.npy'
+
+
+    classification_1, embeddings_df_1 = InferenceGCN( gcnModelNames[0] , pathToUser_Edges=pathToUser_Edges , outputPath=outputPath, multipleFiles='true', npyPath=npyPath, cve=cve)
+    LabelColumn = embeddings_df_1.iloc[:, -1]
+    embeddings_df_1.drop(columns=list(embeddings_df_1.columns)[-1], inplace=True)
+
+
+
+    classification_2, embeddings_df_2 = InferenceGCN( gcnModelNames[1] , pathToUser_Edges=pathToUser_Edges , outputPath=outputPath, multipleFiles='true', npyPath=npyPath, cve=cve)
+    embeddings_df_2.drop(columns=list(embeddings_df_2.columns)[0], inplace=True)
+    embeddings_df_2.drop(columns=list(embeddings_df_2.columns)[-1], inplace=True)
+
+
+    classification_3, embeddings_df_3 = InferenceGCN( gcnModelNames[2] , pathToUser_Edges=pathToUser_Edges , outputPath=outputPath, multipleFiles='true', npyPath=npyPath, cve=cve)
+    embeddings_df_3.drop(columns=list(embeddings_df_3.columns)[0], inplace=True)
+    embeddings_df_3.drop(columns=list(embeddings_df_3.columns)[-1], inplace=True)
+
+    classification_4, embeddings_df_4 = InferenceGCN( gcnModelNames[3] , pathToUser_Edges=pathToUser_Edges , outputPath=outputPath, multipleFiles='true', npyPath=npyPath, cve=cve)
+    embeddings_df_4.drop(columns=list(embeddings_df_4.columns)[0], inplace=True)
+    embeddings_df_4.drop(columns=list(embeddings_df_4.columns)[-1], inplace=True)
+
+    finalDF = pd.concat([embeddings_df_1, embeddings_df_2, embeddings_df_3, embeddings_df_4, LabelColumn], axis=1, ignore_index=True)
+    print(len(finalDF.columns))
+
+    if (csvPath):
+        finalDF.to_csv(csvPath+f'/concatEmbeddings_{cve}.csv', header=False, index=False)
+    else:
+        finalDF.to_csv(outputPath+f'/concatEmbeddings_{cve}.csv', header=False, index=False)
+    
+    return
 
 
 

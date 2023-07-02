@@ -50,6 +50,9 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_json_api',
     'corsheaders',
+    'torch',
+    'torch_geometric',
+    'Levenstein',
     'gback'
 ]
 

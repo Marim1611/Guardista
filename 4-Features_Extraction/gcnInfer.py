@@ -30,31 +30,8 @@ pathToUser_Edges = sys.argv[1]
 outputPath = sys.argv[2]
 cve = sys.argv[3]
 
-npyPath = outputPath+'/features_matrices/features_matrices_' + cve + '.npy'
+scriptPath = os.path.split(os.path.realpath(__file__))[0]
 
-classification_1, embeddings_df_1 = gcnHelpers.InferenceGCN( 'GCN_1.pkl' , pathToUser_Edges=pathToUser_Edges , outputPath=outputPath, multipleFiles='true', npyPath=npyPath, cve=cve)
-LabelColumn = embeddings_df_1.iloc[:, -1]
-embeddings_df_1.drop(columns=list(embeddings_df_1.columns)[-1], inplace=True)
-
-
-
-classification_2, embeddings_df_2 = gcnHelpers.InferenceGCN( 'GCN_2.pkl' , pathToUser_Edges=pathToUser_Edges , outputPath=outputPath, multipleFiles='true', npyPath=npyPath, cve=cve)
-embeddings_df_2.drop(columns=list(embeddings_df_2.columns)[0], inplace=True)
-embeddings_df_2.drop(columns=list(embeddings_df_2.columns)[-1], inplace=True)
-
-
-classification_3, embeddings_df_3 = gcnHelpers.InferenceGCN( 'GCN_3.pkl' , pathToUser_Edges=pathToUser_Edges , outputPath=outputPath, multipleFiles='true', npyPath=npyPath, cve=cve)
-embeddings_df_3.drop(columns=list(embeddings_df_3.columns)[0], inplace=True)
-embeddings_df_3.drop(columns=list(embeddings_df_3.columns)[-1], inplace=True)
-
-classification_4, embeddings_df_4 = gcnHelpers.InferenceGCN( 'GCN_4.pkl' , pathToUser_Edges=pathToUser_Edges , outputPath=outputPath, multipleFiles='true', npyPath=npyPath, cve=cve)
-embeddings_df_4.drop(columns=list(embeddings_df_4.columns)[0], inplace=True)
-embeddings_df_4.drop(columns=list(embeddings_df_4.columns)[-1], inplace=True)
-
-finalDF = pd.concat([embeddings_df_1, embeddings_df_2, embeddings_df_3, embeddings_df_4, LabelColumn], axis=1, ignore_index=True)
-print(len(finalDF.columns))
-print(finalDF.head())
-finalDF.to_csv(outputPath+f'/concatEmbeddings_{cve}.csv', header=False, index=False)
-
+gcnHelpers.mergeEmbeddings(  scriptPath, pathToUser_Edges, outputPath, cve, csvPath=None)
         
  

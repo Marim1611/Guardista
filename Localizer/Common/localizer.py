@@ -13,6 +13,7 @@ def main_localizer(compiledFlag, CFG_scriptPath,llvm_user_file,clf_path, src_pat
     if compiledFlag == "true":
         return
     LocalizerReport = {}
+    classAndLocationReport= {}
 
 
     llvm_user_folder = os.path.split(llvm_user_file)[0]
@@ -26,8 +27,8 @@ def main_localizer(compiledFlag, CFG_scriptPath,llvm_user_file,clf_path, src_pat
     print('here')
 
     with open (clf_path, 'r') as f:
-        content = f.read()
-    classes = re.split('\b', content)
+        content = f.readlines()
+    classes = [re.sub('\n', '', i) for i in content]
     print(classes)
 
     for clss in classes:
@@ -134,7 +135,7 @@ def main_localizer(compiledFlag, CFG_scriptPath,llvm_user_file,clf_path, src_pat
                     scores.sort(reverse=True) 
                     if(check_function_vulnerable(threshold, scores[0], scores[1], scores[2])):
                         Vulnerable_Matches[(key, vuln_head)] = (fn, vuln_func)
-                        
+                        print(key)
                         break
 
                     code_scores[key]=scores
@@ -150,146 +151,152 @@ def main_localizer(compiledFlag, CFG_scriptPath,llvm_user_file,clf_path, src_pat
         #Candidate_Functions is a list of tuples, each containing a possible Match. A Match means User Function matching a Vulnerable Function
         Candidate_Functions = []
 
-        with open('code_scores.pkl', 'rb') as f:
-            Vulnerable_Matches = pickle.load(f)
 
-        
-
-        for PairHeads, PairFuncs in Vulnerable_Matches.items():
-            UserFuncHead = PairHeads[0]
-            VulnFuncHead = PairHeads[1]
-
-            UserFunc = PairFuncs[0]
-            VulnFunc = PairFuncs[1]
-
-            #sometimes normalizing behaves good, sometimes bad.
-            VulnFuncNorm = normalizer.NormalizeLLVM(VulnFunc)
-            UserFuncNorm = normalizer.NormalizeLLVM(UserFunc)
-
-            #MOSS Metrics (defined in Winnowing.py), Parameters passed: k=20, ws = 10, P=10
-            MOSS_Acc_metric1, MOSS_Acc_metric2, hits, misses1, misses2 = Winnowing.diff(UserFuncNorm, VulnFuncNorm, K= 20, WindowSize= 10, P= 10)
-
-            #MOSS Thresholds, 0.7 for Metric1, 0.7 for Metric2, those thresholds are highly dependent on the vulnerability type unfortunately.
-            if(MOSS_Acc_metric1>0.5 or MOSS_Acc_metric2>0.5):
-                found_vuln = True
-                #Candidate_Functions containg a tuple of (original function head, vulnerable function name (which is stored with us))
-                Candidate_Functions.append((re.findall('(@.*)\(', UserFuncHead)[0]  ,  re.findall('(@.*)\(', VulnFuncHead)[0]))
-                print(UserFuncHead)
-        
-
-        print('MOSS finished')
-        #------------------ Graph Matching
-
-        print('\n\n\n\n')
-        for i in Candidate_Functions:
-            print(i[0])
-        print('\n\n\n\n')
-
-        SCRIPT_ROOT_folder = str(os.path.split(os.path.realpath(__file__))[0])
-
-        #Path to the pairs folder in this directory
-        absPathtoPairsFolder = os.path.join(SCRIPT_ROOT_folder, 'pairs').replace("\\", "/")
-        absPathtoPairsFolder = list(absPathtoPairsFolder)
-        absPathtoPairsFolder[0] = absPathtoPairsFolder[0].upper()
-        absPathtoPairsFolder = ''.join(absPathtoPairsFolder)
-
-        #run CFG script on all subfolders inside pairs folder
-        #run(["python",CFG_scriptPath, "0", absPathtoPairsFolder+'/ourVulnCodes' , absPathtoPairsFolder])
-        run(["python",CFG_scriptPath, "1", llvm_user_folder , os.path.split(llvm_user_folder)[0], 'UserCode'])
-
-        #Prepare graphs for Vulnerable code, precompute them and store them in a list
-        #Vulnerable code (we are storing) is put inside a folder called ourVulnCodes, and the corresponding CFGs is inside a folder called ourVulnCodes_subgraphs/VulnerableCode_subgraphs
-        PairsFolder = os.listdir('pairs')
-
-
-        #List containing graphs of each precomputed Vulnerable Code
-        ourGraphs = []
-
-        for llfileCFGFolder in PairsFolder:
-            if (llfileCFGFolder[0:7] != 'llfiles' or llfileCFGFolder.endswith('.pkl')):
-                continue
-
-            if(not re.findall(clss, llfileCFGFolder)):
-                continue
-
-            subFamilyFolders = os.listdir(os.path.join(absPathtoPairsFolder, llfileCFGFolder))
-            if (not (os.path.isfile(f'{absPathtoPairsFolder}/{llfileCFGFolder}.pkl'))):
-                for subFamFolder in tqdm(subFamilyFolders, desc='Constructing subgraphs of representatives, this is done only one time'):
-                    allJsons = os.listdir(f'{absPathtoPairsFolder}/{llfileCFGFolder}/{subFamFolder}')
-                
-                    for jsonFile in allJsons:
-                        fulljsonFilePath = f'{absPathtoPairsFolder}/{llfileCFGFolder}/{subFamFolder}/{jsonFile}'
-                        newGraph = graph.Graph()
-                        newGraph.readGraphFromJSON(fulljsonFilePath)
-                        ourGraphs.append(newGraph)
-                with open(f'{absPathtoPairsFolder}/{llfileCFGFolder}.pkl', 'wb') as f:
-                    pickle.dump(ourGraphs, f)
-            else:
-                with open(f'{absPathtoPairsFolder}/{llfileCFGFolder}.pkl', 'rb') as f:
-                    ourGraphs = pickle.load(f)
-
-
-        '''
-        we are trying to find the json file containing the name of the candidate functions (we will not compute CFG of EVERY possible function, rather just the candidate functions),
-        if we found a json of a candidate function, we compute its graph and perform the matching.
-
-        candidate functions are the functions that passed MOSS
-        '''
-        UserCodeSubgraphsFolder = os.path.join(os.path.split(llvm_user_folder)[0] ,"UserCode_subgraphs", "UserCode_subgraphs")
-
-        final_Matched_Functions = []
-        VulnFunctionNames = [i[1] for i in Candidate_Functions]
-
-        allFiles = os.listdir(UserCodeSubgraphsFolder)
-        i = -1
-        for jsonfile in tqdm(allFiles, desc='graph matching with each vulnerable code'):
-            i += 1
-            fulljsonFilePath = os.path.join(UserCodeSubgraphsFolder, jsonfile)
-            
-            if(pathlib.Path(jsonfile).suffix != ".json"):
-                continue
-            with open(fulljsonFilePath) as f:
-                jsonDict = json.load(f)
-            functionName = jsonDict["function_name"]
-            
-            
-            
+        try:
+            with open('code_scores.pkl', 'rb') as f:
+                Vulnerable_Matches = pickle.load(f)
 
             
+
+            for PairHeads, PairFuncs in Vulnerable_Matches.items():
+                UserFuncHead = PairHeads[0]
+                VulnFuncHead = PairHeads[1]
+
+                UserFunc = PairFuncs[0]
+                VulnFunc = PairFuncs[1]
+
+                #sometimes normalizing behaves good, sometimes bad.
+                VulnFuncNorm = normalizer.NormalizeLLVM(VulnFunc)
+                UserFuncNorm = normalizer.NormalizeLLVM(UserFunc)
+
+                #MOSS Metrics (defined in Winnowing.py), Parameters passed: k=20, ws = 10, P=10
+                MOSS_Acc_metric1, MOSS_Acc_metric2, hits, misses1, misses2 = Winnowing.diff(UserFuncNorm, VulnFuncNorm, K= 20, WindowSize= 10, P= 10)
+
+                #MOSS Thresholds, 0.7 for Metric1, 0.7 for Metric2, those thresholds are highly dependent on the vulnerability type unfortunately.
+                if(MOSS_Acc_metric1>0.5 or MOSS_Acc_metric2>0.5):
+                    found_vuln = True
+                    #Candidate_Functions containg a tuple of (original function head, vulnerable function name (which is stored with us))
+                    Candidate_Functions.append((re.findall('(@.*)\(', UserFuncHead)[0]  ,  re.findall('(@.*)\(', VulnFuncHead)[0]))
+                    print(UserFuncHead)
             
-            if(functionName in [i[0] for i in Candidate_Functions]):              #check if the function name is inside Candidate Functions
-                #Construct User Graph and Perform Matching
-                UserCodeGraph = graph.Graph()
-                UserCodeGraph.readGraphFromJSON(fulljsonFilePath)
-                MatchPairs = graph.matchGraphWithListOfGraphs(UserCodeGraph , ourGraphs, Names=VulnFunctionNames,otherWayAround=False, timeLimit=1)
-                
-                #MatchPairs is a list of Tuples, each Tuples contains the UserFunction Name and the Function Name stored in our Database
-                if(MatchPairs):
-                    final_Matched_Functions.append(MatchPairs)
-                    print("Caught Something !")
-                
 
-        print('graph matching finished')
-        #------------------ Clean up
-        # files = os.listdir('./')
-        # files = [ fi for fi in files if fi.endswith(".json")]
-        # for f in files:
-        #     os.remove(f)
+            print('MOSS finished')
+            #------------------ Graph Matching
+
+            MatchPairs = []
+            try:
+                print('\n\n\n\n')
+                for i in Candidate_Functions:
+                    print(i[0])
+                print('\n\n\n\n')
+
+                SCRIPT_ROOT_folder = str(os.path.split(os.path.realpath(__file__))[0])
+
+                #Path to the pairs folder in this directory
+                absPathtoPairsFolder = os.path.join(SCRIPT_ROOT_folder, 'pairs').replace("\\", "/")
+                absPathtoPairsFolder = list(absPathtoPairsFolder)
+                absPathtoPairsFolder[0] = absPathtoPairsFolder[0].upper()
+                absPathtoPairsFolder = ''.join(absPathtoPairsFolder)
+
+                #run CFG script on all subfolders inside pairs folder
+                #run(["python",CFG_scriptPath, "0", absPathtoPairsFolder+'/ourVulnCodes' , absPathtoPairsFolder])
+                run(["python",CFG_scriptPath, "1", llvm_user_folder , os.path.split(llvm_user_folder)[0], 'UserCode'])
+
+                #Prepare graphs for Vulnerable code, precompute them and store them in a list
+                #Vulnerable code (we are storing) is put inside a folder called ourVulnCodes, and the corresponding CFGs is inside a folder called ourVulnCodes_subgraphs/VulnerableCode_subgraphs
+                PairsFolder = os.listdir('pairs')
 
 
-        #------------------ Highlighter
-        # the GUI should read the file span_{fileNmae}.txt written inside 'output' folder <br> to highlight the exact span of the function in the source code
-        # the source code should be inside 'output/source/'
-        #if the input file srcfile.cpp, then the span file will be called span_srcfile.cpp.txt
+                #List containing graphs of each precomputed Vulnerable Code
+                ourGraphs = []
 
+                for llfileCFGFolder in PairsFolder:
+                    if (llfileCFGFolder[0:7] != 'llfiles' or llfileCFGFolder.endswith('.pkl')):
+                        continue
+
+                    if(not re.findall(clss, llfileCFGFolder)):
+                        continue
+
+                    subFamilyFolders = os.listdir(os.path.join(absPathtoPairsFolder, llfileCFGFolder))
+                    if (not (os.path.isfile(f'{absPathtoPairsFolder}/{llfileCFGFolder}.pkl'))):
+                        for subFamFolder in tqdm(subFamilyFolders, desc='Constructing subgraphs of representatives, this is done only one time'):
+                            allJsons = os.listdir(f'{absPathtoPairsFolder}/{llfileCFGFolder}/{subFamFolder}')
+                        
+                            for jsonFile in allJsons:
+                                fulljsonFilePath = f'{absPathtoPairsFolder}/{llfileCFGFolder}/{subFamFolder}/{jsonFile}'
+                                newGraph = graph.Graph()
+                                newGraph.readGraphFromJSON(fulljsonFilePath)
+                                ourGraphs.append(newGraph)
+                        with open(f'{absPathtoPairsFolder}/{llfileCFGFolder}.pkl', 'wb') as f:
+                            pickle.dump(ourGraphs, f)
+                    else:
+                        with open(f'{absPathtoPairsFolder}/{llfileCFGFolder}.pkl', 'rb') as f:
+                            ourGraphs = pickle.load(f)
+
+
+                '''
+                we are trying to find the json file containing the name of the candidate functions (we will not compute CFG of EVERY possible function, rather just the candidate functions),
+                if we found a json of a candidate function, we compute its graph and perform the matching.
+
+                candidate functions are the functions that passed MOSS
+                '''
+                UserCodeSubgraphsFolder = os.path.join(os.path.split(llvm_user_folder)[0] ,"UserCode_subgraphs", "UserCode_subgraphs")
+
+                final_Matched_Functions = []
+                VulnFunctionNames = [i[1] for i in Candidate_Functions]
+
+                allFiles = os.listdir(UserCodeSubgraphsFolder)
+                i = -1
+                for jsonfile in tqdm(allFiles, desc='graph matching with each vulnerable code'):
+                    i += 1
+                    fulljsonFilePath = os.path.join(UserCodeSubgraphsFolder, jsonfile)
+                    
+                    if(pathlib.Path(jsonfile).suffix != ".json"):
+                        continue
+                    with open(fulljsonFilePath) as f:
+                        jsonDict = json.load(f)
+                    functionName = jsonDict["function_name"]
+                    
+                    
+                    
+
+                    
+                    
+                    if(functionName in [i[0] for i in Candidate_Functions]):              #check if the function name is inside Candidate Functions
+                        #Construct User Graph and Perform Matching
+                        UserCodeGraph = graph.Graph()
+                        UserCodeGraph.readGraphFromJSON(fulljsonFilePath)
+                        MatchPairs = graph.matchGraphWithListOfGraphs(UserCodeGraph , ourGraphs, Names=VulnFunctionNames,otherWayAround=False, timeLimit=1)
+                        
+                        #MatchPairs is a list of Tuples, each Tuples contains the UserFunction Name and the Function Name stored in our Database
+                        if(MatchPairs):
+                            final_Matched_Functions.append(MatchPairs)
+                            print("Caught Something !")
+            except Exception as e:
+                print(e)
+                    
+
+            print('graph matching finished')
+            #------------------ Clean up
+            # files = os.listdir('./')
+            # files = [ fi for fi in files if fi.endswith(".json")]
+            # for f in files:
+            #     os.remove(f)
+
+
+            #------------------ Highlighter
+            # the GUI should read the file span_{fileNmae}.txt written inside 'output' folder <br> to highlight the exact span of the function in the source code
+            # the source code should be inside 'output/source/'
+            #if the input file srcfile.cpp, then the span file will be called span_srcfile.cpp.txt
+        except Exception as e:
+                print(e)
         # make the cwd be the main directory
         os.chdir("../../")
 
         srcFiles = os.listdir(src_path)
         print (len(final_Matched_Functions))
-        print(len(final_Matched_Functions[0]))
     
-        if(MatchPairs):
+        if(MatchPairs and Candidate_Functions):
             for src in srcFiles:
                 if(src.endswith('.txt') or os.path.isdir(src)):
                     continue
@@ -301,7 +308,9 @@ def main_localizer(compiledFlag, CFG_scriptPath,llvm_user_file,clf_path, src_pat
                         _,fileReport = highlighter.getMatchingLines(srcFilePath, func)
                         LocalizerReport.update(fileReport)
             
-            classAndLocationReport = {clss : LocalizerReport}
+            classAndLocationReport[clss] = LocalizerReport
+        else:
+            classAndLocationReport[clss] = 'not localized'
 
 
     print('report finished\n\n\n')
