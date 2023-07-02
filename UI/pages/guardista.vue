@@ -32,12 +32,12 @@
           <v-icon right dark>mdi-cloud-upload</v-icon>
         </v-btn>
         </div>   
-        <div class="btn">
+        <!-- <div class="btn">
           <v-btn color="success" dark small @click="upload">
          RESET
           <v-icon right dark>mdi-cloud-upload</v-icon>
         </v-btn>
-        </div>   
+        </div>    -->
 
         <v-alert ma-6 v-if="message" border="left" color="error" dark>
           {{ message }}
