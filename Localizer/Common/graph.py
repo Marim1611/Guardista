@@ -407,9 +407,6 @@ def matchTwoGraphs(srcGraph:Graph , dstGraph:Graph, found = False, timeLimit=Non
     it recursively tries all possible merges and transformations until we find a transformation with a match, then we return true. otherwise False.
     '''
 
-    #initializing the initial time
-    if(not t1):
-        t1 = time()
     
     #in each iteration, update time
     t2 = time()
@@ -417,15 +414,15 @@ def matchTwoGraphs(srcGraph:Graph , dstGraph:Graph, found = False, timeLimit=Non
     if(timeLimit and t2 - t1 >= timeLimit):
         #print(f"Time OUT during Matching both graphs")
         timeout=True
-        return False
+        return False, True
 
     #first, check both graphs and early stopping conditions
     if(len(dstGraph.innerNodes) <=2 or len(dstGraph.innerNodes) < len(srcGraph.innerNodes)):
-        return False
+        return False, False
     
     if(checkTwoGraphs(srcGraph, dstGraph)):
         found = True
-        return True
+        return True, False
     
     found = False
     for n1 in dstGraph.innerNodes:
@@ -438,16 +435,16 @@ def matchTwoGraphs(srcGraph:Graph , dstGraph:Graph, found = False, timeLimit=Non
                 newGraph.mergeNodes(newGraph.getNodeFromID(n1.ID), newGraph.getNodeFromID(n2.ID))
                 
                 #newGraph.vizualizeGraph( title=f"{n1.ID} and {n2.ID} merged_AFTER")                  # FOR DEBUGGING
-                found = matchTwoGraphs(srcGraph, newGraph, found, timeLimit, t1, t2, timeout)
+                found,_ = matchTwoGraphs(srcGraph, newGraph, found, timeLimit, t1= t1, t2 = t2, timeout=timeout)
                 if (timeout):
-                    return False
+                    return found, True
                 elif(found):
-                    return found
+                    return found, False
     
     if(timeout):
-        return False
+        return found, True
     else:
-        return found
+        return found, False
     
 
 
@@ -467,9 +464,13 @@ def matchGraphWithListOfGraphs (UserGraph, ListOfStoredGraphs, Names=None,timeLi
             continue 
         #gr.vizualizeGraph(title="original", saveGraph=True)
         #UserGraph.vizualizeGraph(title="other", saveGraph=True)
-        if(matchTwoGraphs(gr, UserGraph, timeLimit=timeLimit)):
+        startTime = time()
+        match_or_not, Timeout = matchTwoGraphs(gr, UserGraph, timeLimit=timeLimit, t1=startTime)
+        if(match_or_not and not Timeout):
             output.append( (UserGraph.Name, gr.Name))
         if(otherWayAround):
-            if (matchTwoGraphs(UserGraph, gr, timeLimit=timeLimit)):
+            startTime = time()
+            match_or_not, Timeout = matchTwoGraphs(UserGraph, gr, timeLimit=timeLimit, t1=startTime)
+            if (match_or_not and not Timeout):
                 output.append( (UserGraph.Name, gr.Name))
     return output
