@@ -43,6 +43,30 @@ in case of localized:
 
 
 
+def invertKeys(reportList):
+    newList = []
+    for rep in reportList:
+        newDict = {}
+        allFiles = list(rep['location'].keys())
+        for file, spans in rep['location'].items():
+            newDict[file] = rep
+            newDict[file]['spans'] = spans
+            try:
+                del newDict[file]['location']
+            except:
+                pass
+        newList.append(newDict)
+    
+    return newList
+
+
+
+
+
+
+
+
+
 
 
 script_path = os.path.split(os.path.realpath(__file__))[0]
@@ -61,12 +85,14 @@ finalReport = {}
 all_keys = list(allCWEs.keys())
 print(all_keys)
 
+# try:
+
 classificationPath = os.path.join(outputPath,'classification.txt')
 with open (classificationPath, 'r') as f:
     content = f.readlines()
 classes = [re.sub('\n', '', i) for i in content]
 #print(allCWEs)
-finalReport['waiting_status'] = 'classified'
+
 
 classificationReport_list = []
 
@@ -77,51 +103,65 @@ for classif in classes:
         classificationReport[all_keys[i]] = allCWEs[all_keys[i]][int(classes[0])]
         #print(allCWEs[all_keys[i]][int(classes[0])])
     classificationReport_list.append(classificationReport)
+    classificationReport['ID'] = classif
 
 finalReport['report'] = classificationReport_list
 
 
-try:
 
-    if(os.path.isfile(str(outputPath+'/span.json'))):
-        finalReport['waiting_status'] = 'localized'
 
-        localizationPath = str(outputPath+'/span.json').replace('\\', '/')
-        with open (localizationPath, 'r') as f:
-            loc_content = json.load(f)
-        
-        classes_in_report = list(loc_content.keys())
+with open (outputPath+'/finalReport.json', 'w') as f:
+    json.dump(finalReport, f, indent=6)
+
+
+########################################################## LOCALIZATION REPORT ##############################################
+
+if(os.path.isfile(str(outputPath+'/span.json'))):
+
+    localizationPath = os.path.join(outputPath,'span.json')
+    with open (localizationPath, 'r') as f:
+        loc_content = json.load(f)
     
+    classes_in_report = list(loc_content.keys())
 
-        for classif in classes_in_report:
-            
-            for classification_rep in classificationReport_list:
-                if( classif == classification_rep['ID']):
-                    classification_rep['location': classificationReport_list[classif]]
 
-                elif (not ('location' in classes_in_report.keys())):    
-                    classification_rep['location': 'not Localized']
+    for classif in classes_in_report:
         
-            
+        for classification_rep in classificationReport_list:
+            if( classif == classification_rep['ID']):
+                classification_rep['location'] = loc_content[classif]
 
-
-    else:
-        for classification_rep in classificationReport_list:    
-                classification_rep['location': 'not Localized']
-
-
-#except:
-#    print('no localization report')
-
+            elif (not ('location' in classes_in_report.keys())):    
+                classification_rep['location']= 'not Localized'
 
         
 
+
+else:
+    for classification_rep in classificationReport_list:    
+            classification_rep['location']= 'not Localized'
+
+
+
+finalReport['report'] = classificationReport_list
+with open (outputPath+'/finalReport.json', 'w') as f:
+    json.dump(finalReport, f, indent=6)
+
+classificationReport_list = invertKeys(classificationReport_list)
+finalReport['report'] = classificationReport_list
+
+
+
+
+
+    
+
     
 
     
 
-except:
-    print('no classification.txt')
+# except:
+#     print('no classification.txt')
 
 
 

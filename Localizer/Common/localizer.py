@@ -14,6 +14,8 @@ def main_localizer(compiledFlag, CFG_scriptPath,llvm_user_file,clf_path, src_pat
         return
     LocalizerReport = {}
 
+
+    llvm_user_folder = os.path.split(llvm_user_file)[0]
     
 
     print('enter')
@@ -113,8 +115,9 @@ def main_localizer(compiledFlag, CFG_scriptPath,llvm_user_file,clf_path, src_pat
                 continue
 
         
-
+            
             for key, fn in tqdm(user_code.items()):
+                
                 code_scores = {}
 
                 for vuln_head, vuln_func in vuln_funcs.items():   
@@ -131,7 +134,7 @@ def main_localizer(compiledFlag, CFG_scriptPath,llvm_user_file,clf_path, src_pat
                     scores.sort(reverse=True) 
                     if(check_function_vulnerable(threshold, scores[0], scores[1], scores[2])):
                         Vulnerable_Matches[(key, vuln_head)] = (fn, vuln_func)
-                        print((key, vuln_head))
+                        
                         break
 
                     code_scores[key]=scores
@@ -177,6 +180,10 @@ def main_localizer(compiledFlag, CFG_scriptPath,llvm_user_file,clf_path, src_pat
         print('MOSS finished')
         #------------------ Graph Matching
 
+        print('\n\n\n\n')
+        for i in Candidate_Functions:
+            print(i[0])
+        print('\n\n\n\n')
 
         SCRIPT_ROOT_folder = str(os.path.split(os.path.realpath(__file__))[0])
 
@@ -188,7 +195,7 @@ def main_localizer(compiledFlag, CFG_scriptPath,llvm_user_file,clf_path, src_pat
 
         #run CFG script on all subfolders inside pairs folder
         #run(["python",CFG_scriptPath, "0", absPathtoPairsFolder+'/ourVulnCodes' , absPathtoPairsFolder])
-        run(["python",CFG_scriptPath, "1", absPathtoPairsFolder+'/UserCode' , absPathtoPairsFolder])
+        run(["python",CFG_scriptPath, "1", llvm_user_folder , os.path.split(llvm_user_folder)[0], 'UserCode'])
 
         #Prepare graphs for Vulnerable code, precompute them and store them in a list
         #Vulnerable code (we are storing) is put inside a folder called ourVulnCodes, and the corresponding CFGs is inside a folder called ourVulnCodes_subgraphs/VulnerableCode_subgraphs
@@ -228,34 +235,39 @@ def main_localizer(compiledFlag, CFG_scriptPath,llvm_user_file,clf_path, src_pat
 
         candidate functions are the functions that passed MOSS
         '''
-        UserCodeSubgraphsFolder = os.path.join(absPathtoPairsFolder ,"Vuln_subgraphs","UserCode_subgraphs")
+        UserCodeSubgraphsFolder = os.path.join(os.path.split(llvm_user_folder)[0] ,"UserCode_subgraphs", "UserCode_subgraphs")
 
         final_Matched_Functions = []
         VulnFunctionNames = [i[1] for i in Candidate_Functions]
 
         allFiles = os.listdir(UserCodeSubgraphsFolder)
+        i = -1
         for jsonfile in tqdm(allFiles, desc='graph matching with each vulnerable code'):
+            i += 1
             fulljsonFilePath = os.path.join(UserCodeSubgraphsFolder, jsonfile)
-            print('here')
+            
             if(pathlib.Path(jsonfile).suffix != ".json"):
                 continue
             with open(fulljsonFilePath) as f:
                 jsonDict = json.load(f)
-            functionName = jsonDict["function_name"].replace('\\', '')
+            functionName = jsonDict["function_name"]
+            
             
             
 
+            
+            
             if(functionName in [i[0] for i in Candidate_Functions]):              #check if the function name is inside Candidate Functions
-                print('\n\naym')
                 #Construct User Graph and Perform Matching
                 UserCodeGraph = graph.Graph()
                 UserCodeGraph.readGraphFromJSON(fulljsonFilePath)
-                MatchPairs = graph.matchGraphWithListOfGraphs(UserCodeGraph , ourGraphs, Names=VulnFunctionNames,otherWayAround=True, timeLimit=300)
+                MatchPairs = graph.matchGraphWithListOfGraphs(UserCodeGraph , ourGraphs, Names=VulnFunctionNames,otherWayAround=False, timeLimit=1)
                 
                 #MatchPairs is a list of Tuples, each Tuples contains the UserFunction Name and the Function Name stored in our Database
                 if(MatchPairs):
                     final_Matched_Functions.append(MatchPairs)
-                    print(MatchPairs)
+                    print("Caught Something !")
+                
 
         print('graph matching finished')
         #------------------ Clean up
@@ -274,14 +286,22 @@ def main_localizer(compiledFlag, CFG_scriptPath,llvm_user_file,clf_path, src_pat
         os.chdir("../../")
 
         srcFiles = os.listdir(src_path)
+        print (len(final_Matched_Functions))
+        print(len(final_Matched_Functions[0]))
     
-        for src in srcFiles:
-            srcFilePath = os.path.join(src_path, src)
-            for func,_ in final_Matched_Functions:
-                _,fileReport = highlighter.getMatchingLines(srcFilePath, func)
-                LocalizerReport.update(fileReport)
-        
-        classAndLocationReport = {clss : LocalizerReport}
+        if(MatchPairs):
+            for src in srcFiles:
+                if(src.endswith('.txt') or os.path.isdir(src)):
+                    continue
+                srcFilePath = os.path.join(src_path, src)
+                for elm in final_Matched_Functions[0]:
+                    for e in elm:
+                        func = e[0]
+                        print(func)
+                        _,fileReport = highlighter.getMatchingLines(srcFilePath, func)
+                        LocalizerReport.update(fileReport)
+            
+            classAndLocationReport = {clss : LocalizerReport}
 
 
     print('report finished\n\n\n')
