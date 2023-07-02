@@ -15,7 +15,7 @@
         height="25"
         reactive
       >
-        <strong>{{ progress }} %</strong>
+      <!-- <nuxt-loading></nuxt-loading> -->
       </v-progress-linear>
     </div>
 
@@ -32,6 +32,12 @@
           <v-icon right dark>mdi-cloud-upload</v-icon>
         </v-btn>
         </div>   
+        <div class="btn">
+          <v-btn color="success" dark small @click="upload">
+         RESET
+          <v-icon right dark>mdi-cloud-upload</v-icon>
+        </v-btn>
+        </div>   
 
         <v-alert ma-6 v-if="message" border="left" color="error" dark>
           {{ message }}
@@ -45,7 +51,7 @@
 
         </div>
 
-        <v-card v-if="uploaded" class="mx-auto">
+        <v-card v-if="done[3]" class="mx-auto">
           <v-list>
             <v-subheader>Results</v-subheader>
             <v-list-item-group color="primary">
@@ -86,10 +92,10 @@ data ()
     cases: ['submitted','compiled','lifted','analyzed'],
     done:[false,false,false,false],
     icons:['mdi-loading','mdi-loading','mdi-loading','mdi-loading'],
-    uploaded: false,
     showStatus: false,
     currentCase:-1,
     intervalId: null,
+    reports: [],
   };
 },
   methods:{
@@ -100,12 +106,26 @@ data ()
         headers: {
           'X-CSRFToken': `Bearer ${this.token}`,
         },
+        responseType: 'json',
         withCredentials: true,
       })
       .then((res) => {
         console.log("********get status")
         console.log(res.data);
-        if (res.data.waiting_status == 1)
+        console.log(res);
+        const data = JSON.parse(JSON.stringify(res.data))
+        // console.log(res.data["waiting_status"]);
+
+        // JSON.parse 
+        console.log(data);
+        if (res.data.waiting_status == 0)
+        {
+          console.log("&&&&&&&&&&&&& submitted")
+          this.$set(this.done,0, true);
+          this.$set(this.icons,0, 'mdi-check-circle');
+
+        }
+        else if (res.data.waiting_status == 1)
         {
           console.log("&&&&&&&&&&&&& compiled")
           this.$set(this.done,1, true);
@@ -121,11 +141,13 @@ data ()
         }
         else if (res.data.waiting_status == 3)
         {
+          this.$set(this.done,2, true);
+          this.$set(this.icons,2, 'mdi-check-circle');
           this.$set(this.done,3, true);
           this.$set(this.icons,3, 'mdi-check-circle');
-
           console.log("&&&&&&&&&&&&& classified")
           clearInterval(this.intervalId);
+          this.getReport()
 
         }
       })
@@ -134,6 +156,26 @@ data ()
         console.log(err);
       });
 
+  },
+  async getReport() {
+    console.log("get report")
+    await axios
+      .get(this.baseURL+"/api/report",
+      {
+        headers: {
+          'X-CSRFToken': `Bearer ${this.token}`,
+        },
+        responseType: 'json',
+        withCredentials: true,
+      })
+      .then((res) => {
+        console.log("$######### get report");
+        console.log(res.data);
+        this.reports=res.data.report
+      })
+      .catch((err) => {
+        console.log("Error in get report");
+      });
   },
   selectFile(files) {
     this.progress = 0;
@@ -182,12 +224,11 @@ data ()
         console.log("num_case",this.$cookies.get('num_case'))
         this.$cookies.set('num_case',res.data)
         console.log("num_caseww",this.$cookies.get('num_case'))
-        this.intervalId =setInterval(this.fetchStatus, 1000);
+        this.intervalId =setInterval(this.fetchStatus, 100);
       })
       .catch((err) => {
         console.log("err in upload", err.response);
       });
-      this.uploaded = true;
 
   },
 },
