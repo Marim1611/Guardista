@@ -18,7 +18,7 @@ export default {
   },
 
   // Global CSS: https://go.nuxtjs.dev/config-css
-  css: [],
+  css: ["@mdi/font/css/materialdesignicons.min.css"],
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
   plugins: [],
@@ -29,13 +29,12 @@ export default {
   // Modules for dev and build (recommended): https://go.nuxtjs.dev/config-modules
   buildModules: [
     // https://go.nuxtjs.dev/vuetify
-    "@nuxtjs/vuetify",
+    // "@nuxtjs/vuetify",
+    ["@nuxtjs/vuetify", { iconfont: "mdi" }],
   ],
 
   // Modules: https://go.nuxtjs.dev/config-modules
-  modules: [
-    'cookie-universal-nuxt'
-  ],
+  modules: ["cookie-universal-nuxt"],
 
   // Vuetify module configuration: https://go.nuxtjs.dev/config-vuetify
   vuetify: {
