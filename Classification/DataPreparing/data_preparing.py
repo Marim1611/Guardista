@@ -6,13 +6,14 @@ from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
 import pickle
 
 
-def read_data(file_name,header=None, index_col=None, endcode_labels=False):
+def read_data(file_name,header=None, index_col=None, endcode_labels=False, drop_1st_col=False):
     '''
     this function reads the data from the csv file and returns the features and labels 
     splitted into training and validation sets
     '''
     data = pd.read_csv(file_name , header=header, index_col=index_col )
-    data.head()
+    if drop_1st_col:
+        data = data.drop(data.columns[0], axis=1)
     df_numpy = data.to_numpy()
     features = df_numpy[:, :-1]
     labels = df_numpy[:, -1]
