@@ -67,7 +67,7 @@
                     <nuxt-link
                       :to="{
                         name: 'report',
-                        params: { filename: file.name, filecode: '' },
+                        params: { filename: file.name,  report: reports[index], code: '',},
                       }"
                     >
                     <v-btn color="success" dark small >

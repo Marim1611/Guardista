@@ -66,7 +66,7 @@ a {
 .nav-bar {
   position: fixed;
   top: 0;
-  z-index: 1000;
+  z-index: 10;
   width: 100%;
   display: -webkit-box;
   display: -ms-flexbox;
