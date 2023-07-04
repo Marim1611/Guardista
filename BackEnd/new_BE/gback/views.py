@@ -267,16 +267,24 @@ class CheckReportView(APIView):
             OutputDir = os.path.join(script_parent_folder_path, 'tmp', f'tmp{num_case}', 'output')
             StatusFile = str(os.path.join(OutputDir, 'status.txt')).replace('\\', '/')
 
-            ReportFile =  str(os.path.join(OutputDir, 'finalReport.json')).replace('\\', '/')
+            Classification_ReportFile =  str(os.path.join(OutputDir, 'finalReport.json')).replace('\\', '/')
+            Loc_ReportFile =  str(os.path.join(OutputDir, 'span.json')).replace('\\', '/')
 
 
 
-            if(os.path.isdir(OutputDir) and os.path.isfile(ReportFile)):
+            if(os.path.isdir(OutputDir) and os.path.isfile(Classification_ReportFile)):
                 try:
-                    with open (ReportFile, 'r') as f:
-                        content = json.load(f)
                     with open (StatusFile, 'r') as f:
                         status_content = f.read()
+                    if(status_content == 'classified'):
+                        with open (Classification_ReportFile, 'r') as f:
+                            content = json.load(f)
+                    elif(status_content == 'completed'):
+                        with open (Loc_ReportFile, 'r') as f:
+                            content = json.load(f)
+                        
+                   
+                    
                 except:
                     return JsonResponse(json.dumps({f"invalid {num_case}num_case, no corresponding json report": 'cookie not set'}, ensure_ascii=False), status=status.HTTP_400_BAD_REQUEST, safe=False)
 

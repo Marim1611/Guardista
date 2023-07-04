@@ -44,6 +44,7 @@ in case of localized:
 
 outputPath = sys.argv[1]
 
+
 def invertKeys(reportList):
     newList = []
     for rep in reportList:

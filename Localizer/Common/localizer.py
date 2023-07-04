@@ -32,6 +32,7 @@ def main_localizer(compiledFlag, CFG_scriptPath,llvm_user_file,clf_path, src_pat
     print(classes)
 
     for clss in classes:
+        classAndLocationReport[clss] = {}
 
         os.chdir(os.path.dirname(os.path.abspath(__file__)))
         print('read classification')
@@ -266,7 +267,7 @@ def main_localizer(compiledFlag, CFG_scriptPath,llvm_user_file,clf_path, src_pat
                         
                         #MatchPairs is a list of Tuples, each Tuples contains the UserFunction Name and the Function Name stored in our Database
                         if(MatchPairs):
-                            final_Matched_Functions.append(MatchPairs)
+                            final_Matched_Functions+= MatchPairs
                             print("Caught Something !")
             except Exception as e:
                 print(f'\n\n=====================================\n{e}\n========================================\n\n\n')
@@ -294,20 +295,27 @@ def main_localizer(compiledFlag, CFG_scriptPath,llvm_user_file,clf_path, src_pat
 
         srcFiles = os.listdir(src_path)
         
+
+        # for i in final_Matched_Functions:
+        #     print(i[0])
+        final_Matched_Functions = [i[0] for i in final_Matched_Functions]
+        final_Matched_Functions = list(set(final_Matched_Functions))
+        
     
-        if(MatchPairs and Candidate_Functions and final_Matched_Functions):
+        if(Candidate_Functions and final_Matched_Functions):
+            newReport = dict()
             for src in srcFiles:
                 if(src.endswith('.txt') or os.path.isdir(src)):
                     continue
                 srcFilePath = os.path.join(src_path, src)
-                for elm in final_Matched_Functions[0]:
-                    for e in elm:
-                        func = e[0]
-                        print(func)
+                for func in final_Matched_Functions:
+                        
+                        #print(func)
                         _,fileReport = highlighter.getMatchingLines(srcFilePath, func)
-                        LocalizerReport.update(fileReport)
+                        if(fileReport):
+                            newReport[srcFilePath] = fileReport
             
-            classAndLocationReport[clss] = LocalizerReport
+            classAndLocationReport[clss].update(newReport)
         else:
             classAndLocationReport[clss] = 'not localized'
 
@@ -315,5 +323,5 @@ def main_localizer(compiledFlag, CFG_scriptPath,llvm_user_file,clf_path, src_pat
     print('report finished\n\n\n')
     print(classAndLocationReport)
     with open(output_path, 'w') as f:
-        json.dump(classAndLocationReport, f)
+        json.dump(classAndLocationReport, f, indent=6)
     

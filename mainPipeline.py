@@ -150,20 +150,20 @@ def pipeline(userFilePath,userFile):
     output: ---
     '''
 
-    absPathtoGCNInfer = os.path.join(SCRIPT_ROOT_PATH ,"4-Features_Extraction","gcnInfer.py").replace("\\", "/")
-    absPathtoGCNInfer = list(absPathtoGCNInfer)
-    absPathtoGCNInfer[0] = absPathtoGCNInfer[0].upper()
-    absPathtoGCNInfer = ''.join(absPathtoGCNInfer)
+    # absPathtoGCNInfer = os.path.join(SCRIPT_ROOT_PATH ,"4-Features_Extraction","gcnInfer.py").replace("\\", "/")
+    # absPathtoGCNInfer = list(absPathtoGCNInfer)
+    # absPathtoGCNInfer[0] = absPathtoGCNInfer[0].upper()
+    # absPathtoGCNInfer = ''.join(absPathtoGCNInfer)
     
-    absPathtoNodesEdges = os.path.join(OUTPUT_PATH, 'CFG_UserCode')
+    # absPathtoNodesEdges = os.path.join(OUTPUT_PATH, 'CFG_UserCode')
 
 
-    run(["python",absPathtoGCNInfer, absPathtoEdges_final, absPathtoNodesEdges, 'test'])
+    # run(["python",absPathtoGCNInfer, absPathtoEdges_final, absPathtoNodesEdges, 'test'])
 
-    EmbeddingPath = os.path.join(absPathtoNodesEdges, 'concatEmbeddings_test.csv')
-    X_df = pd.read_csv(EmbeddingPath, header=None, index_col=None)
-    X_df.drop(columns=X_df.columns[0], axis=1, inplace=True)
-    X_test = X_df.iloc[: , :-1]
+    # EmbeddingPath = os.path.join(absPathtoNodesEdges, 'concatEmbeddings_test.csv')
+    # X_df = pd.read_csv(EmbeddingPath, header=None, index_col=None)
+    # X_df.drop(columns=X_df.columns[0], axis=1, inplace=True)
+    # X_test = X_df.iloc[: , :-1]
 
     # ----------------------------------------------------------------------------------------
 
@@ -204,7 +204,7 @@ def pipeline(userFilePath,userFile):
 
     # ----------------------------------------------------------------------------------------
     with open(os.path.join(OUTPUT_PATH, 'classification.txt'), 'w') as f:
-        f.write('121')
+        f.write('191')
 
     #------------------------------ CLASSIFICATION REPORT -----------------------------------------------
     absPathToAssets = os.path.join(SCRIPT_ROOT_PATH, 'assets')
@@ -238,12 +238,12 @@ def pipeline(userFilePath,userFile):
 
 
     #------------------------------ REPORT -----------------------------------------------
-    absPathToAssets = os.path.join(SCRIPT_ROOT_PATH, 'assets')
-    absPathToReportScript = os.path.join(absPathToAssets, 'generateReport.py')
-    absPathToReportScript = list(absPathToReportScript)
-    absPathToReportScript[0] = absPathToReportScript[0].upper()
-    absPathToReportScript = ''.join(absPathToReportScript)
-    run(['python', absPathToReportScript, OUTPUT_PATH])
+    # absPathToAssets = os.path.join(SCRIPT_ROOT_PATH, 'assets')
+    # absPathToReportScript = os.path.join(absPathToAssets, 'generateReport.py')
+    # absPathToReportScript = list(absPathToReportScript)
+    # absPathToReportScript[0] = absPathToReportScript[0].upper()
+    # absPathToReportScript = ''.join(absPathToReportScript)
+    # run(['python', absPathToReportScript, OUTPUT_PATH])
 
 
 
