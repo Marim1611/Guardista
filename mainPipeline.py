@@ -142,6 +142,31 @@ def pipeline(userFilePath,userFile):
     X_test = []
 
 
+
+
+    # ----------------------------------------------------------------------------------------------------
+    # ------------------------------------- Classification using GCN -------------------------------------
+    # ----------------------------------------------------------------------------------------------------
+    '''
+    input: path to nodes, and edges only
+    output: classification class
+    '''
+    # absPathToGCN_classifier_script = os.path.join(SCRIPT_ROOT_PATH, "4-Features_Extraction","gcnInferPoint.py").replace("\\", "/")
+    
+
+    # modelPath = os.path.join(SCRIPT_ROOT_PATH, "models", 'GCN_classifier')
+    # encoderPath = os.path.join(SCRIPT_ROOT_PATH, "model_classes", 'classEncoder.pkl')
+    # classification_txt = os.path.join(OUTPUT_PATH, 'classification.txt')
+
+    # run (['python', absPathToGCN_classifier_script, absPathtoNodes_final, absPathtoEdges_final, OUTPUT_PATH, modelPath, 'test', encoderPath, classification_txt])
+
+
+
+
+
+
+
+
     # ----------------------------------------------------------------------------------------
     # ------------------- 3. Features Extraction ------------------- #
     # ------------------- 3.2. Structural Features ------------------- #
@@ -203,8 +228,8 @@ def pipeline(userFilePath,userFile):
     #     sys.exit()
 
     # ----------------------------------------------------------------------------------------
-    with open(os.path.join(OUTPUT_PATH, 'classification.txt'), 'w') as f:
-        f.write('191')
+    # with open(os.path.join(OUTPUT_PATH, 'classification.txt'), 'w') as f:
+    #     f.write('191')
 
     #------------------------------ CLASSIFICATION REPORT -----------------------------------------------
     absPathToAssets = os.path.join(SCRIPT_ROOT_PATH, 'assets')
@@ -248,7 +273,7 @@ def pipeline(userFilePath,userFile):
 
 
     with open(f'{OUTPUT_PATH}/status.txt', 'w') as f:
-       f.write('completed ')
+       f.write('completed')
 
 
 pipeline(userFilePath=userFilePath,userFile=userFile)
