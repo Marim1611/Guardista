@@ -7,31 +7,32 @@
           {{ filename }}
         </h1></v-col
       >
-      <v-col>
-        <v-btn color="#757575" dark medium @click="localization()">
-          Localize vulnerability?
-          <v-icon right dark>mdi-bug</v-icon>
-        </v-btn>
-        <v-btn color="success" dark medium to="/guardista">
-          Another scan?
-          <v-icon right dark>mdi-feature-search</v-icon>
-        </v-btn>
-
-        <v-dialog v-model="dialog" width="max-content" class="mt-16">
-          <v-card class="code py-8 px-2">
-            <v-card-title class="d-flex justify-end align-end">
-              <v-btn @click="dialog = false" text :hover="false">
-                <v-icon right large color="red">mdi-close-circle</v-icon>
-              </v-btn>
-            </v-card-title>
-            <v-card-text>
-              <pre class="codeColor">
-            <span v-for="(segment, index) in codeSegments" :key="index" :class="{ vulnerableCode: segment.isVulnerable }">{{ segment.content }}</span>
-          </pre>
-            </v-card-text>
-          </v-card>
-        </v-dialog>
-      </v-col>
+    </v-row>
+    <v-row
+      class="text-center d-flex flex-row align-center justify-center mt-10"
+    >
+      <v-btn color="#757575" dark medium @click="localization()" class="mr-2">
+        Localize vulnerability?
+        <v-icon right dark>mdi-bug</v-icon>
+      </v-btn>
+      <v-btn color="success" dark medium to="/guardista" class="ml-0">
+        Another scan?
+        <v-icon right dark>mdi-feature-search</v-icon>
+      </v-btn>
+      <v-dialog v-model="dialog" width="max-content" class="mt-16">
+        <v-card class="code py-8 px-2">
+          <v-card-title class="d-flex justify-end align-end">
+            <v-btn @click="dialog = false" text :hover="false">
+              <v-icon right large color="red">mdi-close-circle</v-icon>
+            </v-btn>
+          </v-card-title>
+          <v-card-text>
+            <pre class="codeColor">
+          <span v-for="(segment, index) in codeSegments" :key="index" :class="{ vulnerableCode: segment.isVulnerable }">{{ segment.content }}</span>
+        </pre>
+          </v-card-text>
+        </v-card>
+      </v-dialog>
     </v-row>
     <v-row class="d-flex flex-row align-center justify-center pt-10">
       <v-col cols="7">
@@ -126,11 +127,10 @@ export default {
             content: code.substring(currentIndex, start),
             isVulnerable: false,
           });
-        } 
-          const vulnerableCode = code.substring(start, end);
-          segments.push({ content: vulnerableCode, isVulnerable: true });
-          currentIndex = end;
-       
+        }
+        const vulnerableCode = code.substring(start, end);
+        segments.push({ content: vulnerableCode, isVulnerable: true });
+        currentIndex = end;
       }
 
       if (currentIndex < code.length) {
