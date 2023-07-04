@@ -280,8 +280,14 @@ class CheckReportView(APIView):
                         with open (Classification_ReportFile, 'r') as f:
                             content = json.load(f)
                     elif(status_content == 'completed'):
+                        with open (Classification_ReportFile, 'r') as f:
+                            class_content = json.load(f)
                         with open (Loc_ReportFile, 'r') as f:
                             content = json.load(f)
+                        newDict = {}
+                        newDict['report'] = class_content
+                        newDict['span'] = content
+                        content = newDict
                         
                    
                     

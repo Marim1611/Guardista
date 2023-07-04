@@ -64,29 +64,25 @@ def invertKeys(reportList):
 
 
 
-
-
-
-
-
-
-
 script_path = os.path.split(os.path.realpath(__file__))[0]
 
 
 
 
-allCWEs = pd.read_csv(os.path.join(script_path, '1000.csv')).to_dict()
+allCWEsDF = pd.read_csv(os.path.join(script_path, '1000.csv'))
+allCWEs = allCWEsDF.to_dict()
 with open ('classes.json', 'w') as f:
     json.dump(allCWEs, f, indent=6)
 
 
 
 finalReport = {}
-all_keys = list(allCWEs.keys())
-print(all_keys)
+fields = list(allCWEsDF.columns)
 
-try:
+
+
+#try:
+if(1):
 
     classificationPath = os.path.join(outputPath,'classification.txt')
     with open (classificationPath, 'r') as f:
@@ -95,16 +91,27 @@ try:
     #print(allCWEs)
 
 
-    classificationReport_list = []
+    classificationReport_list = dict()
 
 
-    for classif in classes:
+    for i, classif in enumerate(classes):
         classificationReport = dict()
-        for i in range(len(all_keys)):
-            classificationReport[all_keys[i]] = allCWEs[all_keys[i]][int(classes[0])]
-            #print(allCWEs[all_keys[i]][int(classes[0])])
-        classificationReport_list.append(classificationReport)
+        # print(classif)
+        # print(allCWEsDF['CWE-ID'])
+        # print(allCWEsDF.loc[allCWEsDF['CWE-ID']==int(classif), 'Name'])  
+        for field in fields:
+            entry = allCWEsDF.loc[allCWEsDF['CWE-ID']==int(classif), field]
+            if(entry.empty):
+                entry = ''
+            else:
+                entry = str(entry.item())
+                re.sub(':', '', entry)
+            classificationReport[field] = entry
+            
+        # print(classificationReport)    
         classificationReport['ID'] = classif
+        classificationReport_list[f'rep{i}'] = classificationReport
+        
 
     finalReport['report'] = classificationReport_list
 
@@ -159,9 +166,9 @@ try:
 
     
 
-except Exception as e:
-    print(e)
-    print('no classification.txt')
+# except Exception as e:
+#    print(e)
+#    print('no classification.txt')
 
 
 
