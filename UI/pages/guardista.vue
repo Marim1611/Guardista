@@ -69,7 +69,7 @@
                         params: {
                           filename: file.name,
                           report: reports[index],
-                          spans: spans[index],
+                          span: spans[index],
                         },
                       }"
                     >
@@ -106,6 +106,8 @@ export default {
       intervalId: null,
       reports: [],
       spans: [],
+      reports_dict: {},
+      spans_dict: {},
     };
   },
   methods: {
@@ -117,7 +119,7 @@ export default {
           },
           responseType: "json",
           withCredentials: true,
-        }) 
+        })
         .then((res) => {
           console.log("********get status");
           console.log(res.data);
@@ -143,8 +145,7 @@ export default {
           } else if (res.data.waiting_status == 3) {
             console.log("&&&&&&&&&&&&& classified");
             this.getReport();
-          }
-          else if(res.data.waiting_status==4){
+          } else if (res.data.waiting_status == 4) {
             this.$set(this.done, 2, true);
             this.$set(this.icons, 2, "mdi-check-circle");
             this.$set(this.done, 3, true);
@@ -171,8 +172,11 @@ export default {
         })
         .then((res) => {
           console.log("$######### get report");
-          console.log(res);
-          this.reports = res.data.report;
+
+          this.reports_dict = res.data.report;
+          for (var key in this.reports_dict) {
+            this.reports.push(this.reports_dict[key]);
+          }
         })
         .catch((err) => {
           console.log("Error in get report");
@@ -190,8 +194,11 @@ export default {
         })
         .then((res) => {
           console.log("$######### get span");
-          console.log(res.data);
-          this.span = res.data.span;
+          this.spans_dict = res.data.span;
+          for (var key in this.reports_dict) {
+              let id = this.reports_dict[key]["CWE-ID"];
+              this.spans.push(this.spans_dict[id]);
+          }
         })
         .catch((err) => {
           console.log("Error in get span");
