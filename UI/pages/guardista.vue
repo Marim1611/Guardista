@@ -179,6 +179,7 @@ data ()
         console.log("$######### get report");
         console.log(res.data);
         this.reports=res.data.report
+      
       })
       .catch((err) => {
         console.log("Error in get report");
@@ -200,7 +201,7 @@ data ()
     {
       console.log(this.currentFiles[i].name);
       const ext = this.currentFiles[i].name.split(".").pop();
-      const allowed_extensions=["py", "c","exe","cpp","ll"]
+      const allowed_extensions=["py", "c","exe","cpp","ll","h"]
     if (! allowed_extensions.includes(ext) ) {
       console.log(ext);
       console.log("**********");
