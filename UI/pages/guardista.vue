@@ -141,14 +141,17 @@ export default {
 
             console.log("&&&&&&&&&&&&& lifted");
           } else if (res.data.waiting_status == 3) {
+            console.log("&&&&&&&&&&&&& classified");
+            this.getReport();
+          }
+          else if(res.data.waiting_status==4){
             this.$set(this.done, 2, true);
             this.$set(this.icons, 2, "mdi-check-circle");
             this.$set(this.done, 3, true);
             this.$set(this.icons, 3, "mdi-check-circle");
-            console.log("&&&&&&&&&&&&& classified");
+            console.log("&&&&&&&&&&&&& Localized");
             clearInterval(this.intervalId);
-            this.getReport();
-            // this.getSpan(); //not sure
+            this.getSpan();
           }
         })
         .catch((err) => {
@@ -168,32 +171,32 @@ export default {
         })
         .then((res) => {
           console.log("$######### get report");
-          console.log(res.data);
+          console.log(res);
           this.reports = res.data.report;
         })
         .catch((err) => {
           console.log("Error in get report");
         });
     },
-    // async getSpan() {
-    //   console.log("get span");
-    //   await axios
-    //     .get(this.baseURL + "/api/span", {
-    //       headers: {
-    //         "X-CSRFToken": `Bearer ${this.token}`,
-    //       },
-    //       responseType: "json",
-    //       withCredentials: true,
-    //     })
-    //     .then((res) => {
-    //       console.log("$######### get span");
-    //       console.log(res.data);
-    //       this.span = res.data.span;
-    //     })
-    //     .catch((err) => {
-    //       console.log("Error in get span");
-    //     });
-    // },
+    async getSpan() {
+      console.log("get span");
+      await axios
+        .get(this.baseURL + "/api/loc", {
+          headers: {
+            "X-CSRFToken": `Bearer ${this.token}`,
+          },
+          responseType: "json",
+          withCredentials: true,
+        })
+        .then((res) => {
+          console.log("$######### get span");
+          console.log(res.data);
+          this.span = res.data.span;
+        })
+        .catch((err) => {
+          console.log("Error in get span");
+        });
+    },
     selectFile(files) {
       this.progress = 0;
       this.currentFiles = files;
