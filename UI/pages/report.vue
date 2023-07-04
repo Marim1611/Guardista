@@ -71,7 +71,8 @@ export default {
       return this.$route.params.filename;
     },
     report() {
-      // <!-- return this.$route.params.report; -->
+      // console.log("Recieved report...",this.$route.params.report);
+      //  return this.$route.params.report;
       return {
         "CWE-ID": "CWE-23",
         Name: "Relative Path Traversal",
@@ -99,14 +100,22 @@ export default {
         "Taxonomy Mappings": "CWE-23",
         "Related Attack Patterns": "CWE-23",
         Notes: "CWE-23",
-        Severity: "HIGH",
+        Severity: "High",
       };
     },
     reportList() {
       const list = [];
+
       for (const [key, value] of Object.entries(this.report)) {
         list.push({ title: key, subtitle: value });
       }
+
+      // remove keys that have Nan values from the list
+      list.forEach((item, index) => {
+        if (item.subtitle === null) {
+          list.splice(index, 1);
+        }
+      }); 
       return list;
     },
   },
@@ -115,7 +124,7 @@ export default {
       dialog: false,
       filecontent:
         '/* TEMPLATE GENERATED TESTCASE FILE\nFilename: CWE191_Integer_Underflow__unsigned_int_min_sub_07.c\nLabel Definition File: CWE191_Integer_Underflow.label.xml\nTemplate File: sources-sinks-07.tmpl.c\n*/\n/*\n * @description\n * CWE: 191 Integer Underflow\n * BadSource: min Set data to the min value for unsigned int\n * GoodSource: Set data to a small, non-zero number (negative two)\n * Sinks: sub\n *    GoodSink: Ensure there will not be an underflow before subtracting 1 from data\n *    BadSink : Subtract 1 from data, which can cause an Underflow\n * Flow Variant: 07 Control flow: if(staticFive==5) and if(staticFive!=5)\n *\n * */\n\n#include "std_testcase.h"\n\n/* The variable below is not declared "const", but is never assigned\n   any other value so a tool should be able to identify that reads of\n   this will always give its initialized value. */\nstatic int staticFive = 5;\n\n#ifndef OMITBAD\n\nvoid CWE191_Integer_Underflow__unsigned_int_min_sub_07_bad()\n{\n    unsigned int data;\n    data = 0;\n    if(staticFive==5)\n    {\n        /* POTENTIAL FLAW: Use the minimum size of the data type */\n        data = 0;\n    }\n    if(staticFive==5)\n    {\n        {\n            /* POTENTIAL FLAW: Subtracting 1 from data could cause an underflow */\n            unsigned int result = data - 1;\n            printUnsignedLine(result);\n        }\n    }\n}\n\n#endif /* OMITBAD */\n\n\n/* Below is the main(). It is only used when building this testcase on\n   its own for testing or for building a binary to use in testing binary\n   analysis tools. It is not used when compiling all the testcases as one\n   application, which is how source code analysis tools are tested. */\n\nint main(int argc, char * argv[])\n{\n    /* seed randomness */\n    srand( (unsigned)time(NULL) );\n\n#ifndef OMITBAD\n    printLine("Calling bad()...");\n    CWE191_Integer_Underflow__unsigned_int_min_sub_07_bad();\n    printLine("Finished bad()");\n#endif /* OMITBAD */\n    return 0;\n}\n',
-      highlight: [[577, 1327]],
+      highlight: [[886, 1328]],
       codeSegments: [],
     };
   },
