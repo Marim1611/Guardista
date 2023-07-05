@@ -1,14 +1,17 @@
 import os, sys, pickle, re, json
 from subprocess import run
-# import Localizer.Common.localizer as Localizer
+import Localizer.Common.localizer as Localizer
 import time
+import pandas as pd
+
 
 userFilePath = sys.argv[1]
 userFile = sys.argv[2]
 
  
 
-RETDEC_PATH = "E:\GP\IR TO CF\retdec\bin"
+RETDEC_PATH = r"D:/ClassWork/GP/RetDec/bin".replace('\\', '/')
+
 SCRIPT_ROOT_PATH = str(os.path.split(os.path.realpath(__file__))[0])
 OUTPUT_PATH = sys.argv[3]
 if (not os.path.exists(OUTPUT_PATH)): os.makedirs(OUTPUT_PATH)
@@ -27,7 +30,7 @@ def pipeline(userFilePath,userFile):
     '''
 
     with open(f'{OUTPUT_PATH}/status.txt', 'w') as f:
-        f.write('submitted')
+        f.write('submitted ')
 
     absPathtoPreprocessingScript = str(os.path.join(SCRIPT_ROOT_PATH ,"BinaryPreprocesor/crosscmp/scripty.ps1")).replace("\\", "/")
     absPathtoPreprocessingScript = list(absPathtoPreprocessingScript)
@@ -74,10 +77,10 @@ def pipeline(userFilePath,userFile):
     # print(OUTPUT_PATH)
     # print(absPathtoRetDec)
     # print(CompiledFlag)
-    time.sleep(5)
+    
     with open(f'{OUTPUT_PATH}/status.txt', 'w') as f:
-        if(CompiledFlag): f.write('compiled')
-        else: f.write('submitted')
+        if(CompiledFlag): f.write('compiled ')
+        else: f.write('submitted ')
     
     run(["powershell.exe", absPathtoPreprocessingScript, absPathToUserFile_Inputed, OUTPUT_PATH ,absPathtoRetDec, "true" if CompiledFlag else 'false'])
     
@@ -90,28 +93,23 @@ def pipeline(userFilePath,userFile):
             output/userCFG/edges.csv
     '''
 
-    with open(os.path.join(OUTPUT_PATH, 'classification.txt'), 'w') as f:
-        f.write('126')
-    
-    with open(f'{OUTPUT_PATH}/status.txt', 'w') as f:
-        f.write('classified')
 
-    # absPathtoCFGScript = str(os.path.abspath("IrToCFGs/cfg_infer.py")).replace("\\", "/")
-    # absPathtoCFGScript = list(absPathtoCFGScript)
-    # absPathtoCFGScript[0] = absPathtoCFGScript[0].upper()
-    # absPathtoCFGScript = ''.join(absPathtoCFGScript)
+    absPathtoCFGScript =  os.path.join(SCRIPT_ROOT_PATH ,"IrToCFGs","cfg_infer.py").replace("\\", "/")
+    absPathtoCFGScript = list(absPathtoCFGScript)
+    absPathtoCFGScript[0] = absPathtoCFGScript[0].upper()
+    absPathtoCFGScript = ''.join(absPathtoCFGScript)
 
-    # absPathtoLLFile = str(os.path.abspath("output/LLfiles/UserCode.ll"))
-    # absPathtoLLFile = list(absPathtoLLFile)
-    # absPathtoLLFile[0] = absPathtoLLFile[0].upper()
-    # absPathtoLLFile = ''.join(absPathtoLLFile)
+    absPathtoLLFile = os.path.join(OUTPUT_PATH,'LLfiles','UserCode.ll')
+    absPathtoLLFile = list(absPathtoLLFile)
+    absPathtoLLFile[0] = absPathtoLLFile[0].upper()
+    absPathtoLLFile = ''.join(absPathtoLLFile)
 
-    # absPathtoCFGOutput = str(os.path.abspath("output/"))
-    # absPathtoCFGOutput = list(absPathtoCFGOutput)
-    # absPathtoCFGOutput[0] = absPathtoCFGOutput[0].upper()
-    # absPathtoCFGOutput = ''.join(absPathtoCFGOutput)
+    absPathtoCFGOutput = str(os.path.abspath("output/"))
+    absPathtoCFGOutput = list(absPathtoCFGOutput)
+    absPathtoCFGOutput[0] = absPathtoCFGOutput[0].upper()
+    absPathtoCFGOutput = ''.join(absPathtoCFGOutput)
 
-    # run(["python",absPathtoCFGScript,absPathtoLLFile,absPathtoCFGOutput])
+    run(["python",absPathtoCFGScript,absPathtoLLFile,OUTPUT_PATH])
 
     # ----------------------------------------------------------------------------------------
     # ------------------- 3. Features Extraction ------------------- #
@@ -121,13 +119,76 @@ def pipeline(userFilePath,userFile):
     output: ---
     '''
 
-    # absPathtoStatFeaturesScript = str(os.path.abspath("4-Features_Extraction/statistical_features.py")).replace("\\", "/")
-    # absPathtoStatFeaturesScript = list(absPathtoStatFeaturesScript)
-    # absPathtoStatFeaturesScript[0] = absPathtoStatFeaturesScript[0].upper()
-    # absPathtoStatFeaturesScript = ''.join(absPathtoStatFeaturesScript)
+    absPathtoNodesEdges = os.path.join(OUTPUT_PATH, 'CFG_UserCode')
+    
+    for fi in os.listdir(absPathtoNodesEdges):
+        if(fi.endswith('.csv')):
+            os.makedirs(os.path.join(absPathtoNodesEdges, 'edges'))
+            os.replace(os.path.join(absPathtoNodesEdges, fi) ,   os.path.join(absPathtoNodesEdges, 'edges', fi))
+            absPathtoEdges_final = os.path.join(absPathtoNodesEdges, 'edges')
+        
+        
+        elif(fi.endswith('.json')):
+            os.makedirs(os.path.join(absPathtoNodesEdges, 'nodes'))
+            os.replace(os.path.join(absPathtoNodesEdges, fi) ,   os.path.join(absPathtoNodesEdges, 'nodes', fi))
+            absPathtoNodes_final = os.path.join(absPathtoNodesEdges, 'Nodes')
 
-    #run(["python",absPathtoStatFeaturesScript, OUTPUT_PATH, CVE?!?!?])
+    absPathtoStatFeaturesScript = os.path.join(SCRIPT_ROOT_PATH ,"4-Features_Extraction","statistical_features.py").replace("\\", "/")
+    absPathtoStatFeaturesScript = list(absPathtoStatFeaturesScript)
+    absPathtoStatFeaturesScript[0] = absPathtoStatFeaturesScript[0].upper()
+    absPathtoStatFeaturesScript = ''.join(absPathtoStatFeaturesScript)
+
+    run(["python",absPathtoStatFeaturesScript, absPathtoNodes_final, absPathtoNodesEdges, 'test'])
     X_test = []
+
+
+
+
+    # ----------------------------------------------------------------------------------------------------
+    # ------------------------------------- Classification using GCN -------------------------------------
+    # ----------------------------------------------------------------------------------------------------
+    '''
+    input: path to nodes, and edges only
+    output: classification class
+    '''
+    # absPathToGCN_classifier_script = os.path.join(SCRIPT_ROOT_PATH, "4-Features_Extraction","gcnInferPoint.py").replace("\\", "/")
+    
+
+    # modelPath = os.path.join(SCRIPT_ROOT_PATH, "models", 'GCN_classifier')
+    # encoderPath = os.path.join(SCRIPT_ROOT_PATH, "model_classes", 'classEncoder.pkl')
+    # classification_txt = os.path.join(OUTPUT_PATH, 'classification.txt')
+
+    # run (['python', absPathToGCN_classifier_script, absPathtoNodes_final, absPathtoEdges_final, OUTPUT_PATH, modelPath, 'test', encoderPath, classification_txt])
+
+
+
+
+
+
+
+
+    # ----------------------------------------------------------------------------------------
+    # ------------------- 3. Features Extraction ------------------- #
+    # ------------------- 3.2. Structural Features ------------------- #
+    '''
+    input:  output/userCFG/nodes.json 
+    output: ---
+    '''
+
+    # absPathtoGCNInfer = os.path.join(SCRIPT_ROOT_PATH ,"4-Features_Extraction","gcnInfer.py").replace("\\", "/")
+    # absPathtoGCNInfer = list(absPathtoGCNInfer)
+    # absPathtoGCNInfer[0] = absPathtoGCNInfer[0].upper()
+    # absPathtoGCNInfer = ''.join(absPathtoGCNInfer)
+    
+    # absPathtoNodesEdges = os.path.join(OUTPUT_PATH, 'CFG_UserCode')
+
+
+    # run(["python",absPathtoGCNInfer, absPathtoEdges_final, absPathtoNodesEdges, 'test'])
+
+    # EmbeddingPath = os.path.join(absPathtoNodesEdges, 'concatEmbeddings_test.csv')
+    # X_df = pd.read_csv(EmbeddingPath, header=None, index_col=None)
+    # X_df.drop(columns=X_df.columns[0], axis=1, inplace=True)
+    # X_test = X_df.iloc[: , :-1]
 
     # ----------------------------------------------------------------------------------------
 
@@ -138,25 +199,48 @@ def pipeline(userFilePath,userFile):
     '''
 
     # models=[]
-    # for file in os.listdir("models"):
-    #     with open("models/"+file, 'rb') as f:
+    # for file in os.listdir(os.path.join(SCRIPT_ROOT_PATH, "models")):
+    #     with open(os.path.join(SCRIPT_ROOT_PATH, "models", file), 'rb') as f:
     #         models.append(pickle.load(f))
     
-    # with open('output/classification.txt', 'w') as f:
+
+    # with open(os.path.join(OUTPUT_PATH, 'classification.txt'), 'w') as f:
+    #     classification_preds = []
     #     for model in models:
     #         y_pred = model.predict(X_test)
     #         if y_pred!= 'safe':
-    #             cve_id= re.search(r"\d+", y_pred).group(0)
-    #             f.write(cve_id)
+    #             cve_id= re.search(r"\d+", y_pred[0]).group(0)
+    #             classification_preds.append(cve_id)
+    #     f.write('\n'.join(list(set(classification_preds))))
+    
+    # print(f"\n\n\nI CLASSIFIED : \n{classification_preds}")
+    
+    
+    with open(f'{OUTPUT_PATH}/status.txt', 'w') as f:
+        f.write('classified')
 
-    # # check if the classification.txt file is empty, then user code is safe
-    # if os.stat("output/classification.txt").st_size == 0:
+
+    # # # check if the classification.txt file is empty, then user code is safe
+    # if os.stat(f"{OUTPUT_PATH}/classification.txt").st_size == 0:
     #     print("No vulnerabilities found")
     #     with open(f'{OUTPUT_PATH}/logs.txt', 'a') as f:
     #         f.write('no Vulnerabilities found')
-        #sys.exit()                                                     SHOULD WE EXIT ?!?!?
+    #     sys.exit()
 
     # ----------------------------------------------------------------------------------------
+    # with open(os.path.join(OUTPUT_PATH, 'classification.txt'), 'w') as f:
+    #     f.write('191')
+
+    #------------------------------ CLASSIFICATION REPORT -----------------------------------------------
+    absPathToAssets = os.path.join(SCRIPT_ROOT_PATH, 'assets')
+    absPathToReportScript = os.path.join(absPathToAssets, 'generateReport.py')
+    absPathToReportScript = list(absPathToReportScript)
+    absPathToReportScript[0] = absPathToReportScript[0].upper()
+    absPathToReportScript = ''.join(absPathToReportScript)
+    run(['python', absPathToReportScript, OUTPUT_PATH])
+
+
+
 
     # ------------------- 5. Localizer ------------------- #
     '''
@@ -164,14 +248,14 @@ def pipeline(userFilePath,userFile):
            output/classification.txt
            output/source
     output: output/localization.txt
-    '''
-    # absPathtoGenerateSubGraphScript = os.path.join(SCRIPT_ROOT_PATH, "IrToCFGs", "generate_subgraphs.py")
-    # Localizer.main_localizer('false',#'true' if CompiledFlag else 'false',\
-    #                         CFG_scriptPath= absPathtoGenerateSubGraphScript,
-    #                         llvm_user_file=os.path.join(OUTPUT_PATH, 'LLfiles','UserCode.ll').replace("\\", "/"),\
-    #                         clf_path=os.path.join(OUTPUT_PATH, 'classification.txt'),\
-    #                         src_path=os.path.join(OUTPUT_PATH, 'source'),\
-    #                         output_path=os.path.join(OUTPUT_PATH, 'span.json')) #not used haleyan
+    # '''
+    absPathtoGenerateSubGraphScript = os.path.join(SCRIPT_ROOT_PATH, "IrToCFGs", "generate_subgraphs.py")
+    Localizer.main_localizer('false',#'true' if CompiledFlag else 'false',\
+                            CFG_scriptPath= absPathtoGenerateSubGraphScript,
+                            llvm_user_file=os.path.join(OUTPUT_PATH, 'LLfiles','UserCode.ll').replace("\\", "/"),\
+                            clf_path=os.path.join(OUTPUT_PATH, 'classification.txt'),\
+                            src_path=os.path.join(OUTPUT_PATH, 'source'),\
+                            output_path=os.path.join(OUTPUT_PATH, 'span.json')) #not used haleyan
     
 
 
@@ -179,23 +263,17 @@ def pipeline(userFilePath,userFile):
 
 
     #------------------------------ REPORT -----------------------------------------------
-    absPathToAssets = os.path.join(SCRIPT_ROOT_PATH, 'assets')
-    #absPathToReportScript = os.path.join(absPathToAssets, 'generateReport.py')
+    # absPathToAssets = os.path.join(SCRIPT_ROOT_PATH, 'assets')
+    # absPathToReportScript = os.path.join(absPathToAssets, 'generateReport.py')
     # absPathToReportScript = list(absPathToReportScript)
     # absPathToReportScript[0] = absPathToReportScript[0].upper()
     # absPathToReportScript = ''.join(absPathToReportScript)
     # run(['python', absPathToReportScript, OUTPUT_PATH])
 
-    with open(os.path.join(absPathToAssets, 'finalReport.json'), 'r') as f:
-        finalDummyReport = json.load(f)
-    
-    with open(os.path.join(OUTPUT_PATH, 'finalReport.json'), 'w') as f:
-        json.dump(finalDummyReport, f)
 
 
-
-    #with open(f'{OUTPUT_PATH}/status.txt', 'w') as f:
-    #    f.write('completed')
+    with open(f'{OUTPUT_PATH}/status.txt', 'w') as f:
+       f.write('completed')
 
 
 pipeline(userFilePath=userFilePath,userFile=userFile)

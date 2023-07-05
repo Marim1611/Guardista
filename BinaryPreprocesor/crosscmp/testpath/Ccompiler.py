@@ -1,18 +1,23 @@
 import os
 
-sub = ["g++"]
-file_names = ["testCPP2.cpp", "testC.h", "testC.cpp"]
 
 
 
-gcomp = "g++"
-for i in file_names:
-    gcomp = gcomp + " " + i
 
-gcomp = gcomp + " -c"
-print(gcomp)
-os.system("cmd")
-os.system("")
+def func():
+    sub = ["g++"]
+    file_names = ["testCPP2.cpp", "testC.h", "testC.cpp"]
+
+
+
+    gcomp = "g++"
+    for i in file_names:
+        gcomp = gcomp + " " + i
+
+    gcomp = gcomp + " -c"
+    print(gcomp)
+    os.system("cmd")
+    os.system("")
 
 
 '''
@@ -32,3 +37,6 @@ stdout, stderr = proc.communicate('dir c:\\')
 
 
 '''
+
+if __name__ == '__main__':
+    func()

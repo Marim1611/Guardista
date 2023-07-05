@@ -162,9 +162,20 @@ if($os -eq "Windows_NT")
                 Remove-Item ./.spec -Recurse -ErrorAction SilentlyContinue
                 
                 # I AM ASSUMING HERE THAT THE MAIN PYTHON FILE IS CALLED "main.py"
-                $mainpyFile = $pythonFiles -eq "main.py"
+                foreach ($pyfile in $pythonFiles)
+                {
+                    $A = Select-String -Pattern "if.*__name__.*==.*__main__" -Path "$projPath/$pyfile"
+                    if($A.Matches.Length -ne 0)
+                    {
+                        Rename-Item -Path "$projPath/$pyfile" -NewName "main.py"
+                        break
+                    }
+                }
+                $pythonFiles = Get-ChildItem $projPath | Where-Object {$_.Extension -eq ".py"}
+                $pythonFiles = $pythonFiles.Name
+                $mainpyFile = "main.py"
                 #New-Item -ItemType Directory -Path ./output -ErrorAction SilentlyContinue
-                pyinstaller --distpath "$outputDir/dist" -D --clean --workpath "$outputDir/build" --onefile "$projPath/$mainpyFile" -n "binaryex.exe" --strip
+                pyinstaller --distpath "$outputDir/dist" -D --clean --workpath "$outputDir/build" --onefile "$projPath/$mainpyFile" -n "binaryex.exe"
             }
 
 
@@ -229,7 +240,10 @@ if($os -eq "Windows_NT")
             g++ "*.o" -o "binaryex.exe"
             Set-Location $loc
 
-            Out-File -FilePath "$GuardistaOutputPath/status.txt" -InputObject "compiled" -Force
+            Write-Host "$GuardistaOutputPath\status.txt"
+            Set-Content -Path "$GuardistaOutputPath\status.txt" -Value "compiled"
+            $printe = Get-Content -Path "$GuardistaOutputPath\status.txt"
+            Write-Host $printe
 
             Write-Host "--------------COMPILING DONE----------------"
             Write-Host "-------------BUILDING LLVM IR---------------"
@@ -300,7 +314,10 @@ if($os -eq "Windows_NT")
         }
         
 
-        Out-File -FilePath "$GuardistaOutputPath/status.txt" -InputObject "lifted" -Force
+        Write-Host "$GuardistaOutputPath\status.txt"
+        Set-Content -Path "$GuardistaOutputPath\status.txt" -Value "lifted"
+        $printe = Get-Content -Path "$GuardistaOutputPath\status.txt"
+        Write-Host $printe
 
 
 

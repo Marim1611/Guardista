@@ -3,37 +3,172 @@ import numpy as np
 import json
 import sys
 import re
+import os
 
 
-allCWEs = pd.read_csv('1000.csv').to_dict()
-with open ('classes.json', 'w') as f:
-    json.dump(allCWEs, f, indent=6)
+
+
+'''
+in case of classified:
+
+{'waiting_status' : classified,
+'report':
+            [{ID : ..,
+              name: ..,
+              },
+              
+            {ID : ..,
+             name:..,
+             }]
+}
+
+in case of localized:
+
+{'waiting_status' : localized,
+'report':
+            [{ID : ..,
+              name: ..,
+              location: {'filename' : (123,12343) , 'filename' : (123124,525234)}
+              
+              
+              },
+              
+            {ID : ..,
+             name:..,
+             location: not localized
+             }]
+}
+
+'''
+
 
 outputPath = sys.argv[1]
 
 
-finalReport = {}
-all_keys = list(allCWEs.keys())
-print(all_keys)
+def invertKeys(reportList):
+    newList = []
+    for rep in reportList:
+        newDict = {}
+        allFiles = list(rep['location'].keys())
+        for file, spans in rep['location'].items():
+            newDict[file] = rep
+            newDict[file]['spans'] = spans
+            try:
+                del newDict[file]['location']
+            except:
+                pass
+        newList.append(newDict)
+    
+    return newList
 
-try:
-    classificationPath = str(outputPath+'/classification.txt').replace('\\', '/')
+
+
+
+script_path = os.path.split(os.path.realpath(__file__))[0]
+
+
+
+
+allCWEsDF = pd.read_csv(os.path.join(script_path, '1000.csv'))
+allCWEs = allCWEsDF.to_dict()
+with open ('classes.json', 'w') as f:
+    json.dump(allCWEs, f, indent=6)
+
+
+
+finalReport = {}
+fields = list(allCWEsDF.columns)
+
+
+
+#try:
+if(1):
+
+    classificationPath = os.path.join(outputPath,'classification.txt')
     with open (classificationPath, 'r') as f:
         content = f.readlines()
     classes = [re.sub('\n', '', i) for i in content]
     #print(allCWEs)
+
+
+    classificationReport_list = dict()
+
+
+    for i, classif in enumerate(classes):
+        classificationReport = dict()
+        # print(classif)
+        # print(allCWEsDF['CWE-ID'])
+        # print(allCWEsDF.loc[allCWEsDF['CWE-ID']==int(classif), 'Name'])  
+        for field in fields:
+            entry = allCWEsDF.loc[allCWEsDF['CWE-ID']==int(classif), field]
+            if(entry.empty):
+                entry = ''
+            else:
+                entry = str(entry.item())
+                re.sub(':', '', entry)
+            classificationReport[field] = entry
+            
+        # print(classificationReport)    
+        classificationReport['ID'] = classif
+        classificationReport_list[f'rep{i}'] = classificationReport
+        
+
+    finalReport['report'] = classificationReport_list
+
+
+
+
+    with open (outputPath+'/finalReport.json', 'w') as f:
+        json.dump(finalReport, f, indent=6)
+
+
+    ########################################################## LOCALIZATION REPORT ##############################################
+
+    try:
+        if(os.path.isfile(str(outputPath+'/span.json'))):
+
+            localizationPath = os.path.join(outputPath,'span.json')
+            with open (localizationPath, 'r') as f:
+                loc_content = json.load(f)
+            
+            classes_in_report = list(loc_content.keys())
+
+
+            for classif in classes_in_report:
+                
+                for classification_rep in classificationReport_list:
+                    if( classif == classification_rep['ID']):
+                        classification_rep['location'] = loc_content[classif]
+
+                    elif (not ('location' in classes_in_report.keys())):    
+                        classification_rep['location']= 'not Localized'
+
+                
+
+
+        else:
+            for classification_rep in classificationReport_list:    
+                    classification_rep['location']= 'not Localized'
+
+
+
+        finalReport['report'] = classificationReport_list
+        with open (outputPath+'/finalReport.json', 'w') as f:
+            json.dump(finalReport, f, indent=6)
+
+        classificationReport_list = invertKeys(classificationReport_list)
+        finalReport['report'] = classificationReport_list
+    except Exception as e:
+                print(e)
+                print('no localization')
+
+
+
     
 
-    for i in range(len(all_keys)):
-        finalReport[all_keys[i]] = allCWEs[all_keys[i]][int(classes[0])]
-        #print(allCWEs[all_keys[i]][int(classes[0])])
-    
-    
-
-    
-
-except:
-    print('no classification.txt')
+# except Exception as e:
+#    print(e)
+#    print('no classification.txt')
 
 
 

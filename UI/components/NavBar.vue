@@ -1,5 +1,4 @@
 <template>
-  <!-- <MobNavBarVue v-if="$vuetify.breakpoint.smAndDown" /> -->
   <v-container fluid>
     <v-row class="nav-bar pt-2 pb-0">
       <v-col cols="2">
@@ -9,10 +8,11 @@
           </div>
         </nuxt-link>
       </v-col>
-      <v-col>
+       <v-col col="7">
         <v-spacer></v-spacer>
       </v-col>
-      <v-col col="7" md="6" cols="4">
+     
+      <v-col  class="pt-6">
         <v-tabs
           grow
           align-with-title
@@ -29,6 +29,7 @@
           >
         </v-tabs>
       </v-col>
+      
     </v-row>
   </v-container>
 </template>
@@ -41,8 +42,9 @@ export default {
         { name: "Home", route: "/" },
         { name: "About Us", route: "/about" },
         { name: "Tools", route: "guardista" },
-        { name: "Contact Us", route: "/contact" },
+       
       ],
+      navbar: false,
     };
   },
   computed: {
@@ -50,8 +52,10 @@ export default {
       return this.$store.state.Theme;
     },
   },
+
 };
 </script>
+
 <style scoped>
 a {
   text-decoration: none;
@@ -62,7 +66,7 @@ a {
 .nav-bar {
   position: fixed;
   top: 0;
-  z-index: 1000;
+  z-index: 10;
   width: 100%;
   display: -webkit-box;
   display: -ms-flexbox;
@@ -75,8 +79,9 @@ a {
   -ms-flex-pack: justify;
   justify-content: space-between;
   height: min-content;
-  -webkit-backdrop-filter: blur(20px);
-  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(.625rem);
+  backdrop-filter: blur(.625rem);
+  background: hsla(0,0%,100%,.9);
 }
 .v-tab--exact--active v-tab {
   font-size: 20px !important;
@@ -86,8 +91,8 @@ a {
   color: #9d0000 !important;
   -webkit-box-shadow: none !important;
   box-shadow: none !important;
-  background: transparent !important;
-  background-color: transparent !important;
+  background: hsla(0,0%,100%,.9) !important;
+  background-color: hsla(0,0%,100%,.9) !important;
 }
 .logo {
   display: flex;
@@ -98,7 +103,7 @@ a {
   justify-content: center;
 }
 #img-logo {
-  width: 199px;
-  height: 50px;
+  width: 150px;
+  height: 70px;
 }
 </style>
