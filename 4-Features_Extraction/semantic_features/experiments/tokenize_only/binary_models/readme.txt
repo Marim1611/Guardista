@@ -1,0 +1,1 @@
+please put the binary word2vec models sent in whatsapp here
