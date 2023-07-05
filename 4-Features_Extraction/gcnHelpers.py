@@ -6,10 +6,11 @@ from tqdm import tqdm
 import re
 import os, pickle, json
 from torch_geometric.data import Data, Batch
-from torch_geometric.nn import GCNConv, Sequential, Linear, global_mean_pool
+from torch_geometric.nn import GCNConv, Sequential, Linear, global_mean_pool, GATConv
 from torch_geometric.data import Dataset
 from torch_geometric.loader import DataLoader
 import torch.nn.functional as F
+from torch_geometric.utils import remove_self_loops, add_self_loops
 
 '''
 This script contains a lot of helper functions
@@ -117,16 +118,26 @@ def PreprocessingFolder_GraphClassification(pathToUserNodes, pathToUserEdges, np
 class GCN(torch.nn.Module):
     def __init__(self, hidden_channels, numClasses, numFeatures):
         super(GCN, self).__init__()
-        torch.manual_seed(12345)
+        
+         
         self.conv1 = GCNConv(numFeatures, hidden_channels)
         self.conv2 = GCNConv(hidden_channels, hidden_channels)
+        # self.conv1 = GATConv(numFeatures, hidden_channels, heads=4)
+        # self.conv2 = GATConv(hidden_channels*4, hidden_channels, heads=4)
         self.conv3 = GCNConv(hidden_channels, hidden_channels)
         self.conv4 = GCNConv(hidden_channels, hidden_channels)
         self.conv5 = GCNConv(hidden_channels, hidden_channels)
-        self.lin = Linear(hidden_channels, numClasses)
+        #self.conv6 = GCNConv(hidden_channels, hidden_channels)
+        #self.conv7 = GCNConv(hidden_channels, hidden_channels)
+        #self.lin = Linear(hidden_channels, numClasses)
+
+        #self.fc1 = torch.nn.Linear(hidden_channels, hidden_channels)
+        self.fc2 = torch.nn.Linear(hidden_channels, hidden_channels)
+        self.lin = torch.nn.Linear(hidden_channels, numClasses)
 
     def forward(self, x, edge_index, batch):
         # 1. Obtain node embeddings 
+        
         x = self.conv1(x, edge_index)
         x = x.relu()
         x = self.conv2(x, edge_index)
@@ -136,6 +147,65 @@ class GCN(torch.nn.Module):
         x = self.conv4(x, edge_index)
         x = x.relu()
         x = self.conv5(x, edge_index)
+        x = x.relu()
+        # x = self.conv6(x, edge_index)
+        # x = x.relu()
+        # x = self.conv7(x, edge_index)
+        # x = x.relu()
+
+        # 2. Fully connected layers
+        #x = self.fc1(x)
+        #x = x.relu()
+        x = self.fc2(x)
+        x = x.relu()
+
+        # 3. Readout layer
+        x = global_mean_pool(x, batch)
+        embeddings = x
+
+        # 4. Apply a final classifier
+        x = F.dropout(x, p=0.5, training=self.training)
+        x = self.lin(x)
+        
+        return x, torch.squeeze(embeddings)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+'''
+    def forward(self, x, edge_index, batch):
+        # 1. Obtain node embeddings 
+        # x = self.gat1(x, edge_index)
+        # x = x.relu()
+        # x = self.gat2(x, edge_index)
+        # x = x.relu()
+        edge_index, _ = remove_self_loops(edge_index)
+        edge_index = add_self_loops(edge_index, fill_value='mean')
+        x = self.conv1(x, edge_index)
+        x = x.relu()
+        x = self.conv2(x, edge_index)
+        x = x.relu()
+        x = self.conv3(x, edge_index)
+        x = x.relu()
+        
+        x = self.conv4(x, edge_index)
+        x = x.relu()
+        x = self.conv5(x, edge_index)
+        x = x.relu()
+        x = self.conv6(x, edge_index)
+        x = x.relu()
+        x = self.conv7(x, edge_index)
 
         # 2. Readout layer
         x = global_mean_pool(x, batch)  # [batch_size, hidden_channels]
@@ -147,6 +217,8 @@ class GCN(torch.nn.Module):
         
         return x, torch.squeeze(Embeddings)
 
+
+'''
 
 
 
@@ -242,8 +314,8 @@ def InferenceGCN (model, pathToUser_Edges, outputPath, multipleFiles, cve='test'
         embeddingDict[filename] = finalEmbedding
 
 
-        with open (outputPath+'/embeddings.npy' , 'wb') as f:
-            np.save(f, finalEmbedding)
+        # with open (outputPath+'/embeddings.npy' , 'wb') as f:
+        #     np.save(f, finalEmbedding)
         
         df = pd.DataFrame(data=finalEmbedding)
         df = df.transpose()
@@ -252,7 +324,7 @@ def InferenceGCN (model, pathToUser_Edges, outputPath, multipleFiles, cve='test'
         df.to_csv(outputPath+'/embeddings.csv', header=False, index=False)
 
 
-        return  finalClassification,  finalEmbedding
+        return  finalClassification,  df
 
 
 
