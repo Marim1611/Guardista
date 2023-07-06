@@ -36,6 +36,9 @@ for i in range(20):
     
 print(len(all_tokens_array))
 
+if not os.path.exists(binary_models_path+"/"+cwe_1):
+    os.mkdir(binary_models_path+"/"+cwe_1)
+
 # Train a Word2Vec model with the CBOW architecture
 model = Word2Vec(all_tokens_array, vector_size=100, window=3, min_count=1, workers=4, sg=0, sample=1e-3)
 
