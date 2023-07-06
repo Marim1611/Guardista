@@ -4,7 +4,7 @@
 BinaryPreprocessor/RetDec/
 BinaryPreprocessor/openssl/
 BinaryPreprocessor/ghidra_10.2.2_PUBLIC/
-4-Features_Extraction
+
 play
 *.npy
 *.rar
@@ -24,3 +24,9 @@ targets_folder
 LSTM/
 BackEnd/new_BE/tmp
 BackEnd/new_BE/tmp/*
+4-Features_Extraction/GCN/gcnNode.ipynb
+
+tests/
+unused_models/
+models/
+word2vec.model

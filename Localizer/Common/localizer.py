@@ -32,6 +32,7 @@ def main_localizer(compiledFlag, CFG_scriptPath,llvm_user_file,clf_path, src_pat
     print(classes)
 
     for clss in classes:
+        classAndLocationReport[clss] = {}
 
         os.chdir(os.path.dirname(os.path.abspath(__file__)))
         print('read classification')
@@ -166,16 +167,18 @@ def main_localizer(compiledFlag, CFG_scriptPath,llvm_user_file,clf_path, src_pat
 
                 #MOSS Metrics (defined in Winnowing.py), Parameters passed: k=20, ws = 10, P=10
                 try:
-                    MOSS_Acc_metric1, MOSS_Acc_metric2, hits, misses1, misses2 = Winnowing.diff(UserFuncNorm, VulnFuncNorm, K= 20, WindowSize= 10, P= 10)
+                    MOSS_Acc_metric1, MOSS_Acc_metric2, hits, misses1, misses2 = Winnowing.diff(UserFuncNorm, VulnFuncNorm, K= 10, WindowSize= 5, P= 5)
+                
+
+                    #MOSS Thresholds, 0.7 for Metric1, 0.7 for Metric2, those thresholds are highly dependent on the vulnerability type unfortunately.
+                    if(MOSS_Acc_metric1>0.5 or MOSS_Acc_metric2>0.5):
+                        found_vuln = True
+                        #Candidate_Functions containg a tuple of (original function head, vulnerable function name (which is stored with us))
+                        Candidate_Functions.append((re.findall('(@.*)\(', UserFuncHead)[0]  ,  re.findall('(@.*)\(', VulnFuncHead)[0]))
+                
                 except Exception as e:
                     print(f'\n\n=====================================\n{e}\n========================================\n\n\n')
-                    print(f"{hits}        {misses1}            {misses2}")
-
-                #MOSS Thresholds, 0.7 for Metric1, 0.7 for Metric2, those thresholds are highly dependent on the vulnerability type unfortunately.
-                if(MOSS_Acc_metric1>0.5 or MOSS_Acc_metric2>0.5):
-                    found_vuln = True
-                    #Candidate_Functions containg a tuple of (original function head, vulnerable function name (which is stored with us))
-                    Candidate_Functions.append((re.findall('(@.*)\(', UserFuncHead)[0]  ,  re.findall('(@.*)\(', VulnFuncHead)[0]))
+                    #print(f"{hits}        {misses1}            {misses2}")
             
 
             print('MOSS finished')
@@ -264,7 +267,7 @@ def main_localizer(compiledFlag, CFG_scriptPath,llvm_user_file,clf_path, src_pat
                         
                         #MatchPairs is a list of Tuples, each Tuples contains the UserFunction Name and the Function Name stored in our Database
                         if(MatchPairs):
-                            final_Matched_Functions.append(MatchPairs)
+                            final_Matched_Functions+= MatchPairs
                             print("Caught Something !")
             except Exception as e:
                 print(f'\n\n=====================================\n{e}\n========================================\n\n\n')
@@ -292,20 +295,27 @@ def main_localizer(compiledFlag, CFG_scriptPath,llvm_user_file,clf_path, src_pat
 
         srcFiles = os.listdir(src_path)
         
+
+        # for i in final_Matched_Functions:
+        #     print(i[0])
+        final_Matched_Functions = [i[0] for i in final_Matched_Functions]
+        final_Matched_Functions = list(set(final_Matched_Functions))
+        
     
-        if(MatchPairs and Candidate_Functions and final_Matched_Functions):
+        if(Candidate_Functions and final_Matched_Functions):
+            newReport = dict()
             for src in srcFiles:
                 if(src.endswith('.txt') or os.path.isdir(src)):
                     continue
                 srcFilePath = os.path.join(src_path, src)
-                for elm in final_Matched_Functions[0]:
-                    for e in elm:
-                        func = e[0]
-                        print(func)
+                for func in final_Matched_Functions:
+                        
+                        #print(func)
                         _,fileReport = highlighter.getMatchingLines(srcFilePath, func)
-                        LocalizerReport.update(fileReport)
+                        if(fileReport):
+                            newReport[srcFilePath] = fileReport
             
-            classAndLocationReport[clss] = LocalizerReport
+            classAndLocationReport[clss].update(newReport)
         else:
             classAndLocationReport[clss] = 'not localized'
 
@@ -313,5 +323,5 @@ def main_localizer(compiledFlag, CFG_scriptPath,llvm_user_file,clf_path, src_pat
     print('report finished\n\n\n')
     print(classAndLocationReport)
     with open(output_path, 'w') as f:
-        json.dump(classAndLocationReport, f)
+        json.dump(classAndLocationReport, f, indent=6)
     

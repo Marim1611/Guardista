@@ -134,3 +134,9 @@ cves = \
 '843': "Access of Resource Using Incompatible Type ('Type Confusion')",
 '90': "Improper Neutralization of Special Elements used in an LDAP Query ('LDAP Injection')"
 }
+
+import pandas as pd
+import numpy as np
+
+df = pd.read_csv('1000.csv')
+print(df.iloc[12, :])

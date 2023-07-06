@@ -267,16 +267,30 @@ class CheckReportView(APIView):
             OutputDir = os.path.join(script_parent_folder_path, 'tmp', f'tmp{num_case}', 'output')
             StatusFile = str(os.path.join(OutputDir, 'status.txt')).replace('\\', '/')
 
-            ReportFile =  str(os.path.join(OutputDir, 'finalReport.json')).replace('\\', '/')
+            Classification_ReportFile =  str(os.path.join(OutputDir, 'finalReport.json')).replace('\\', '/')
+            Loc_ReportFile =  str(os.path.join(OutputDir, 'span.json')).replace('\\', '/')
 
 
 
-            if(os.path.isdir(OutputDir) and os.path.isfile(ReportFile)):
+            if(os.path.isdir(OutputDir) and os.path.isfile(Classification_ReportFile)):
                 try:
-                    with open (ReportFile, 'r') as f:
-                        content = json.load(f)
                     with open (StatusFile, 'r') as f:
                         status_content = f.read()
+                    if(status_content == 'classified'):
+                        with open (Classification_ReportFile, 'r') as f:
+                            content = json.load(f)
+                    elif(status_content == 'completed'):
+                        with open (Classification_ReportFile, 'r') as f:
+                            class_content = json.load(f)
+                        with open (Loc_ReportFile, 'r') as f:
+                            content = json.load(f)
+                        newDict = {}
+                        newDict['report'] = class_content
+                        newDict['span'] = content
+                        content = newDict
+                        
+                   
+                    
                 except:
                     return JsonResponse(json.dumps({f"invalid {num_case}num_case, no corresponding json report": 'cookie not set'}, ensure_ascii=False), status=status.HTTP_400_BAD_REQUEST, safe=False)
 
@@ -295,7 +309,52 @@ class CheckReportView(APIView):
 
 
 
+class LocReportView(APIView):
+    def get(self, request):
+        try:
+            num_case  = request.COOKIES.get('num_case')
+        except:
+            response = HttpResponse({f"invalid {num_case} num_case, exception occured, no corresponding json report": 'cookie not set'}) 
+            response.status_code = 403
+            return response
+        if (num_case == ''):
+            response = HttpResponse({f"invalid {num_case} num_case, empty num case, no corresponding json report": 'cookie not set'}) 
+            response.status_code = 404
+            return response
+       
+        if(num_case):
+            script_parent_folder_path = '/'.join(re.split(r'\\',os.path.realpath(__file__))[:-2])
+            OutputDir = os.path.join(script_parent_folder_path, 'tmp', f'tmp{num_case}', 'output')
+            StatusFile = str(os.path.join(OutputDir, 'status.txt')).replace('\\', '/')
 
+            Classification_ReportFile =  str(os.path.join(OutputDir, 'finalReport.json')).replace('\\', '/')
+            Loc_ReportFile =  str(os.path.join(OutputDir, 'span.json')).replace('\\', '/')
+
+
+
+            if(os.path.isdir(OutputDir) and os.path.isfile(Loc_ReportFile)):
+                try:
+                    with open (Classification_ReportFile, 'r') as f:
+                        class_content = json.load(f)
+                    with open (Loc_ReportFile, 'r') as f:
+                        content = json.load(f)
+                    newDict = {}
+                    newDict['report'] = class_content
+                    newDict['span'] = content
+                    resp = newDict
+                        
+                   
+                    
+                except:
+                    return JsonResponse(json.dumps({f"invalid {num_case}num_case, exception while reading localizer report, no corresponding json report": 'cookie not set'}, ensure_ascii=False), status=status.HTTP_400_BAD_REQUEST, safe=False)
+
+                return JsonResponse(resp)
+            else:
+                return JsonResponse(json.dumps({f"invalid {num_case} num_case, no localization report YET, wait for it, no corresponding json report": 'cookie not set'}, ensure_ascii=False), status=status.HTTP_400_BAD_REQUEST, safe=False)
+        
+        response = HttpResponse({f"invalid {num_case}num_case, no corresponding json report": 'cookie not set'}) 
+        response.status_code = 400
+        return response
 
 
 '''

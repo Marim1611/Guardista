@@ -162,9 +162,20 @@ if($os -eq "Windows_NT")
                 Remove-Item ./.spec -Recurse -ErrorAction SilentlyContinue
                 
                 # I AM ASSUMING HERE THAT THE MAIN PYTHON FILE IS CALLED "main.py"
-                $mainpyFile = $pythonFiles -eq "main.py"
+                foreach ($pyfile in $pythonFiles)
+                {
+                    $A = Select-String -Pattern "if.*__name__.*==.*__main__" -Path "$projPath/$pyfile"
+                    if($A.Matches.Length -ne 0)
+                    {
+                        Rename-Item -Path "$projPath/$pyfile" -NewName "main.py"
+                        break
+                    }
+                }
+                $pythonFiles = Get-ChildItem $projPath | Where-Object {$_.Extension -eq ".py"}
+                $pythonFiles = $pythonFiles.Name
+                $mainpyFile = "main.py"
                 #New-Item -ItemType Directory -Path ./output -ErrorAction SilentlyContinue
-                pyinstaller --distpath "$outputDir/dist" -D --clean --workpath "$outputDir/build" --onefile "$projPath/$mainpyFile" -n "binaryex.exe" --strip
+                pyinstaller --distpath "$outputDir/dist" -D --clean --workpath "$outputDir/build" --onefile "$projPath/$mainpyFile" -n "binaryex.exe"
             }
 
 

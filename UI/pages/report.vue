@@ -1,41 +1,61 @@
 <template>
-  <v-container class="mt-10 pt-16" fluid>
-    <v-row class="text-center pb-10">
+  <v-container class="mt-10 pt-16 px-12" fluid>
+    <v-row class="text-center">
       <v-col>
-        <h1><v-icon left>mdi-code-tags</v-icon> {{filename}}</h1></v-col
+        <h1>
+          <v-icon right class="iconColor" large>mdi-file-code</v-icon>
+          {{ filename }}
+        </h1></v-col
       >
     </v-row>
-    <v-row>
-      <v-col class="ml-10 py-5 code" cols="9">
-        <pre>{{ userCode }}</pre>
-      </v-col>
-      <v-col class="text-left pr-10 pl-10">
-        <v-row class="pb-10 text-center mx-auto">
-          <h3 class="text-center">
-            Report Summary
-            <v-icon medium> mdi-bug-check </v-icon>
-          </h3>
-        </v-row>
-
-        <v-card
-          v-for="(issue, index) in issues"
-          :key="index"
-          class="mx-auto mb-5"
-        >
-          <v-card-title class="subtitle">
-            <v-icon left>mdi-bug</v-icon>
-            {{ issue.vulnerability }}
-          </v-card-title>
-          <v-card-text> {{ issue.description }}</v-card-text>
-        </v-card>
-        <v-row class="text-center">
-          <v-col>
-            <v-btn color="success" dark medium to="/guardista">
-              Another scan?
-              <v-icon right dark>mdi-feature-search</v-icon>
+    <v-row
+      class="text-center d-flex flex-row align-center justify-center mt-10"
+    >
+      <v-btn color="#757575" dark medium @click="localization()" class="mr-2">
+        Localize vulnerability?
+        <v-icon right dark>mdi-bug</v-icon>
+      </v-btn>
+      <v-btn color="success" dark medium to="/guardista" class="ml-0">
+        Another scan?
+        <v-icon right dark>mdi-feature-search</v-icon>
+      </v-btn>
+      <v-dialog v-model="dialog" width="max-content" class="mt-16">
+        <v-card class="code py-8 px-2">
+          <v-card-title class="d-flex justify-end align-end">
+            <v-btn @click="dialog = false" text :hover="false">
+              <v-icon right large color="red">mdi-close-circle</v-icon>
             </v-btn>
-          </v-col>
-        </v-row>
+          </v-card-title>
+          <v-card-text>
+            <pre class="codeColor">
+          <span v-for="(segment, index) in codeSegments" :key="index" :class="{ vulnerableCode: segment.isVulnerable }">{{ segment.content }}</span>
+        </pre>
+          </v-card-text>
+        </v-card>
+      </v-dialog>
+    </v-row>
+    <v-row class="d-flex flex-row align-center justify-center pt-10">
+      <v-col cols="7">
+        <v-card class="py-5 px-2">
+          <v-card-title class="text-center align-center justify-center">
+            <h3 class="text-center">
+              <v-icon medium class="iconColor"> mdi-bug-check </v-icon>
+              Report Summary
+            </h3>
+          </v-card-title>
+          <v-list>
+            <v-list-item-group>
+              <v-list-item v-for="(item, i) in reportList" :key="i">
+                <v-list-item-content>
+                  <v-list-item-title v-html="item.title"></v-list-item-title>
+                  <v-list-item-subtitle
+                    v-html="item.subtitle"
+                  ></v-list-item-subtitle>
+                </v-list-item-content>
+              </v-list-item>
+            </v-list-item-group>
+          </v-list>
+        </v-card>
       </v-col>
     </v-row>
   </v-container>
@@ -49,27 +69,82 @@ export default {
   },
   computed: {
     filename() {
-      return this.$route.params.filename
-    }
+      return this.$route.params.filename;
+    },
+    report() {
+      return this.$route.params.report;
+    },
+
+    span() {
+      return this.$route.params.span;
+    },
+
+    reportList() {
+      const list = [];
+
+      for (const [key, value] of Object.entries(this.report)) {
+        if (value !== null && value !== "nan") {
+          list.push({ title: key, subtitle: value });
+        }
+      }
+
+      return list;
+    },
   },
   data() {
     return {
-      userCode:
-        'def encrypt(key, plaintext):\n\n key = key % 26\n    ciphertext = ""\n    for c in plaintext:\n        if c.isalpha():\n            if c.isupper():\n                ciphertext += chr((ord(c) + key - 65) % 26 + 65)\n            else:\n                ciphertext += chr((ord(c) + key - 97) % 26 + 97)\n        else:\n            ciphertext += c\n    return ciphertext\n\n\n ',
-
-      issues: [
-        {
-          vulnerability: "CWE23",
-          description:
-            "The application uses a hard-coded cryptographic key for encryption.",
-        },
-        {
-          vulnerability: "CWE23",
-          description:
-            "The application uses a hard-coded cryptographic key for encryption.",
-        },
-      ],
+      dialog: false,
+      filecontent: "",
+      highlight: [],
+      codeSegments: [],
     };
+  },
+
+  methods: {
+    extractSpan() {
+      for (var key in this.span) {
+        if (key.includes(this.filename)) {
+          this.filecontent = this.span[key]["filecontent"];
+          let start = this.span[key][this.filename][0][0];
+          let end = this.span[key][this.filename][0][1];
+          this.highlight.push([start, end]);
+        }
+      }
+    },
+    highlightCode() {
+      this.extractSpan();
+      const code = this.filecontent;
+      const segments = [];
+      const sortedHighlight = this.highlight
+        .slice()
+        .sort((a, b) => a[0] - b[0]);
+      let currentIndex = 0;
+      for (let i = 0; i < sortedHighlight.length; i++) {
+        const start = sortedHighlight[i][0];
+        const end = sortedHighlight[i][1];
+        if (start > currentIndex) {
+          segments.push({
+            content: code.substring(currentIndex, start),
+            isVulnerable: false,
+          });
+        }
+        const vulnerableCode = code.substring(start, end);
+        segments.push({ content: vulnerableCode, isVulnerable: true });
+        currentIndex = end;
+      }
+
+      if (currentIndex < code.length) {
+        segments.push({
+          content: code.substring(currentIndex),
+          isVulnerable: false,
+        });
+      }
+      this.codeSegments = segments;
+    },
+    localization() {
+      this.highlightCode();
+      this.dialog = true;
+    },
   },
 };
 </script>
@@ -78,10 +153,16 @@ export default {
 .code {
   background-color: rgb(44, 44, 44);
   color: rgb(250, 241, 241);
-  border-radius: 10px;
+  z-index: 12;
+}
+.codeColor {
+  color: rgb(250, 241, 241);
 }
 
-.subtitle {
+.iconColor {
   color: #9d0000;
+}
+.vulnerableCode {
+  color: red;
 }
 </style>
