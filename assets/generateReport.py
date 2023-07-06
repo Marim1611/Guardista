@@ -105,7 +105,9 @@ if(1):
                 entry = ''
             else:
                 entry = str(entry.item())
+                print(entry)
                 re.sub(':', '', entry)
+                print(entry)
             classificationReport[field] = entry
             
         # print(classificationReport)    
@@ -124,43 +126,43 @@ if(1):
 
     ########################################################## LOCALIZATION REPORT ##############################################
 
-    try:
-        if(os.path.isfile(str(outputPath+'/span.json'))):
+    # try:
+    #     if(os.path.isfile(str(outputPath+'/span.json'))):
 
-            localizationPath = os.path.join(outputPath,'span.json')
-            with open (localizationPath, 'r') as f:
-                loc_content = json.load(f)
+    #         localizationPath = os.path.join(outputPath,'span.json')
+    #         with open (localizationPath, 'r') as f:
+    #             loc_content = json.load(f)
             
-            classes_in_report = list(loc_content.keys())
+    #         classes_in_report = list(loc_content.keys())
 
 
-            for classif in classes_in_report:
+    #         for classif in classes_in_report:
                 
-                for classification_rep in classificationReport_list:
-                    if( classif == classification_rep['ID']):
-                        classification_rep['location'] = loc_content[classif]
+    #             for classification_rep in classificationReport_list:
+    #                 if( classif == classification_rep['ID']):
+    #                     classification_rep['location'] = loc_content[classif]
 
-                    elif (not ('location' in classes_in_report.keys())):    
-                        classification_rep['location']= 'not Localized'
+    #                 elif (not ('location' in classes_in_report.keys())):    
+    #                     classification_rep['location']= 'not Localized'
 
                 
 
 
-        else:
-            for classification_rep in classificationReport_list:    
-                    classification_rep['location']= 'not Localized'
+    #     else:
+    #         for classification_rep in classificationReport_list:    
+    #                 classification_rep['location']= 'not Localized'
 
 
 
-        finalReport['report'] = classificationReport_list
-        with open (outputPath+'/finalReport.json', 'w') as f:
-            json.dump(finalReport, f, indent=6)
+    #     finalReport['report'] = classificationReport_list
+    #     with open (outputPath+'/finalReport.json', 'w') as f:
+    #         json.dump(finalReport, f, indent=6)
 
-        classificationReport_list = invertKeys(classificationReport_list)
-        finalReport['report'] = classificationReport_list
-    except Exception as e:
-                print(e)
-                print('no localization')
+    #     classificationReport_list = invertKeys(classificationReport_list)
+    #     finalReport['report'] = classificationReport_list
+    # except Exception as e:
+    #             print(e)
+    #             print('no localization')
 
 
 
