@@ -81,7 +81,8 @@ def semantic_features(data):
                 
                 bb_tokens_embs.append(embedding)
 
-        bb_emb = np.asarray(bb_tokens_embs).mean(axis=0)
+        # bb_emb = np.asarray(bb_tokens_embs).mean(axis=0)
+        bb_emb = np.asarray(bb_tokens_embs).sum(axis=0)
         features_matrix.append(bb_emb)
     
     return features_matrix
@@ -113,9 +114,10 @@ def embeddings_per_basic_block(nodes_directory_path):
                     bb_arr = np.concatenate((a,b))
                     file_arr.append(bb_arr)
                 else: 
-                    b_temp = np.zeros(100)
-                    bb_arr = np.concatenate((a,b_temp))
-                    file_arr.append(bb_arr)
+                    # b_temp = np.zeros(100)
+                    # bb_arr = np.concatenate((a,b_temp))
+                    # file_arr.append(bb_arr)
+                    file_arr.append(np.zeros(133))
             features_matrices_list.append(file_arr)
             # print('file array shape', np.array(file_arr).shape)
 
