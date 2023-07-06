@@ -122,7 +122,7 @@ def embeddings_per_basic_block(nodes_directory_path):
             # print('file array shape', np.array(file_arr).shape)
 
         i+=1
-    print(np.array(features_matrices_list).shape)
+    #print(np.array(features_matrices_list).shape)
     # return np.array(statistical_features_matrices_list, dtype=object), np.array(semantic_features_matrices_list, dtype=object)
     return np.array(features_matrices_list, dtype=object)
 
