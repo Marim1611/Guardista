@@ -78,7 +78,7 @@ with open ('classes.json', 'w') as f:
 
 finalReport = {}
 fields = list(allCWEsDF.columns)
-
+ 
 
 
 #try:
