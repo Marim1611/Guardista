@@ -120,6 +120,14 @@ def get_class_probs(path,clf):
                 probabilities = clf.predict_proba(x_safe_test)
                 all_probabilities.append(probabilities)
         return all_probabilities,x_safe_test,y_safe_test
+
+def load_model():
+        '''
+        this function to load the model
+        '''
+        with open('models/model.pkl', 'rb') as f:
+                model = pickle.load(f)
+        return model
 #write function to 
 # def validation_curves(clf,x_data,y_data,cv, hyperparameters):
 #     '''
