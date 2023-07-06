@@ -29,3 +29,4 @@ BackEnd/new_BE/tmp/*
 tests/
 unused_models/
 models/
+word2vec.model
