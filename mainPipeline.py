@@ -8,7 +8,7 @@ import pandas as pd
 userFilePath = sys.argv[1]
 userFile = sys.argv[2]
 
- 
+
 
 RETDEC_PATH = r"D:/ClassWork/GP/RetDec/bin".replace('\\', '/')
 
@@ -151,14 +151,55 @@ def pipeline(userFilePath,userFile):
     input: path to nodes, and edges only
     output: classification class
     '''
-    # absPathToGCN_classifier_script = os.path.join(SCRIPT_ROOT_PATH, "4-Features_Extraction","gcnInferPoint.py").replace("\\", "/")
-    
-
-    # modelPath = os.path.join(SCRIPT_ROOT_PATH, "models", 'GCN_classifier')
-    # encoderPath = os.path.join(SCRIPT_ROOT_PATH, "model_classes", 'classEncoder.pkl')
+    # absPathToGCN_classifier_script = os.path.join(SCRIPT_ROOT_PATH, "GCN", "4-Features_Extraction","gcnInferPoint.py").replace("\\", "/")
+    # modelPath = os.path.join(SCRIPT_ROOT_PATH, "models", 'GCN_class_g1.pkl')
     # classification_txt = os.path.join(OUTPUT_PATH, 'classification.txt')
 
-    # run (['python', absPathToGCN_classifier_script, absPathtoNodes_final, absPathtoEdges_final, OUTPUT_PATH, modelPath, 'test', encoderPath, classification_txt])
+    # run (['python', absPathToGCN_classifier_script, absPathtoNodes_final, absPathtoEdges_final, OUTPUT_PATH, modelPath, 'test', classification_txt])
+
+    # with open(classification_txt, 'r') as f:
+    #     classification = f.read()
+    
+    # print(f"I CLASSIFIED {classification}")
+
+    # embDF = pd.read_csv(f"{OUTPUT_PATH}/embeddings_test.csv", header=None, index_col=None)
+
+
+
+    # ----------------------------------------------------------------------------------------------------
+    # ------------------------------------- Binary model after using GCN for classification -------------------------------------
+    # ----------------------------------------------------------------------------------------------------
+    '''
+    input: same input as the prev stage
+    output: safe or unsafe
+    '''
+
+    # absPathToGCN_classifier_script = os.path.join(SCRIPT_ROOT_PATH, "4-Features_Extraction","gcnInferPoint.py").replace("\\", "/")
+    # modelPath = os.path.join(SCRIPT_ROOT_PATH, "models", 'GCN_class_safe.pkl')
+    # classification_txt = os.path.join(OUTPUT_PATH, 'classification.txt')
+    # run (['python', absPathToGCN_classifier_script, absPathtoNodes_final, absPathtoEdges_final, OUTPUT_PATH, modelPath, 'test', classification_txt])
+    # # with open(classification_txt, 'r') as f:
+    # #     classification = f.read()
+    
+    # # print(f"I CLASSIFIED {classification}")
+
+    # embDF_safe = pd.read_csv(f"{OUTPUT_PATH}/embeddings_test.csv", header=None, index_col=None)
+
+    # finalEmb = pd.concat([embDF, embDF_safe], axis=1, ignore_index=True)
+    # finalEmb.to_csv(f'{OUTPUT_PATH}/embeddings_concat.csv', header=False, index=False)
+    # print(len(finalEmb.columns))
+
+    # binary_model_path = os.path.join(SCRIPT_ROOT_PATH, "models", f'{classification}_concat_adaboost.pkl')
+    # with open(binary_model_path, 'rb') as f:
+    #     binary_model = pickle.load(f)
+    
+    # final_classification = binary_model.predict(finalEmb)
+
+    # print(f"\n\nI CLASSIFIED FINALLY :  {final_classification}\n\n")
+
+    # with open(os.path.join(OUTPUT_PATH, 'classification.txt'), 'w') as f:
+    #     f.write(final_classification)
+
 
 
 
@@ -175,20 +216,27 @@ def pipeline(userFilePath,userFile):
     output: ---
     '''
 
-    # absPathtoGCNInfer = os.path.join(SCRIPT_ROOT_PATH ,"4-Features_Extraction","gcnInfer.py").replace("\\", "/")
-    # absPathtoGCNInfer = list(absPathtoGCNInfer)
-    # absPathtoGCNInfer[0] = absPathtoGCNInfer[0].upper()
-    # absPathtoGCNInfer = ''.join(absPathtoGCNInfer)
+    absPathtoGCNInfer = os.path.join(SCRIPT_ROOT_PATH , "GCN", "4-Features_Extraction","gcnInfer.py").replace("\\", "/")
+    absPathtoGCNInfer = list(absPathtoGCNInfer)
+    absPathtoGCNInfer[0] = absPathtoGCNInfer[0].upper()
+    absPathtoGCNInfer = ''.join(absPathtoGCNInfer)
     
-    # absPathtoNodesEdges = os.path.join(OUTPUT_PATH, 'CFG_UserCode')
+    absPathtoNodesEdges = os.path.join(OUTPUT_PATH, 'CFG_UserCode')
+
+    ModelPaths =[
+        os.path.join(SCRIPT_ROOT_PATH, 'models', 'GCN_class_g1.pkl'),
+        os.path.join(SCRIPT_ROOT_PATH, 'models', 'GCN_class_g2.pkl'),
+        os.path.join(SCRIPT_ROOT_PATH, 'models', 'GCN_class_g3.pkl'),
+        os.path.join(SCRIPT_ROOT_PATH, 'models', 'GCN_class_g4.pkl')
+    ]
 
 
-    # run(["python",absPathtoGCNInfer, absPathtoEdges_final, absPathtoNodesEdges, 'test'])
+    run(["python",absPathtoGCNInfer, absPathtoEdges_final, absPathtoNodesEdges, ModelPaths[0], ModelPaths[1], ModelPaths[2], ModelPaths[3], 'test'])
 
-    # EmbeddingPath = os.path.join(absPathtoNodesEdges, 'concatEmbeddings_test.csv')
-    # X_df = pd.read_csv(EmbeddingPath, header=None, index_col=None)
-    # X_df.drop(columns=X_df.columns[0], axis=1, inplace=True)
-    # X_test = X_df.iloc[: , :-1]
+    EmbeddingPath = os.path.join(absPathtoNodesEdges, 'concatEmbeddings_test.csv')
+    X_df = pd.read_csv(EmbeddingPath, header=None, index_col=None)
+    X_df.drop(columns=X_df.columns[0], axis=1, inplace=True)
+    X_test = X_df.iloc[: , :-1]
 
     # ----------------------------------------------------------------------------------------
 
@@ -198,26 +246,29 @@ def pipeline(userFilePath,userFile):
     output: output/classification.txt
     '''
 
-    # models=[]
+    models=[]
     # for file in os.listdir(os.path.join(SCRIPT_ROOT_PATH, "models")):
     #     with open(os.path.join(SCRIPT_ROOT_PATH, "models", file), 'rb') as f:
     #         models.append(pickle.load(f))
     
+    
+    modelNames = ['rbf_svm_group1.pkl']
+    for mName in modelNames:
+       with open(os.path.join(SCRIPT_ROOT_PATH, "models", mName), 'rb') as f:
+            models.append(pickle.load(f))
+    
 
-    # with open(os.path.join(OUTPUT_PATH, 'classification.txt'), 'w') as f:
-    #     classification_preds = []
-    #     for model in models:
-    #         y_pred = model.predict(X_test)
-    #         if y_pred!= 'safe':
-    #             cve_id= re.search(r"\d+", y_pred[0]).group(0)
-    #             classification_preds.append(cve_id)
-    #     f.write('\n'.join(list(set(classification_preds))))
+    with open(os.path.join(OUTPUT_PATH, 'classification.txt'), 'w') as f:
+        classification_preds = []
+        for model in models:
+            y_pred = model.predict(X_test)
+            if y_pred!= 'safe':
+                cve_id= re.search(r"\d+", y_pred[0]).group(0)
+                classification_preds.append(cve_id)
+        f.write('\n'.join(list(set(classification_preds))))
     
-    # print(f"\n\n\nI CLASSIFIED : \n{classification_preds}")
+    print(f"\n\n\nI CLASSIFIED : \n{classification_preds}")
     
-    
-    with open(f'{OUTPUT_PATH}/status.txt', 'w') as f:
-        f.write('classified')
 
 
     # # # check if the classification.txt file is empty, then user code is safe
@@ -240,6 +291,9 @@ def pipeline(userFilePath,userFile):
     run(['python', absPathToReportScript, OUTPUT_PATH])
 
 
+    
+    with open(f'{OUTPUT_PATH}/status.txt', 'w') as f:
+        f.write('classified')
 
 
     # ------------------- 5. Localizer ------------------- #

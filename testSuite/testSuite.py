@@ -2,6 +2,7 @@ import os, sys, pickle, re, json
 from subprocess import run
 import time
 import pandas as pd
+from sklearn.metrics import classification_report
 
 
 SCRIPT_ROOT_PATH = str(os.path.split(os.path.realpath(__file__))[0])
@@ -16,7 +17,7 @@ absPathtoGCNInfer = list(absPathtoGCNInfer)
 absPathtoGCNInfer[0] = absPathtoGCNInfer[0].upper()
 absPathtoGCNInfer = ''.join(absPathtoGCNInfer)
 
-cves_to_be_tested=['23_test', '36_test']
+cves_to_be_tested=['78_test', '122_test']
 
 
 ModelPaths =[
@@ -54,4 +55,19 @@ for cve in cves_to_be_tested:
 
 
 allCSVs.to_csv(f"{'_'.join(cves_to_be_tested)}.csv", header=False, index=False)
+
+
+models_to_be_tested = [
+    os.path.join(GUARDISTA_ROOT_PATH, 'models', 'rbf_svm_group1.pkl'),
+    #os.path.join(GUARDISTA_ROOT_PATH, 'models', 'rbf_svm_group2.pkl'),
+    #os.path.join(GUARDISTA_ROOT_PATH, 'models', 'rbf_svm_group3.pkl'),
+    #os.path.join(GUARDISTA_ROOT_PATH, 'models', 'rbf_svm_group4.pkl')
+]
+
+
+for mod in models_to_be_tested:
+    with open(mod, 'rb') as f:
+        model = pickle.load(f)
+    allPreds = model.predict(allCSVs.iloc[:, 1:-1])
+    classification_report(allCSVs.iloc[:, -1], allPreds)
 
