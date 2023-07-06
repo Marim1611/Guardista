@@ -28,10 +28,14 @@ import sys
 
 pathToUser_Edges = sys.argv[1]
 outputPath = sys.argv[2]
-cve = sys.argv[3]
+m1 = sys.argv[3]
+m2 = sys.argv[4]
+m3 = sys.argv[5]
+m4 = sys.argv[6]
+cve = sys.argv[7]
 
 scriptPath = os.path.split(os.path.realpath(__file__))[0]
 
-gcnHelpers.mergeEmbeddings(  scriptPath, pathToUser_Edges, outputPath, cve, csvPath=None)
+gcnHelpers.mergeEmbeddings(  m1, m2, m3, m4, pathToUser_Edges, outputPath, cve, csvPath=None)
         
  
