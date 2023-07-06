@@ -442,35 +442,35 @@ def InferenceGCN (model, pathToUser_Edges, outputPath, multipleFiles, cve='test'
 
 
 
-def mergeEmbeddings(pathToModels,pathToUser_Edges, outputPath, cve, csvPath=None):
+def mergeEmbeddings(m1, m2, m3, m4, pathToUser_Edges, outputPath, cve, csvPath=None):
 
-    folderContents = os.listdir(pathToModels)
-    gcnModelNames = []
-    for fi in folderContents:
-        if re.findall('GCN_\d.pkl', fi):
-            gcnModelNames.append(os.path.join(pathToModels, fi))
+    # folderContents = os.listdir(pathToModels)
+    # gcnModelNames = []
+    # for fi in folderContents:
+    #     if re.findall('GCN_\d.pkl', fi):
+    #         gcnModelNames.append(os.path.join(pathToModels, fi))
     
 
     
     npyPath = outputPath+'/features_matrices/features_matrices_' + cve + '.npy'
 
 
-    classification_1, embeddings_df_1 = InferenceGCN( gcnModelNames[0] , pathToUser_Edges=pathToUser_Edges , outputPath=outputPath, multipleFiles='true', npyPath=npyPath, cve=cve)
+    classification_1, embeddings_df_1 = InferenceGCN( m1 , pathToUser_Edges=pathToUser_Edges , outputPath=outputPath, multipleFiles='true', npyPath=npyPath, cve=cve)
     LabelColumn = embeddings_df_1.iloc[:, -1]
     embeddings_df_1.drop(columns=list(embeddings_df_1.columns)[-1], inplace=True)
 
 
 
-    classification_2, embeddings_df_2 = InferenceGCN( gcnModelNames[1] , pathToUser_Edges=pathToUser_Edges , outputPath=outputPath, multipleFiles='true', npyPath=npyPath, cve=cve)
+    classification_2, embeddings_df_2 = InferenceGCN( m2 , pathToUser_Edges=pathToUser_Edges , outputPath=outputPath, multipleFiles='true', npyPath=npyPath, cve=cve)
     embeddings_df_2.drop(columns=list(embeddings_df_2.columns)[0], inplace=True)
     embeddings_df_2.drop(columns=list(embeddings_df_2.columns)[-1], inplace=True)
 
 
-    classification_3, embeddings_df_3 = InferenceGCN( gcnModelNames[2] , pathToUser_Edges=pathToUser_Edges , outputPath=outputPath, multipleFiles='true', npyPath=npyPath, cve=cve)
+    classification_3, embeddings_df_3 = InferenceGCN( m3 , pathToUser_Edges=pathToUser_Edges , outputPath=outputPath, multipleFiles='true', npyPath=npyPath, cve=cve)
     embeddings_df_3.drop(columns=list(embeddings_df_3.columns)[0], inplace=True)
     embeddings_df_3.drop(columns=list(embeddings_df_3.columns)[-1], inplace=True)
 
-    classification_4, embeddings_df_4 = InferenceGCN( gcnModelNames[3] , pathToUser_Edges=pathToUser_Edges , outputPath=outputPath, multipleFiles='true', npyPath=npyPath, cve=cve)
+    classification_4, embeddings_df_4 = InferenceGCN( m4 , pathToUser_Edges=pathToUser_Edges , outputPath=outputPath, multipleFiles='true', npyPath=npyPath, cve=cve)
     embeddings_df_4.drop(columns=list(embeddings_df_4.columns)[0], inplace=True)
     embeddings_df_4.drop(columns=list(embeddings_df_4.columns)[-1], inplace=True)
 
