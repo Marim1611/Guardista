@@ -9,7 +9,8 @@ import gensim
 # sentences = [["this is a sentence"], ["this is another sentence"], ["yet another sentence"]]
 
 in_path = sys.argv[1]
-cwe_1 = sys.argv[2]
+binary_models_path = sys.argv[2]
+cwe_1 = sys.argv[3]
 # cwe_2 = sys.argv[3]
 # out_path = sys.argv[4]
 
@@ -39,7 +40,7 @@ print(len(all_tokens_array))
 model = Word2Vec(all_tokens_array, vector_size=100, window=3, min_count=1, workers=4, sg=0, sample=1e-3)
 
 # Save the trained model to disk
-model.save(in_path+"/"+cwe_1+"/word2vec.model")
+model.save(binary_models_path+"/"+cwe_1+"/word2vec.model")
 
 
 # # Train the model on the new data

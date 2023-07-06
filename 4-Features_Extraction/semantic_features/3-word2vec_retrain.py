@@ -5,12 +5,13 @@ import os
 import gensim
 
 in_path = sys.argv[1]
-cwe_1 = sys.argv[2]
-cwe_2 = sys.argv[3]
+binary_models_path = sys.argv[2]
+cwe_1 = sys.argv[3]
+cwe_2 = sys.argv[4]
 
 
 # Load pre-trained Word2Vec model.
-model = gensim.models.Word2Vec.load(in_path+"/"+cwe_1+"/word2vec.model")
+model = gensim.models.Word2Vec.load(binary_models_path+"/"+cwe_1+"/word2vec.model")
 
 all_tokens_array = []
 
