@@ -89,14 +89,15 @@ def semantic_features(data):
 
 #--------------------------------------------------------------------------------------------------------------------------------
 
-def embeddings_per_basic_block(nodes_directory_path):
+def embeddings_per_basic_block(nodes_directory_path, files_representaions_path, cwe):
     # semantic_features_matrices_list = []
     # statistical_features_matrices_list = []
     features_matrices_list = []
+    # files_embeddings = []
 
     i=0
     for filename in tqdm(os.listdir(nodes_directory_path)):
-        if i>1500 : break
+        if i>1499 : break
         f = os.path.join(nodes_directory_path, filename)
         if os.path.isfile(f) and f.endswith('.json'):
 
@@ -120,9 +121,19 @@ def embeddings_per_basic_block(nodes_directory_path):
                     file_arr.append(np.zeros(136))
             features_matrices_list.append(file_arr)
             # print('file array shape', np.array(file_arr).shape)
+            summed_file_arr = np.asarray(file_arr).sum(axis=0)
+            # files_embeddings.append(summed_file_arr)
+            z = summed_file_arr.tolist()
+            if 'safe' in cwe or 'SAFE' in cwe:
+                z.append('safe')
+            else:
+                z.append('CWE'+cwe)
+            with open(out_path+files_representaions_path, 'a', newline='') as file:
+                writer = csv.writer(file)
+                writer.writerow(z)
 
         i+=1
-    print(np.array(features_matrices_list).shape)
+    print(np.array(features_matrices_list, dtype=object).shape)
     # return np.array(statistical_features_matrices_list, dtype=object), np.array(semantic_features_matrices_list, dtype=object)
     return np.array(features_matrices_list, dtype=object)
 
@@ -138,9 +149,10 @@ cwe_without_safe = cwe.split('_')[0]
 # Load pre-trained Word2Vec model.
 model = gensim.models.Word2Vec.load(models_path+"/"+cwe_without_safe+"/word2vec.model")
 
+files_representaions_path = '/files_representations_'+ cwe +'.csv'
 
 # statistical_features_matrices_list, semantic_features_matrices_list = embeddings_per_basic_block(nodes_directory_path)
-features_matrices_list = embeddings_per_basic_block(nodes_directory_path)
+features_matrices_list = embeddings_per_basic_block(nodes_directory_path, files_representaions_path, cwe)
 
 print('number of matrices', len(features_matrices_list))
 
@@ -164,3 +176,6 @@ if not os.path.exists(out_path+'/stat_semantic_matrices'):
 
 with open(out_path+'/stat_semantic_matrices/stat_semantic_matrices_' + cwe + '.npy', 'wb') as f:
     np.save(f, features_matrices_list)
+
+
+

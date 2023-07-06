@@ -24,3 +24,9 @@ targets_folder
 LSTM/
 BackEnd/new_BE/tmp
 BackEnd/new_BE/tmp/*
+4-Features_Extraction/GCN/gcnNode.ipynb
+
+tests/
+unused_models/
+models/
+word2vec.model
