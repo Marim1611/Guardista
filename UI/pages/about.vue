@@ -45,9 +45,8 @@
       :text="screen.text"
       :title="screen.title"
       :bg-color="screen.bgColor"
-      :is-left="screen.leftOrRight"
+      :img="screen.img"
     />
-    <!-- :img="screen.img" -->
   </v-container>
 </template>
 <script>
@@ -68,28 +67,28 @@ export default {
         {
           text: "Guardista is a cutting-edge security tool that offers a comprehensive analysis of software code at the binary level. Our mission is to provide a reliable and efficient solution for software security by detecting potential security vulnerabilities that may not be apparent at the source code level. With Guardista, developers can focus on building great software without worrying about potential vulnerabilities.",
           title: "Mission",
-          //   img: 'examine.png',
+          img: "paper.png",
           bgColor: "#9d000020",
           leftOrRight: true,
         },
         {
           text: "Guardista's main objective is to develop a binary vulnerability detection tool that can identify potential security vulnerabilities in software at the binary level. By examining actual executable code, Guardista provides accurate and efficient results without the need for access to the original source code. Guardista can detect vulnerabilities in software written in any language, regardless of the specific tools or frameworks used to develop it, making it a valuable tool for any software developer.",
           title: "Objective",
-          //   img: 'coffe.png',
+          img: "paper.png",
           bgColor: "#f8f8f8",
           leftOrRight: false,
         },
         {
           text: "At Guardista, our process involves the transformation of binary code into a higher-level representation of control flow graphs. We then extract statistical, structural, and semantic features that we use to train different models, including both classical and deep learning models. Our classifiers output accurate results, reducing false positives and negatives, and improving overall accuracy. This process allows Guardista to provide a comprehensive analysis of software code at the binary level, detecting potential security vulnerabilities that may not be apparent at the source code level.",
           title: "Process",
-          //   img: 'examine.png',
+          img: "paper.png",
           bgColor: "#9d000020",
           leftOrRight: true,
         },
         {
           text: "Guardista detects potential security vulnerabilities in software at the binary level. If vulnerabilities are detected, Guardista can mark the location of the vulnerability within the source code and provide a highlighted representation of the affected area. Guardista also informs the user of the corresponding CVE name associated with the identified vulnerability and a description of the vulnerability. This information helps developers quickly identify and address potential security risks in their software.",
           title: "How it works?",
-          //   img: 'coffe.png',
+          img: "paper.png",
           bgColor: "#f8f8f8",
           leftOrRight: false,
         },

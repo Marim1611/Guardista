@@ -13,7 +13,7 @@
         <p class="text pa-md-8" :class="{ 'multi-lined-text': multiLined }">{{ text }}</p>
       </v-col>
       <v-col :class="{ 'order-first': isLeft }" md="6" cols="12">
-        <!-- <img class="resp-img" :src="require(`~/assets/imgs/metisImgs/${img}`)" alt="" /> -->
+        <img class="resp-img" :src="require(`~/assets/${img}`)" alt="" /> 
       </v-col>
     </v-row>
   </v-container>
