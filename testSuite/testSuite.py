@@ -11,7 +11,7 @@ GUARDISTA_ROOT_PATH = str(os.path.split(os.path.split(os.path.realpath(__file__)
 
 
 
-absPathtoGCNInfer = os.path.join(GUARDISTA_ROOT_PATH ,"4-Features_Extraction","gcnInfer.py").replace("\\", "/")
+absPathtoGCNInfer = os.path.join(GUARDISTA_ROOT_PATH ,"4-Features_Extraction","GCN","gcnInfer.py").replace("\\", "/")
 absPathtoGCNInfer = list(absPathtoGCNInfer)
 absPathtoGCNInfer[0] = absPathtoGCNInfer[0].upper()
 absPathtoGCNInfer = ''.join(absPathtoGCNInfer)
