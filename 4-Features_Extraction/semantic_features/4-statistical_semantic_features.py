@@ -23,7 +23,7 @@ def prepare(fi):
     list_features = []
     terminator_instructions = ['ret', 'br', 'call', 'switch', 'indirectbr', 'invoke', 'callbr', 'resume',
                     'catchsweitch', 'catchret', 'cleanupret']
-    unary_instructions = ['fneg']
+    unary_instructions = ['and', 'or', 'xor', 'fneg']
     binary_instructions = ['add', 'fadd', 'sub', 'fsub', 'mul', 'fmul', 'div', 'udiv',
                     'sdiv', 'urem', 'srem', 'frem', 'fcmp', 'icmp', 'load', 'store']
     operands = ['void', '%\\d+']
@@ -117,7 +117,7 @@ def embeddings_per_basic_block(nodes_directory_path):
                     # b_temp = np.zeros(100)
                     # bb_arr = np.concatenate((a,b_temp))
                     # file_arr.append(bb_arr)
-                    file_arr.append(np.zeros(133))
+                    file_arr.append(np.zeros(136))
             features_matrices_list.append(file_arr)
             # print('file array shape', np.array(file_arr).shape)
 
