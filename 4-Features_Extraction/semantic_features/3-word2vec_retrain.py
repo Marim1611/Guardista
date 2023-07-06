@@ -29,4 +29,6 @@ print(len(all_tokens_array))
 model.build_vocab(all_tokens_array, update=True)
 model.train(all_tokens_array, total_examples=len(all_tokens_array), epochs=model.epochs)
 
+model.save(binary_models_path+"/"+cwe_1+"/word2vec.model")
+
 
