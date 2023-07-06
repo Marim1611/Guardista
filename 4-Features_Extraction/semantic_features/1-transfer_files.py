@@ -6,13 +6,13 @@ import random
 origin = sys.argv[1]
 cwe = sys.argv[2]
 
-if not os.path.exists("train_files"):
-   os.mkdir("train_files")
+if not os.path.exists("w2v_train_files"):
+   os.mkdir("w2v_train_files")
 
-if not os.path.exists("train_files/"+cwe):
-    os.mkdir("train_files/"+cwe)
+if not os.path.exists("w2v_train_files/"+cwe):
+    os.mkdir("w2v_train_files/"+cwe)
 
-train_target = "train_files/"+cwe
+train_target = "w2v_train_files/"+cwe
 
 all_ll_files = os.listdir(origin)
 
