@@ -24,14 +24,14 @@
           {{ message }}
         </v-alert>
 
-        <!-- <div v-if="showStatus" class="stats_bar">
+        <div v-if="showStatus" class="stats_bar">
           <div v-for="(ele, i) in cases" :key="i" class="btn">
             <v-icon :class="{ iconColor: done[i] }">{{ icons[i] }}</v-icon>
             <p class="stat" color="#6e1131" :class="{ checked: done[i] }">
               {{ ele }}
             </p>
           </div>
-        </div> -->
+        </div>
 
         <v-card v-if="done[3]" class="mx-auto pa-auto mb-9">
           <v-list>
