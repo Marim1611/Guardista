@@ -33,7 +33,7 @@
           </div>
         </div> -->
 
-        <v-card v-if="done[3]" class="mx-auto pa-auto mb-15">
+        <v-card v-if="done[3]" class="mx-auto pa-auto mb-9">
           <v-list>
             <v-subheader>Results</v-subheader>
             <v-list-item-group color="primary">
@@ -126,12 +126,25 @@
             <v-icon right dark>mdi-bug</v-icon>
           </v-btn>
         </v-row>
-        <LocalizationReport
-          v-if="spans.length > 0"
-          :span="spans[0]"
-        ></LocalizationReport>
       </v-col>
     </v-row>
+
+    <v-dialog
+      v-model="localizationDialog"
+      width="max-content"
+      class="mt-16"
+      @keydown.esc="closeReport"
+    >
+      <v-carousel v-model="selectedWindow" hide-delimiters>
+        <v-carousel-item v-for="span in spans" :key="span.id">
+          <LocalizationReport
+            :span="span"
+            @closeDialog="closeReport"
+            class="report-container"
+          ></LocalizationReport>
+        </v-carousel-item>
+      </v-carousel>
+    </v-dialog>
   </v-container>
 </template>
 
@@ -175,6 +188,8 @@ export default {
       safe_reports: [false, false],
       show_safe_msg: [false, false],
       no_source_code: false,
+      localizationDialog: false,
+      selectedWindow: true,
     };
   },
   methods: {
@@ -306,6 +321,9 @@ export default {
       this.currentFiles = files;
       console.log(this.currentFiles);
     },
+    closeReport() {
+      this.localizationDialog = false;
+    },
     upload() {
       if (!this.currentFiles) {
         this.message = "Please select a file!";
@@ -316,7 +334,7 @@ export default {
       for (let i = 0; i < this.currentFiles.length; i++) {
         console.log(this.currentFiles[i].name);
         const ext = this.currentFiles[i].name.split(".").pop();
-        const allowed_extensions = ["py", "c", "exe", "cpp", "ll", "h"];
+        const allowed_extensions = ["py", "c", "exe", "cpp", "gch", "h", "o"];
         if (!allowed_extensions.includes(ext)) {
           console.log(ext);
           console.log("**********");
@@ -325,13 +343,6 @@ export default {
           return;
         }
         formData.append("files", this.currentFiles[i]);
-
-        // remove any .h file from current files and add it to helper files
-      }
-
-      if (!this.currentFiles.length) {
-        this.message = "Please upload your source or executable files!";
-        return;
       }
       this.message = "";
       this.$set(this.done, 3, true);
@@ -592,7 +603,16 @@ export default {
                   '/* TEMPLATE GENERATED TESTCASE FILE\nFilename: CWE78_OS_Command_Injection__char_file_w32_execv_04.c\nLabel Definition File: CWE78_OS_Command_Injection.strings.label.xml\nTemplate File: sources-sink-04.tmpl.c\n*/\n/*\n * @description\n * CWE: 78 OS Command Injection\n * BadSource: file Read input from a file\n * GoodSource: Fixed string\n * Sink: w32_execv\n *    BadSink : execute command with execv\n * Flow Variant: 04 Control flow: if(STATIC_CONST_TRUE) and if(STATIC_CONST_FALSE)\n *\n * */\n\n#include "std_testcase.h"\n\n#include <wchar.h>\n\n#include <unistd.h>\n#define COMMAND_INT_PATH "/bin/sh"\n#define COMMAND_INT "sh"\n#define COMMAND_ARG1 "-c"\n#define COMMAND_ARG2 "ls "\n#define COMMAND_ARG3 data\n\n\n\n#define FILENAME "/tmp/file.txt"\n\n\n#include <process.h>\n#define EXECV _execv\n\n/* The two variables below are declared "const", so a tool should\n * be able to identify that reads of these will always return their\n * initialized values.\n */\nstatic const int STATIC_CONST_TRUE = 1; /* true */\nstatic const int STATIC_CONST_FALSE = 0; /* false */\n\n#ifndef OMITBAD\n\nvoid CWE78_OS_Command_Injection__char_file_w32_execv_04_bad()\n{\n    char * data;\n    char dataBuffer[100] = COMMAND_ARG2;\n    data = dataBuffer;\n    if(STATIC_CONST_TRUE)\n    {\n        {\n            /* Read input from a file */\n            size_t dataLen = strlen(data);\n            FILE * pFile;\n            /* if there is room in data, attempt to read the input from a file */\n            if (100-dataLen > 1)\n            {\n                pFile = fopen(FILENAME, "r");\n                if (pFile != NULL)\n                {\n                    /* POTENTIAL FLAW: Read data from a file */\n                    if (fgets(data+dataLen, (int)(100-dataLen), pFile) == NULL)\n                    {\n                        printLine("fgets() failed");\n                        /* Restore NUL terminator if fgets fails */\n                        data[dataLen] = \'\\0\';\n                    }\n                    fclose(pFile);\n                }\n            }\n        }\n    }\n    {\n        char *args[] = {COMMAND_INT_PATH, COMMAND_ARG1, COMMAND_ARG3, NULL};\n        /* execv - specify the path where the command is located */\n        /* POTENTIAL FLAW: Execute command without validating input possibly leading to command injection */\n        EXECV(COMMAND_INT_PATH, args);\n    }\n}\n\n#endif /* OMITBAD */\n\n\n/* Below is the main(). It is only used when building this testcase on\n * its own for testing or for building a binary to use in testing binary\n * analysis tools. It is not used when compiling all the testcases as one\n * application, which is how source code analysis tools are tested.\n */\n\n\nint main(int argc, char * argv[])\n{\n    /* seed randomness */\n    srand( (unsigned)time(NULL) );\n\n#ifndef OMITBAD\n    printLine("Calling bad()...");\n    CWE78_OS_Command_Injection__char_file_w32_execv_04_bad();\n    printLine("Finished bad()");\n#endif /* OMITBAD */\n    return 0;\n}\n',
               },
           },
-          126: {},
+          126: {
+            "D:/ClassWork/Guardista/BackEnd/new_BE/tmp/tmp76\\output\\source\\CWE126_OS_Command_Injection__char_file_w32_execv_04.c":
+              {
+                "CWE126_OS_Command_Injection__char_file_w32_execv_04.c": [
+                  [1053, 2323],
+                ],
+                filecontent:
+                  '/* TEMPLATE GENERATED TESTCASE FILE\nFilename: CWE126_OS_Command_Injection__char_file_w32_execv_04.c\nLabel Definition File: CWE78_OS_Command_Injection.strings.label.xml\nTemplate File: sources-sink-04.tmpl.c\n*/\n/*\n * @description\n * CWE: 78 OS Command Injection\n * BadSource: file Read input from a file\n * GoodSource: Fixed string\n * Sink: w32_execv\n *    BadSink : execute command with execv\n * Flow Variant: 04 Control flow: if(STATIC_CONST_TRUE) and if(STATIC_CONST_FALSE)\n *\n * */\n\n#include "std_testcase.h"\n\n#include <wchar.h>\n\n#include <unistd.h>\n#define COMMAND_INT_PATH "/bin/sh"\n#define COMMAND_INT "sh"\n#define COMMAND_ARG1 "-c"\n#define COMMAND_ARG2 "ls "\n#define COMMAND_ARG3 data\n\n\n\n#define FILENAME "/tmp/file.txt"\n\n\n#include <process.h>\n#define EXECV _execv\n\n/* The two variables below are declared "const", so a tool should\n * be able to identify that reads of these will always return their\n * initialized values.\n */\nstatic const int STATIC_CONST_TRUE = 1; /* true */\nstatic const int STATIC_CONST_FALSE = 0; /* false */\n\n#ifndef OMITBAD\n\nvoid CWE78_OS_Command_Injection__char_file_w32_execv_04_bad()\n{\n    char * data;\n    char dataBuffer[100] = COMMAND_ARG2;\n    data = dataBuffer;\n    if(STATIC_CONST_TRUE)\n    {\n        {\n            /* Read input from a file */\n            size_t dataLen = strlen(data);\n            FILE * pFile;\n            /* if there is room in data, attempt to read the input from a file */\n            if (100-dataLen > 1)\n            {\n                pFile = fopen(FILENAME, "r");\n                if (pFile != NULL)\n                {\n                    /* POTENTIAL FLAW: Read data from a file */\n                    if (fgets(data+dataLen, (int)(100-dataLen), pFile) == NULL)\n                    {\n                        printLine("fgets() failed");\n                        /* Restore NUL terminator if fgets fails */\n                        data[dataLen] = \'\\0\';\n                    }\n                    fclose(pFile);\n                }\n            }\n        }\n    }\n    {\n        char *args[] = {COMMAND_INT_PATH, COMMAND_ARG1, COMMAND_ARG3, NULL};\n        /* execv - specify the path where the command is located */\n        /* POTENTIAL FLAW: Execute command without validating input possibly leading to command injection */\n        EXECV(COMMAND_INT_PATH, args);\n    }\n}\n\n#endif /* OMITBAD */\n\n\n/* Below is the main(). It is only used when building this testcase on\n * its own for testing or for building a binary to use in testing binary\n * analysis tools. It is not used when compiling all the testcases as one\n * application, which is how source code analysis tools are tested.\n */\n\n\nint main(int argc, char * argv[])\n{\n    /* seed randomness */\n    srand( (unsigned)time(NULL) );\n\n#ifndef OMITBAD\n    printLine("Calling bad()...");\n    CWE78_OS_Command_Injection__char_file_w32_execv_04_bad();\n    printLine("Finished bad()");\n#endif /* OMITBAD */\n    return 0;\n}\n',
+              },
+          },
           590: {},
           762: {},
         };
@@ -616,8 +636,9 @@ export default {
           this.spans.push([id, this.spans_dict[id]]);
         }
 
-        console.log(this.spans[0]);
+        console.log(this.spans);
         //////////////////to be removed////////////////////
+        this.localizationDialog = true;
       } else {
         this.no_source_code = true;
         return;
@@ -696,26 +717,11 @@ h3 {
   align-items: flex-start;
 }
 
-.custom-carousel {
-  position: relative;
-}
-.v-carousel__controls {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  display: flex;
-  justify-content: space-between;
-  padding: 16px;
-}
-.v-carousel__icon--prev,
-.v-carousel__icon--next {
-  height: 48px;
-  width: 48px;
-  padding: 0;
-}
-
 .dialog {
   z-index: 12;
+}
+.report-container {
+  height: 100%; /* Set the maximum height of the container */
+  overflow-y: auto; /* Enable vertical scrolling when the content exceeds the height of the container */
 }
 </style>
