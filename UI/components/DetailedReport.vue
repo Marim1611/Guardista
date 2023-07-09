@@ -2,12 +2,17 @@
   <v-dialog
     v-model="detailed"
     width="max-content"
-    class="mt-16 dialog"
+    class="mt-16 "
     hide-overlay
     persistent
     @keydown.esc="closeDialog"
   >
     <v-card class="py-5 px-2" max-height="auto">
+      <v-card-title class="d-flex justify-end align-end">
+        <v-btn @click="closeDialog" text :hover="false">
+          <v-icon right large color="red">mdi-close-circle</v-icon>
+        </v-btn>
+      </v-card-title>
       <v-list>
         <v-list-item-group>
           <v-list-item v-for="(item, i) in detailedReport" :key="i">
@@ -69,6 +74,6 @@ export default {
 
 <style scoped>
 .dialog {
-  z-index: 15;
+  z-index: 15 !important;
 }
 </style>
