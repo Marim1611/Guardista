@@ -315,23 +315,32 @@ export default {
         })
         .then((res) => {
           console.log("$######### get span");
-          this.spans_dict = res.data.span;
-          for (var key in this.report1) {
-            let id = this.report1[key]["CWE-ID"];
-            if (this.spans_dict[id] === undefined) {
-              continue;
+          console.log("-------- Response --------");
+          console.log(res.data);
+          console.log("--------------------------");
+          this.spans_dict = res.data;
+
+          if (this.spans.length == 0 && this.safe_reports[0] == false) {
+            for (var key in this.report1) {
+              let id = this.report1[key]["CWE-ID"];
+              if (this.spans_dict[id] === undefined) {
+                continue;
+              }
+              this.spans.push(this.spans_dict[id]);
             }
-            this.spans.push(this.spans_dict[id]);
           }
-          for (var key in this.report2) {
-            let id = this.report2[key]["CWE-ID"];
-            if (
-              this.spans_dict[id] === undefined ||
-              Object.keys(this.spans_dict[id]).length === 0
-            ) {
-              continue;
+          if (this.spans.length == 0 && this.safe_reports[1] == false) {
+            for (var key in this.report2) {
+              console.log("key");
+              let id = this.report2[key]["CWE-ID"];
+              if (
+                this.spans_dict[id] === undefined ||
+                Object.keys(this.spans_dict[id]).length === 0
+              ) {
+                continue;
+              }
+              this.spans.push([id, this.spans_dict[id]]);
             }
-            this.spans.push([id, this.spans_dict[id]]);
           }
         })
         .catch((err) => {
