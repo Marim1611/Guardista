@@ -53,7 +53,7 @@ export default {
       for (let i = 0; i < reportKeys.length; i++) {
         const key = reportKeys[i];
         const value = this.report[key];
-        if (value !== null && value !== "nan") {
+        if (value !== null && value !== "nan" && key!="ID") {
           if (key === "Severity") {
             list.splice(2, 0, { title: key, subtitle: value });
           } else {
