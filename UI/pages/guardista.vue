@@ -278,24 +278,25 @@ export default {
           var report1 = res.data.report1;
           var report2 = res.data.report2;
 
-
-          if (report1.hasOwnProperty('report')) {
-            this.$set(this.safe_reports, 0, true);
-          } else {
-            for (var key in report1['report1']) {
-              this.report1.push(report1['report1'][key]);
+          if (this.report1.length == 0) {
+            if (report1.hasOwnProperty("report")) {
+              this.$set(this.safe_reports, 0, true);
+            } else {
+              for (var key in report1["report1"]) {
+                this.report1.push(report1["report1"][key]);
+              }
             }
           }
 
-          
-          if (report2.hasOwnProperty('report')) {
-            this.$set(this.safe_reports, 1, true);
-          } else {
-            for (var key in report2['report2']) {
-              this.report2.push(report2['report2'][key]);
+          if (this.report2.length == 0) {
+            if (report2.hasOwnProperty("report")) {
+              this.$set(this.safe_reports, 1, true);
+            } else {
+              for (var key in report2["report2"]) {
+                this.report2.push(report2["report2"][key]);
+              }
             }
           }
-
         })
 
         .catch((err) => {
