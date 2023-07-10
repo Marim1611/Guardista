@@ -28,9 +28,7 @@ CVE36: {
 just run it using python precomputeMOSS.py
 
 this script assumes the representatives are put inside pairs/ourVulnCodes/
-
-
-
+it stores the MOSS signature of all representatives in a json file, instead of computing the same signature over and over again with each run
 '''
 
 pathToOurVulnCodes = 'pairs/OurVulnCodes'
@@ -55,11 +53,6 @@ for CVEFolder in CVEFolders:
             BigDict[CVEFolder][fnNames[i]] = signature
 
 
-#print(BigDict)
 
 with open('signatures.json', 'w') as f:
     f.write(json.dumps( BigDict, indent=6, sort_keys=True ))
-
-
-
-

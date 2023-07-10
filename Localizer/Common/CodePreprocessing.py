@@ -1,5 +1,16 @@
 import re, json, os
 
+'''
+    Hello, this script is to provide helper functions for the Localizer module, by preprocessing the input LLVM
+    enjoy :)
+'''
+
+
+
+
+
+
+
 ''' 
                             For matcher purposes
 This function is used to extract the functions from the LLVM IR file and store them in a JSON file.

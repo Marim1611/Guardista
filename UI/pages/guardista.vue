@@ -275,24 +275,26 @@ export default {
         .then((res) => {
           console.log("$######### get report");
 
-          this.reports_dict = res.data.report;
+          var report1 = res.data.report1;
+          var report2 = res.data.report2;
 
-          var report1 = this.reports_dict["report1"];
-          var report2 = this.reports_dict["report2"];
-
-          if (report1.hasOwnProperty("report")) {
-            this.$set(this.safe_reports, 0, true);
-          } else {
-            for (var key in report1["report1"]) {
-              this.report1.push(report1["report1"][key]);
+          if (this.report1.length == 0) {
+            if (report1.hasOwnProperty("report")) {
+              this.$set(this.safe_reports, 0, true);
+            } else {
+              for (var key in report1["report1"]) {
+                this.report1.push(report1["report1"][key]);
+              }
             }
           }
 
-          if (report2.hasOwnProperty("report")) {
-            this.$set(this.safe_reports, 1, true);
-          } else {
-            for (var key in report2["report2"]) {
-              this.report2.push(report2["report2"][key]);
+          if (this.report2.length == 0) {
+            if (report2.hasOwnProperty("report")) {
+              this.$set(this.safe_reports, 1, true);
+            } else {
+              for (var key in report2["report2"]) {
+                this.report2.push(report2["report2"][key]);
+              }
             }
           }
         })
@@ -313,23 +315,32 @@ export default {
         })
         .then((res) => {
           console.log("$######### get span");
-          this.spans_dict = res.data.span;
-          for (var key in this.report1) {
-            let id = this.report1[key]["CWE-ID"];
-            if (this.spans_dict[id] === undefined) {
-              continue;
+          console.log("-------- Response --------");
+          console.log(res.data);
+          console.log("--------------------------");
+          this.spans_dict = res.data;
+
+          if (this.spans.length == 0 && this.safe_reports[0] == false) {
+            for (var key in this.report1) {
+              let id = this.report1[key]["CWE-ID"];
+              if (this.spans_dict[id] === undefined) {
+                continue;
+              }
+              this.spans.push(this.spans_dict[id]);
             }
-            this.spans.push(this.spans_dict[id]);
           }
-          for (var key in this.report2) {
-            let id = this.report2[key]["CWE-ID"];
-            if (
-              this.spans_dict[id] === undefined ||
-              Object.keys(this.spans_dict[id]).length === 0
-            ) {
-              continue;
+          if (this.spans.length == 0 && this.safe_reports[1] == false) {
+            for (var key in this.report2) {
+              console.log("key");
+              let id = this.report2[key]["CWE-ID"];
+              if (
+                this.spans_dict[id] === undefined ||
+                Object.keys(this.spans_dict[id]).length === 0
+              ) {
+                continue;
+              }
+              this.spans.push([id, this.spans_dict[id]]);
             }
-            this.spans.push([id, this.spans_dict[id]]);
           }
         })
         .catch((err) => {
