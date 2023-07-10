@@ -38,7 +38,7 @@
     >
       <v-col cols="3"><v-spacer></v-spacer></v-col>
 
-      <v-col v-for="(ele, i) in cases.span(0, -1)" :key="i" class="btn">
+      <v-col v-for="(ele, i) in cases.slice(0, -1)" :key="i" class="btn">
         <v-icon :class="{ iconColor: done[i] }">{{ icons[i] }}</v-icon>
         <p class="stat" color="#6e1131" :class="{ checked: done[i] }">
           {{ ele }}
@@ -47,7 +47,7 @@
       <v-col class="btn" v-if="!disableLocalization">
         <v-icon :class="{ iconColor: done[4] }">{{ icons[4] }}</v-icon>
         <p class="stat" color="#6e1131" :class="{ checked: done[4] }">
-          {{ ele }}
+          {{ cases[4] }}
         </p>
       </v-col>
 
@@ -222,10 +222,9 @@
     </v-dialog>
   </v-container>
 </template>
-
 <script>
-import axios from "axios";
-import { getUniversalCookies } from "cookie-universal-nuxt";
+// import axios from "axios";
+// import { getUniversalCookies } from "cookie-universal-nuxt";
 import MainInfo from "../components/MainInfo.vue";
 import LocalizationReport from "../components/LocalizationReport.vue";
 export default {
@@ -241,6 +240,16 @@ export default {
       message: "",
       main_report1: false,
       main_report2: false,
+
+      cases: ["Submitted", "Compiled", "Lifted", "Classified", "Localized"],
+      done: [false, false, false, false, false],
+      icons: [
+        "mdi-loading rotate",
+        "mdi-loading rotate",
+        "mdi-loading rotate",
+        "mdi-loading rotate",
+        "mdi-loading rotate",
+      ],
       showStatus: false,
       currentCase: -1,
       intervalId: null,
@@ -255,167 +264,255 @@ export default {
       no_source_code: false,
       localizationDialog: false,
       selectedWindow: true,
+      message2: "",
       report1Clicked: false,
       report2Clicked: false,
-      cases: ["Submitted", "Compiled", "Lifted", "Classified", "Localized"],
-      done: [false, false, false, false, false],
-      icons: [
-        "mdi-loading rotate",
-        "mdi-loading rotate",
-        "mdi-loading rotate",
-        "mdi-loading rotate",
-        "mdi-loading rotate",
-      ],
-      message2: "",
       disableLocalization: false,
     };
   },
   methods: {
-    async fetchStatus() {
-      await axios
-        .get(this.baseURL + "/api/status", {
-          headers: {
-            "X-CSRFToken": `Bearer ${this.token}`,
-          },
-          responseType: "json",
-          withCredentials: true,
-        })
-        .then((res) => {
-          console.log("********get status");
-          console.log(res.data);
-          console.log(res);
-          const data = JSON.parse(JSON.stringify(res.data));
-          // console.log(res.data["waiting_status"]);
+    async uploadSrcCode() {
+      if (!this.srcFiles) {
+        this.message2 = "Please select a source file!";
+        return;
+      }
+      // loop on current files
+      const formData = new FormData();
+      for (let i = 0; i < this.srcFiles.length; i++) {
+        console.log(this.srcFiles[i].name);
+        const ext = this.srcFiles[i].name.split(".").pop();
+        const allowed_extensions = ["py", "c", "cpp", "h"];
+        if (!allowed_extensions.includes(ext)) {
+          console.log(ext);
+          console.log("**********");
+          this.srcFiles[i] = undefined;
+          this.message2 = "Only source code files are allowed!";
+          return;
+        }
+        formData.append("files", this.srcFiles[i]);
+      }
+      this.message2 = "";
+      this.no_source_code = false;
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+      this.icons[4] = "mdi-check-circle";
+      this.$set(this.done, 4, true);
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      this.localizationDialog = true;
+      var response = {
+        78: {
+          "D:/ClassWork/Guardista/BackEnd/new_BE/tmp/tmp76\\output\\source\\CWE78_OS_Command_Injection__char_file_w32_execv_04.c":
+            {
+              "CWE78_OS_Command_Injection__char_file_w32_execv_04.c": [
+                [1053, 2323],
+              ],
+              filecontent:
+                '/* TEMPLATE GENERATED TESTCASE FILE\nFilename: CWE78_OS_Command_Injection__char_file_w32_execv_04.c\nLabel Definition File: CWE78_OS_Command_Injection.strings.label.xml\nTemplate File: sources-sink-04.tmpl.c\n*/\n/*\n * @description\n * CWE: 78 OS Command Injection\n * BadSource: file Read input from a file\n * GoodSource: Fixed string\n * Sink: w32_execv\n *    BadSink : execute command with execv\n * Flow Variant: 04 Control flow: if(STATIC_CONST_TRUE) and if(STATIC_CONST_FALSE)\n *\n * */\n\n#include "std_testcase.h"\n\n#include <wchar.h>\n\n#include <unistd.h>\n#define COMMAND_INT_PATH "/bin/sh"\n#define COMMAND_INT "sh"\n#define COMMAND_ARG1 "-c"\n#define COMMAND_ARG2 "ls "\n#define COMMAND_ARG3 data\n\n\n\n#define FILENAME "/tmp/file.txt"\n\n\n#include <process.h>\n#define EXECV _execv\n\n/* The two variables below are declared "const", so a tool should\n * be able to identify that reads of these will always return their\n * initialized values.\n */\nstatic const int STATIC_CONST_TRUE = 1; /* true */\nstatic const int STATIC_CONST_FALSE = 0; /* false */\n\n#ifndef OMITBAD\n\nvoid CWE78_OS_Command_Injection__char_file_w32_execv_04_bad()\n{\n    char * data;\n    char dataBuffer[100] = COMMAND_ARG2;\n    data = dataBuffer;\n    if(STATIC_CONST_TRUE)\n    {\n        {\n            /* Read input from a file */\n            size_t dataLen = strlen(data);\n            FILE * pFile;\n            /* if there is room in data, attempt to read the input from a file */\n            if (100-dataLen > 1)\n            {\n                pFile = fopen(FILENAME, "r");\n                if (pFile != NULL)\n                {\n                    /* POTENTIAL FLAW: Read data from a file */\n                    if (fgets(data+dataLen, (int)(100-dataLen), pFile) == NULL)\n                    {\n                        printLine("fgets() failed");\n                        /* Restore NUL terminator if fgets fails */\n                        data[dataLen] = \'\\0\';\n                    }\n                    fclose(pFile);\n                }\n            }\n        }\n    }\n    {\n        char *args[] = {COMMAND_INT_PATH, COMMAND_ARG1, COMMAND_ARG3, NULL};\n        /* execv - specify the path where the command is located */\n        /* POTENTIAL FLAW: Execute command without validating input possibly leading to command injection */\n        EXECV(COMMAND_INT_PATH, args);\n    }\n}\n\n#endif /* OMITBAD */\n\n\n/* Below is the main(). It is only used when building this testcase on\n * its own for testing or for building a binary to use in testing binary\n * analysis tools. It is not used when compiling all the testcases as one\n * application, which is how source code analysis tools are tested.\n */\n\n\nint main(int argc, char * argv[])\n{\n    /* seed randomness */\n    srand( (unsigned)time(NULL) );\n\n#ifndef OMITBAD\n    printLine("Calling bad()...");\n    CWE78_OS_Command_Injection__char_file_w32_execv_04_bad();\n    printLine("Finished bad()");\n#endif /* OMITBAD */\n    return 0;\n}\n',
+            },
+        },
+        126: {
+          "D:/ClassWork/Guardista/BackEnd/new_BE/tmp/tmp76\\output\\source\\CWE126_OS_Command_Injection__char_file_w32_execv_04.c":
+            {
+              "CWE126_OS_Command_Injection__char_file_w32_execv_04.c": [
+                [1053, 2323],
+              ],
+              filecontent:
+                '/* TEMPLATE GENERATED TESTCASE FILE\nFilename: CWE126_OS_Command_Injection__char_file_w32_execv_04.c\nLabel Definition File: CWE78_OS_Command_Injection.strings.label.xml\nTemplate File: sources-sink-04.tmpl.c\n*/\n/*\n * @description\n * CWE: 78 OS Command Injection\n * BadSource: file Read input from a file\n * GoodSource: Fixed string\n * Sink: w32_execv\n *    BadSink : execute command with execv\n * Flow Variant: 04 Control flow: if(STATIC_CONST_TRUE) and if(STATIC_CONST_FALSE)\n *\n * */\n\n#include "std_testcase.h"\n\n#include <wchar.h>\n\n#include <unistd.h>\n#define COMMAND_INT_PATH "/bin/sh"\n#define COMMAND_INT "sh"\n#define COMMAND_ARG1 "-c"\n#define COMMAND_ARG2 "ls "\n#define COMMAND_ARG3 data\n\n\n\n#define FILENAME "/tmp/file.txt"\n\n\n#include <process.h>\n#define EXECV _execv\n\n/* The two variables below are declared "const", so a tool should\n * be able to identify that reads of these will always return their\n * initialized values.\n */\nstatic const int STATIC_CONST_TRUE = 1; /* true */\nstatic const int STATIC_CONST_FALSE = 0; /* false */\n\n#ifndef OMITBAD\n\nvoid CWE78_OS_Command_Injection__char_file_w32_execv_04_bad()\n{\n    char * data;\n    char dataBuffer[100] = COMMAND_ARG2;\n    data = dataBuffer;\n    if(STATIC_CONST_TRUE)\n    {\n        {\n            /* Read input from a file */\n            size_t dataLen = strlen(data);\n            FILE * pFile;\n            /* if there is room in data, attempt to read the input from a file */\n            if (100-dataLen > 1)\n            {\n                pFile = fopen(FILENAME, "r");\n                if (pFile != NULL)\n                {\n                    /* POTENTIAL FLAW: Read data from a file */\n                    if (fgets(data+dataLen, (int)(100-dataLen), pFile) == NULL)\n                    {\n                        printLine("fgets() failed");\n                        /* Restore NUL terminator if fgets fails */\n                        data[dataLen] = \'\\0\';\n                    }\n                    fclose(pFile);\n                }\n            }\n        }\n    }\n    {\n        char *args[] = {COMMAND_INT_PATH, COMMAND_ARG1, COMMAND_ARG3, NULL};\n        /* execv - specify the path where the command is located */\n        /* POTENTIAL FLAW: Execute command without validating input possibly leading to command injection */\n        EXECV(COMMAND_INT_PATH, args);\n    }\n}\n\n#endif /* OMITBAD */\n\n\n/* Below is the main(). It is only used when building this testcase on\n * its own for testing or for building a binary to use in testing binary\n * analysis tools. It is not used when compiling all the testcases as one\n * application, which is how source code analysis tools are tested.\n */\n\n\nint main(int argc, char * argv[])\n{\n    /* seed randomness */\n    srand( (unsigned)time(NULL) );\n\n#ifndef OMITBAD\n    printLine("Calling bad()...");\n    CWE78_OS_Command_Injection__char_file_w32_execv_04_bad();\n    printLine("Finished bad()");\n#endif /* OMITBAD */\n    return 0;\n}\n',
+            },
+        },
+        590: {},
+        762: {},
+      };
 
-          // JSON.parse
-          console.log(data);
-          if (res.data.waiting_status == 0) {
-            console.log("&&&&&&&&&&&&& submitted");
-            this.$set(this.done, 0, true);
-            this.$set(this.icons, 0, "mdi-check-circle");
-          } else if (res.data.waiting_status == 1) {
-            console.log("&&&&&&&&&&&&& compiled");
-            this.$set(this.done, 1, true);
-            this.$set(this.icons, 1, "mdi-check-circle");
-          } else if (res.data.waiting_status == 2) {
-            this.$set(this.done, 2, true);
-            this.$set(this.icons, 2, "mdi-check-circle");
+      this.spans_dict = response;
+      for (var key in this.report1) {
+        let id = this.report1[key]["CWE-ID"];
+        if (this.spans_dict[id] === undefined) {
+          continue;
+        }
+        this.spans.push(this.spans_dict[id]);
+      }
+      for (var key in this.report2) {
+        let id = this.report2[key]["CWE-ID"];
+        if (
+          this.spans_dict[id] === undefined ||
+          Object.keys(this.spans_dict[id]).length === 0
+        ) {
+          continue;
+        }
+        this.spans.push([id, this.spans_dict[id]]);
+      }
 
-            console.log("&&&&&&&&&&&&& lifted");
-          } else if (
-            res.data.waiting_status == 3 ||
-            res.data.waiting_status == 5
-          ) {
-            this.$set(this.done, 3, true);
-            this.$set(this.icons, 3, "mdi-check-circle");
-            console.log("&&&&&&&&&&&&& classified");
-            this.getReport();
-            if (res.data.waiting_status == 5) {
-              this.disableLocalization = true;
-            }
-          } else if (res.data.waiting_status == 4) {
-            this.$set(this.done, 4, true);
-            this.$set(this.icons, 4, "mdi-check-circle");
-            console.log("&&&&&&&&&&&&& Localized");
-            clearInterval(this.intervalId);
-            this.getSpan();
-          }
-        })
-        .catch((err) => {
-          console.log("Error in get status");
-          console.log(err);
-        });
+      // this.message2 = "";
+      // console.log(this.srcFiles);
+      // console.log("token in upload", this.token);
+      // console.log(this.srcFiles);
+      // this.showStatus = true;
+      // await axios
+      //   .post(this.baseURL + "/api/uploadSrc", formData, {
+      //     headers: {
+      //       "Content-Type": "multipart/form-data",
+      //       "X-CSRFToken": `Bearer ${this.token}`,
+      //     },
+      //   })
+      //   .then((res) => {
+      //     this.icons[0] = "mdi-check-circle";
+      //     console.log("response to upload", res);
+      //     console.log("response to upload", res.data);
+      //     console.log("num_case", this.$cookies.get("num_case"));
+      //     this.$cookies.set("num_case", res.data);
+      //     console.log("num_caseww", this.$cookies.get("num_case"));
+      //     this.intervalId = setInterval(this.fetchStatus, 100);
+      //   })
+      //   .catch((err) => {
+      //     console.log("err in upload", err.response);
+      //   });
     },
-    async getReport() {
-      console.log("get report");
-      await axios
-        .get(this.baseURL + "/api/report", {
-          headers: {
-            "X-CSRFToken": `Bearer ${this.token}`,
-          },
-          responseType: "json",
-          withCredentials: true,
-        })
-        .then((res) => {
-          console.log("$######### get report");
-
-          var report1 = res.data.report1;
-          var report2 = res.data.report2;
-
-          if (this.report1.length == 0) {
-            if (report1.hasOwnProperty("report")) {
-              this.$set(this.safe_reports, 0, true);
-            } else {
-              for (var key in report1["report1"]) {
-                this.report1.push(report1["report1"][key]);
-              }
-            }
-          }
-
-          if (this.report2.length == 0) {
-            if (report2.hasOwnProperty("report")) {
-              this.$set(this.safe_reports, 1, true);
-            } else {
-              for (var key in report2["report2"]) {
-                this.report2.push(report2["report2"][key]);
-              }
-            }
-          }
-        })
-
-        .catch((err) => {
-          console.log("Error in get report");
-        });
+    selectSrcFiles(files) {
+      this.progress = 0;
+      this.srcFiles = files;
+      console.log(this.srcFiles);
     },
-    async getSpan() {
-      console.log("get span");
-      await axios
-        .get(this.baseURL + "/api/loc", {
-          headers: {
-            "X-CSRFToken": `Bearer ${this.token}`,
-          },
-          responseType: "json",
-          withCredentials: true,
-        })
-        .then((res) => {
-          console.log("$######### get span");
-          console.log("-------- Response --------");
-          console.log(res.data);
-          console.log("--------------------------");
-          this.spans_dict = res.data;
+    // async fetchStatus() {
+    //   await axios
+    //     .get(this.baseURL + "/api/status", {
+    //       headers: {
+    //         "X-CSRFToken": `Bearer ${this.token}`,
+    //       },
+    //       responseType: "json",
+    //       withCredentials: true,
+    //     })
+    //     .then((res) => {
+    //       console.log("********get status");
+    //       console.log(res.data);
+    //       console.log(res);
+    //       const data = JSON.parse(JSON.stringify(res.data));
+    //       // console.log(res.data["waiting_status"]);
 
-          if (this.spans.length == 0 && this.safe_reports[0] == false) {
-            for (var key in this.report1) {
-              let id = this.report1[key]["CWE-ID"];
-              if (this.spans_dict[id] === undefined) {
-                continue;
-              }
-              this.spans.push(this.spans_dict[id]);
-            }
-          }
-          if (this.spans.length == 0 && this.safe_reports[1] == false) {
-            for (var key in this.report2) {
-              console.log("key");
-              let id = this.report2[key]["CWE-ID"];
-              if (
-                this.spans_dict[id] === undefined ||
-                Object.keys(this.spans_dict[id]).length === 0
-              ) {
-                continue;
-              }
-              this.spans.push([id, this.spans_dict[id]]);
-            }
-          }
-        })
-        .catch((err) => {
-          console.log("Error in get span");
-        });
-    },
+    //       // JSON.parse
+    //       console.log(data);
+    //       if (res.data.waiting_status == 0) {
+    //         console.log("&&&&&&&&&&&&& submitted");
+    //         this.$set(this.done, 0, true);
+    //         this.$set(this.icons, 0, "mdi-check-circle");
+    //       } else if (res.data.waiting_status == 1) {
+    //         console.log("&&&&&&&&&&&&& compiled");
+    //         this.$set(this.done, 1, true);
+    //         this.$set(this.icons, 1, "mdi-check-circle");
+    //       } else if (res.data.waiting_status == 2) {
+    //         this.$set(this.done, 2, true);
+    //         this.$set(this.icons, 2, "mdi-check-circle");
+
+    //         console.log("&&&&&&&&&&&&& lifted");
+    //       } else if (res.data.waiting_status == 3) {
+    ////         this.$set(this.done, 3, true);
+    //         this.$set(this.icons, 3, "mdi-check-circle");
+    //         console.log("&&&&&&&&&&&&& classified");
+    //         this.getReport();
+    //       } else if (res.data.waiting_status == 4) {
+    //         this.$set(this.done, 4, true);
+    //         this.$set(this.icons, 4, "mdi-check-circle");
+    //         console.log("&&&&&&&&&&&&& Localized");
+    //         clearInterval(this.intervalId);
+    //         this.getSpan();
+    //       }
+    //     })
+    //     .catch((err) => {
+    //       console.log("Error in get status");
+    //       console.log(err);
+    //     });
+    // },
+    // async getReport() {
+    //   console.log("get report");
+    //   await axios
+    //     .get(this.baseURL + "/api/report", {
+    //       headers: {
+    //         "X-CSRFToken": `Bearer ${this.token}`,
+    //       },
+    //       responseType: "json",
+    //       withCredentials: true,
+    //     })
+    //     .then((res) => {
+    //       console.log("$######### get report");
+
+    //  this.reports_dict = res.data.report;
+
+    //   var report1 = this.reports_dict["report1"];
+    //   var report2 = this.reports_dict["report2"];
+
+    //   if (report1.hasOwnProperty("report")) {
+    //     this.$set(this.safe_reports, 0, true);
+    //   } else {
+    //     for (var key in report1["report1"]) {
+    //       this.report1.push(report1["report1"][key]);
+    //     }
+    //   }
+
+    //   if (report2.hasOwnProperty("report")) {
+    //     this.$set(this.safe_reports, 1, true);
+    //   } else {
+    //     for (var key in report2["report2"]) {
+    //       this.report2.push(report2["report2"][key]);
+    //     }
+    //   }
+
+    //     .catch((err) => {
+    //       console.log("Error in get report");
+    //     });
+    // },
+    // async getSpan() {
+    //   console.log("get span");
+    //   await axios
+    //     .get(this.baseURL + "/api/loc", {
+    //       headers: {
+    //         "X-CSRFToken": `Bearer ${this.token}`,
+    //       },
+    //       responseType: "json",
+    //       withCredentials: true,
+    //     })
+    //     .then((res) => {
+    //       console.log("$######### get span");
+    //       console.log("-------- Response --------");
+    //       console.log(res.data);
+    //       console.log("--------------------------");
+    //       this.spans_dict = res.data;
+
+    //       if (this.spans.length == 0 && this.safe_reports[0] == false) {
+    //         for (var key in this.report1) {
+    //           let id = this.report1[key]["CWE-ID"];
+    //           if (this.spans_dict[id] === undefined) {
+    //             continue;
+    //           }
+    //           this.spans.push(this.spans_dict[id]);
+    //         }
+    //       }
+    //       if (this.spans.length == 0 && this.safe_reports[1] == false) {
+    //         for (var key in this.report2) {
+    //           console.log("key");
+    //           let id = this.report2[key]["CWE-ID"];
+    //           if (
+    //             this.spans_dict[id] === undefined ||
+    //             Object.keys(this.spans_dict[id]).length === 0
+    //           ) {
+    //             continue;
+    //           }
+    //           this.spans.push([id, this.spans_dict[id]]);
+    //         }
+    //       }
+    //       this.localizationDialog = true;
+    //     })
+    //     .catch((err) => {
+    //       console.log("Error in get span");
+    //     });
+    // },
     selectFile(files) {
+      if (this.currentFiles != undefined && files.length == 0) {
+        this.reset();
+      }
       this.progress = 0;
       this.currentFiles = files;
       console.log(this.currentFiles);
     },
+
     closeReport() {
       this.localizationDialog = false;
     },
@@ -439,34 +536,77 @@ export default {
         }
         formData.append("files", this.currentFiles[i]);
       }
-
       this.message = "";
-      console.log(this.currentFiles);
-      console.log("token in upload", this.token);
-      console.log(this.currentFiles);
       this.showStatus = true;
-      await axios
-        .post(this.baseURL + "/api/upload", formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-            "X-CSRFToken": `Bearer ${this.token}`,
-          },
-        })
-        .then((res) => {
-          this.done[0] = true;
-          this.icons[0] = "mdi-check-circle";
-          console.log("response to upload", res);
-          console.log("response to upload", res.data);
-          console.log("progress", this.progress);
-          console.log("num_case", this.$cookies.get("num_case"));
-          this.$cookies.set("num_case", res.data);
-          console.log("num_caseww", this.$cookies.get("num_case"));
-          this.intervalId = setInterval(this.fetchStatus, 100);
-        })
-        .catch((err) => {
-          console.log("err in upload", err.response);
-        });
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+
+      this.icons[0] = "mdi-check-circle";
+      this.$set(this.done, 0, true);
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+
+      this.icons[1] = "mdi-check-circle";
+      this.$set(this.done, 1, true);
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+
+      this.icons[2] = "mdi-check-circle";
+      this.$set(this.done, 2, true);
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+
+      this.icons[3] = "mdi-check-circle";
+      this.$set(this.done, 3, true);
+
+      var response = {
+        report1: {
+          report: "safe",
+        },
+        report2: {
+          report: "safe",
+        },
+      };
+      this.reports_dict = response;
+
+      var report1 = this.reports_dict["report1"];
+      var report2 = this.reports_dict["report2"];
+
+      if (report1.hasOwnProperty("report")) {
+        this.$set(this.safe_reports, 0, true);
+      }
+
+      if (report2.hasOwnProperty("report")) {
+        this.$set(this.safe_reports, 1, true);
+      }
+
+      if (this.safe_reports[0] == true && this.safe_reports[1] == true) {
+        this.disableLocalization = true;
+      }
     },
+    //   this.message = "";
+    //   console.log(this.currentFiles);
+    //   console.log("token in upload", this.token);
+    //   console.log(this.currentFiles);
+    //   this.showStatus = true;
+    //   await axios
+    //     .post(this.baseURL + "/api/upload", formData, {
+    //       headers: {
+    //         "Content-Type": "multipart/form-data",
+    //         "X-CSRFToken": `Bearer ${this.token}`,
+    //       },
+    //     })
+    //     .then((res) => {
+    //       this.done[0] = true;
+    //       this.icons[0] = "mdi-check-circle";
+    //       console.log("response to upload", res);
+    //       console.log("response to upload", res.data);
+    //       console.log("progress", this.progress);
+    //       console.log("num_case", this.$cookies.get("num_case"));
+    //       this.$cookies.set("num_case", res.data);
+    //       console.log("num_caseww", this.$cookies.get("num_case"));
+    //       this.intervalId = setInterval(this.fetchStatus, 100);
+    //     })
+    //     .catch((err) => {
+    //       console.log("err in upload", err.response);
+    //     });
+    // },
 
     reset() {
       console.log("reset");
@@ -507,13 +647,43 @@ export default {
       this.message2 = "";
       this.report1Clicked = false;
       this.report2Clicked = false;
+      this.disableLocalization = false;
 
       clearInterval(this.intervalId);
       this.$refs.form.reset();
-      this.disableLocalization = false;
     },
 
     show_report(report) {
+      var response = {
+        report1: {
+          report: "safe",
+        },
+        report2: {
+          report: "safe",
+        },
+      };
+      this.reports_dict = response;
+
+      var report1 = this.reports_dict["report1"];
+      var report2 = this.reports_dict["report2"];
+
+      if (report1.hasOwnProperty("report")) {
+        this.$set(this.safe_reports, 0, true);
+      } else {
+        for (var key in report1["report1"]) {
+          this.report1.push(report1["report1"][key]);
+        }
+      }
+
+      if (report2.hasOwnProperty("report")) {
+        this.$set(this.safe_reports, 1, true);
+      } else {
+        for (var key in report2["report2"]) {
+          this.report2.push(report2["report2"][key]);
+        }
+      }
+      //////////////////////////////// Remove above////////////////////////////////////
+
       if (report === "report1") {
         this.report1Clicked = true;
         this.report2Clicked = false;
@@ -554,108 +724,106 @@ export default {
         this.main_report2 = false;
       }
     },
-    localize() {
-      var source_code_available = false;
+    async localize() {
+      let source_code_available = false;
       for (var i = 0; i < this.currentFiles.length; i++) {
         const ext = this.currentFiles[i].name.split(".").pop();
+        console.log(ext);
         const allowed_extensions = ["py", "c", "cpp"];
         if (allowed_extensions.includes(ext)) {
           source_code_available = true;
+          console.log("HERE");
           break;
         }
       }
 
-      if ((source_code_available = true)) {
+      if (source_code_available == true) {
+        ///////////////////////// show span and loadinggggggg
+        var response = {
+          78: {
+            "D:/ClassWork/Guardista/BackEnd/new_BE/tmp/tmp76\\output\\source\\CWE78_OS_Command_Injection__char_file_w32_execv_04.c":
+              {
+                "CWE78_OS_Command_Injection__char_file_w32_execv_04.c": [
+                  [1053, 2323],
+                ],
+                filecontent:
+                  '/* TEMPLATE GENERATED TESTCASE FILE\nFilename: CWE78_OS_Command_Injection__char_file_w32_execv_04.c\nLabel Definition File: CWE78_OS_Command_Injection.strings.label.xml\nTemplate File: sources-sink-04.tmpl.c\n*/\n/*\n * @description\n * CWE: 78 OS Command Injection\n * BadSource: file Read input from a file\n * GoodSource: Fixed string\n * Sink: w32_execv\n *    BadSink : execute command with execv\n * Flow Variant: 04 Control flow: if(STATIC_CONST_TRUE) and if(STATIC_CONST_FALSE)\n *\n * */\n\n#include "std_testcase.h"\n\n#include <wchar.h>\n\n#include <unistd.h>\n#define COMMAND_INT_PATH "/bin/sh"\n#define COMMAND_INT "sh"\n#define COMMAND_ARG1 "-c"\n#define COMMAND_ARG2 "ls "\n#define COMMAND_ARG3 data\n\n\n\n#define FILENAME "/tmp/file.txt"\n\n\n#include <process.h>\n#define EXECV _execv\n\n/* The two variables below are declared "const", so a tool should\n * be able to identify that reads of these will always return their\n * initialized values.\n */\nstatic const int STATIC_CONST_TRUE = 1; /* true */\nstatic const int STATIC_CONST_FALSE = 0; /* false */\n\n#ifndef OMITBAD\n\nvoid CWE78_OS_Command_Injection__char_file_w32_execv_04_bad()\n{\n    char * data;\n    char dataBuffer[100] = COMMAND_ARG2;\n    data = dataBuffer;\n    if(STATIC_CONST_TRUE)\n    {\n        {\n            /* Read input from a file */\n            size_t dataLen = strlen(data);\n            FILE * pFile;\n            /* if there is room in data, attempt to read the input from a file */\n            if (100-dataLen > 1)\n            {\n                pFile = fopen(FILENAME, "r");\n                if (pFile != NULL)\n                {\n                    /* POTENTIAL FLAW: Read data from a file */\n                    if (fgets(data+dataLen, (int)(100-dataLen), pFile) == NULL)\n                    {\n                        printLine("fgets() failed");\n                        /* Restore NUL terminator if fgets fails */\n                        data[dataLen] = \'\\0\';\n                    }\n                    fclose(pFile);\n                }\n            }\n        }\n    }\n    {\n        char *args[] = {COMMAND_INT_PATH, COMMAND_ARG1, COMMAND_ARG3, NULL};\n        /* execv - specify the path where the command is located */\n        /* POTENTIAL FLAW: Execute command without validating input possibly leading to command injection */\n        EXECV(COMMAND_INT_PATH, args);\n    }\n}\n\n#endif /* OMITBAD */\n\n\n/* Below is the main(). It is only used when building this testcase on\n * its own for testing or for building a binary to use in testing binary\n * analysis tools. It is not used when compiling all the testcases as one\n * application, which is how source code analysis tools are tested.\n */\n\n\nint main(int argc, char * argv[])\n{\n    /* seed randomness */\n    srand( (unsigned)time(NULL) );\n\n#ifndef OMITBAD\n    printLine("Calling bad()...");\n    CWE78_OS_Command_Injection__char_file_w32_execv_04_bad();\n    printLine("Finished bad()");\n#endif /* OMITBAD */\n    return 0;\n}\n',
+              },
+          },
+          126: {
+            "D:/ClassWork/Guardista/BackEnd/new_BE/tmp/tmp76\\output\\source\\CWE126_OS_Command_Injection__char_file_w32_execv_04.c":
+              {
+                "CWE126_OS_Command_Injection__char_file_w32_execv_04.c": [
+                  [1053, 2323],
+                ],
+                filecontent:
+                  '/* TEMPLATE GENERATED TESTCASE FILE\nFilename: CWE126_OS_Command_Injection__char_file_w32_execv_04.c\nLabel Definition File: CWE78_OS_Command_Injection.strings.label.xml\nTemplate File: sources-sink-04.tmpl.c\n*/\n/*\n * @description\n * CWE: 78 OS Command Injection\n * BadSource: file Read input from a file\n * GoodSource: Fixed string\n * Sink: w32_execv\n *    BadSink : execute command with execv\n * Flow Variant: 04 Control flow: if(STATIC_CONST_TRUE) and if(STATIC_CONST_FALSE)\n *\n * */\n\n#include "std_testcase.h"\n\n#include <wchar.h>\n\n#include <unistd.h>\n#define COMMAND_INT_PATH "/bin/sh"\n#define COMMAND_INT "sh"\n#define COMMAND_ARG1 "-c"\n#define COMMAND_ARG2 "ls "\n#define COMMAND_ARG3 data\n\n\n\n#define FILENAME "/tmp/file.txt"\n\n\n#include <process.h>\n#define EXECV _execv\n\n/* The two variables below are declared "const", so a tool should\n * be able to identify that reads of these will always return their\n * initialized values.\n */\nstatic const int STATIC_CONST_TRUE = 1; /* true */\nstatic const int STATIC_CONST_FALSE = 0; /* false */\n\n#ifndef OMITBAD\n\nvoid CWE78_OS_Command_Injection__char_file_w32_execv_04_bad()\n{\n    char * data;\n    char dataBuffer[100] = COMMAND_ARG2;\n    data = dataBuffer;\n    if(STATIC_CONST_TRUE)\n    {\n        {\n            /* Read input from a file */\n            size_t dataLen = strlen(data);\n            FILE * pFile;\n            /* if there is room in data, attempt to read the input from a file */\n            if (100-dataLen > 1)\n            {\n                pFile = fopen(FILENAME, "r");\n                if (pFile != NULL)\n                {\n                    /* POTENTIAL FLAW: Read data from a file */\n                    if (fgets(data+dataLen, (int)(100-dataLen), pFile) == NULL)\n                    {\n                        printLine("fgets() failed");\n                        /* Restore NUL terminator if fgets fails */\n                        data[dataLen] = \'\\0\';\n                    }\n                    fclose(pFile);\n                }\n            }\n        }\n    }\n    {\n        char *args[] = {COMMAND_INT_PATH, COMMAND_ARG1, COMMAND_ARG3, NULL};\n        /* execv - specify the path where the command is located */\n        /* POTENTIAL FLAW: Execute command without validating input possibly leading to command injection */\n        EXECV(COMMAND_INT_PATH, args);\n    }\n}\n\n#endif /* OMITBAD */\n\n\n/* Below is the main(). It is only used when building this testcase on\n * its own for testing or for building a binary to use in testing binary\n * analysis tools. It is not used when compiling all the testcases as one\n * application, which is how source code analysis tools are tested.\n */\n\n\nint main(int argc, char * argv[])\n{\n    /* seed randomness */\n    srand( (unsigned)time(NULL) );\n\n#ifndef OMITBAD\n    printLine("Calling bad()...");\n    CWE78_OS_Command_Injection__char_file_w32_execv_04_bad();\n    printLine("Finished bad()");\n#endif /* OMITBAD */\n    return 0;\n}\n',
+              },
+          },
+          590: {},
+          762: {},
+        };
+
+        this.spans_dict = response;
+        for (var key in this.report1) {
+          let id = this.report1[key]["CWE-ID"];
+          if (this.spans_dict[id] === undefined) {
+            continue;
+          }
+          this.spans.push(this.spans_dict[id]);
+        }
+        for (var key in this.report2) {
+          let id = this.report2[key]["CWE-ID"];
+          if (
+            this.spans_dict[id] === undefined ||
+            Object.keys(this.spans_dict[id]).length === 0
+          ) {
+            continue;
+          }
+          this.spans.push([id, this.spans_dict[id]]);
+        }
+
+        console.log(this.spans);
+        //////////////////to be removed////////////////////
+        await new Promise((resolve) => setTimeout(resolve, 3000));
+
         this.localizationDialog = true;
+
+        this.icons[4] = "mdi-check-circle";
+        this.$set(this.done, 4, true);
       } else {
         this.no_source_code = true;
-        return;
-      }
-    },
 
-    // For Localizer
-    async uploadSrcCode() {
-      if (!this.srcFiles) {
-        this.message2 = "Please select a source file!";
         return;
       }
-      // loop on current files
-      const formData = new FormData();
-      for (let i = 0; i < this.srcFiles.length; i++) {
-        console.log(this.srcFiles[i].name);
-        const ext = this.srcFiles[i].name.split(".").pop();
-        const allowed_extensions = ["py", "c", "cpp", "h"];
-        if (!allowed_extensions.includes(ext)) {
-          console.log(ext);
-          console.log("**********");
-          this.srcFiles[i] = undefined;
-          this.message2 = "Only Source Code file(s) is/are allowed!";
-          return;
-        }
-        formData.append("files", this.srcFiles[i]);
-      }
-      // this.message = "";
-      // this.$set(this.done, 3, true);
-      this.message2 = "";
-      this.no_source_code = false;
-      console.log(this.srcFiles);
-      console.log("token in upload", this.token);
-      console.log(this.srcFiles);
-      this.showStatus = true;
-      await axios
-        .post(this.baseURL + "/api/uploadSrc", formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-            "X-CSRFToken": `Bearer ${this.token}`,
-          },
-        })
-        .then((res) => {
-          this.icons[0] = "mdi-check-circle";
-          console.log("response to upload", res);
-          console.log("response to upload", res.data);
-          console.log("num_case", this.$cookies.get("num_case"));
-          this.$cookies.set("num_case", res.data);
-          console.log("num_caseww", this.$cookies.get("num_case"));
-          this.intervalId = setInterval(this.fetchStatus, 100);
-        })
-        .catch((err) => {
-          console.log("err in upload", err.response);
-        });
-    },
-    selectSrcFiles(files) {
-      if (this.currentFiles != undefined && files.length == 0) {
-        this.reset();
-      }
-      this.progress = 0;
-      this.srcFiles = files;
-      console.log(this.srcFiles);
     },
   },
   computed: {
     isSafeMsgDisabled() {
       return this.safe_reports[0] === true && this.safe_reports[1] === true;
     },
-    token() {
-      return this.$store.state.token;
-    },
-    set_token() {
-      this.$store.commit("setToken", this.$cookies.get("csrftoken"));
-    },
-    baseURL() {
-      return this.$store.state.baseURL;
-    },
+
+    // token() {
+    //   return this.$store.state.token;
+    // },
+    // set_token() {
+    //   this.$store.commit("setToken", this.$cookies.get("csrftoken"));
+    // },
+    // baseURL() {
+    //   return this.$store.state.baseURL;
+    // },
   },
-  async created() {
-    await axios
-      .get(this.baseURL + "/api/get")
-      .then((res) => {
-        console.log("$######### get token");
-      })
-      .catch((err) => {
-        console.log("Error in get token");
-      });
-    this.set_token;
-  },
+  // async created() {
+  //   await axios
+  //     .get(this.baseURL + "/api/get")
+  //     .then((res) => {
+  //       console.log("$######### get token");
+  //     })
+  //     .catch((err) => {
+  //       console.log("Error in get token");
+  //     });
+  //   this.set_token;
+  // },
 };
 </script>
 
