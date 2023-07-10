@@ -42,6 +42,30 @@ in case of localized:
 '''
 
 
+
+
+
+
+'''
+Related weaknesses
+Alternate terms
+Modes of intro
+Detection methods hasa en de mohema lena ehna msh ll user
+Taxonomy mappings
+Related attack patterns
+Bafakr nshel dool
+
+-Potential mitigations mmkn nzabat feha l spaces 7asa feha kalam mofed
+'''
+
+
+forbidden_fields = ['Related Weaknesses', "Alternate Terms", "Modes Of Introduction", "Taxonomy Mappings", "Related Attack Patterns"]
+
+
+
+
+
+
 outputPath = sys.argv[1]
 
 
@@ -84,44 +108,125 @@ fields = list(allCWEsDF.columns)
 #try:
 if(1):
 
-    classificationPath = os.path.join(outputPath,'classification.txt')
+    classificationPath = os.path.join(outputPath,'classification1.txt')
     with open (classificationPath, 'r') as f:
         content = f.readlines()
     classes = [re.sub('\n', '', i) for i in content]
+
+
+    vuln1_flag = True
+    if(len(classes) == 0 or (len(classes) == 1 and classes[0] == 'safe')):
+        with open (outputPath+'/finalReport1.json', 'w') as f:
+            json.dump({'report': 'safe'}, f, indent=6)
+            vuln1_flag = False
     #print(allCWEs)
 
 
-    classificationReport_list = dict()
+    if(vuln1_flag):
+        classificationReport_list = dict()
 
 
-    for i, classif in enumerate(classes):
-        classificationReport = dict()
-        # print(classif)
-        # print(allCWEsDF['CWE-ID'])
-        # print(allCWEsDF.loc[allCWEsDF['CWE-ID']==int(classif), 'Name'])  
-        for field in fields:
-            entry = allCWEsDF.loc[allCWEsDF['CWE-ID']==int(classif), field]
-            if(entry.empty):
-                entry = ''
-            else:
-                entry = str(entry.item())
-                print(entry)
-                re.sub(':', '', entry)
-                print(entry)
-            classificationReport[field] = entry
+        for i, classif in enumerate(classes):
+            classificationReport = dict()
+            # print(classif)
+            # print(allCWEsDF['CWE-ID'])
+            # print(allCWEsDF.loc[allCWEsDF['CWE-ID']==int(classif), 'Name'])  
+            for field in fields:
+                if field in forbidden_fields:
+                    continue
+                entry = allCWEsDF.loc[allCWEsDF['CWE-ID']==int(classif), field]
+                if(entry.empty):
+                    entry = ''
+                else:
+                    entry = str(entry.item())
+                    #print(entry)
+                    entry = re.sub(':', '', entry)
+                    entry = re.sub('SCOPE', ' ,', entry)
+                    entry = re.sub('METHOD', ' ,', entry)
+                    entry = re.sub('DESCRIPTION', ' ,', entry)
+                    entry = re.sub('REFERENCE', ' ,', entry)
+                    entry = re.sub('IMPACT', ' ,', entry)
+                    entry = re.sub('PHASE', ' ,', entry)
+                    entry = re.sub('STRATEGY', ' ,', entry)
+                    entry = re.sub('TYPE', ' ,', entry)
+                    entry = re.sub('NOTE', ' ,', entry)
+                    #print(entry)
+                classificationReport[field] = entry
+                
+            # print(classificationReport)    
+            classificationReport['ID'] = classif
+            classificationReport_list[f'rep{i}'] = classificationReport
             
-        # print(classificationReport)    
-        classificationReport['ID'] = classif
-        classificationReport_list[f'rep{i}'] = classificationReport
-        
 
-    finalReport['report'] = classificationReport_list
+        finalReport['report1'] = classificationReport_list
 
 
 
 
-    with open (outputPath+'/finalReport.json', 'w') as f:
-        json.dump(finalReport, f, indent=6)
+        with open (outputPath+'/finalReport1.json', 'w') as f:
+            json.dump(finalReport, f, indent=6)
+
+
+
+
+
+    vuln2_flag = True
+    finalReport = {}
+    classificationPath = os.path.join(outputPath,'classification2.txt')
+    with open (classificationPath, 'r') as f:
+        content = f.readlines()
+    classes = [re.sub('\n', '', i) for i in content]
+
+    if((not classes) or len(classes) == 0 or (len(classes) == 1 and classes[0] == 'safe')):
+        with open (outputPath+'/finalReport2.json', 'w') as f:
+            json.dump({'report': 'safe'}, f, indent=6)
+        vuln2_flag = False
+    #print(allCWEs)
+
+
+    if (vuln2_flag):
+        classificationReport_list = dict()
+
+
+        for i, classif in enumerate(classes):
+            classificationReport = dict()
+            # print(classif)
+            # print(allCWEsDF['CWE-ID'])
+            # print(allCWEsDF.loc[allCWEsDF['CWE-ID']==int(classif), 'Name'])  
+            for field in fields:
+                if field in forbidden_fields:
+                    continue
+                entry = allCWEsDF.loc[allCWEsDF['CWE-ID']==int(classif), field]
+                if(entry.empty):
+                    entry = ''
+                else:
+                    entry = str(entry.item())
+                    #print(entry)
+                    entry = re.sub(':', '', entry)
+                    entry = re.sub('SCOPE', ' ,', entry)
+                    entry = re.sub('METHOD', ' ,', entry)
+                    entry = re.sub('DESCRIPTION', ' ,', entry)
+                    entry = re.sub('REFERENCE', ' ,', entry)
+                    entry = re.sub('IMPACT', ' ,', entry)
+                    entry = re.sub('PHASE', ' ,', entry)
+                    entry = re.sub('STRATEGY', ' ,', entry)
+                    entry = re.sub('TYPE', ' ,', entry)
+                    entry = re.sub('NOTE', ' ,', entry)
+                    #print(entry)
+                classificationReport[field] = entry
+                
+            # print(classificationReport)    
+            classificationReport['ID'] = classif
+            classificationReport_list[f'rep{i}'] = classificationReport
+            
+
+        finalReport['report2'] = classificationReport_list
+
+
+
+
+        with open (outputPath+'/finalReport2.json', 'w') as f:
+            json.dump(finalReport, f, indent=6)
 
 
     ########################################################## LOCALIZATION REPORT ##############################################
@@ -174,5 +279,5 @@ if(1):
 
 
 
-with open (outputPath+'/finalReport.json', 'w') as f:
-    json.dump(finalReport, f, indent=6)
+# with open (outputPath+'/finalReport.json', 'w') as f:
+#     json.dump(finalReport, f, indent=6)

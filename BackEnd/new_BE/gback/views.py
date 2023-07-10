@@ -109,7 +109,7 @@ def runOnFolder(folderPath):
 
 
 
-def asynchronousRunOnFolder(folderPath):
+def asynchronousRunOnFolder(folderPath, localize_only = 'false'):
 
     OUTputPath = os.path.join(folderPath,'output')
     statusPath = str(os.path.join(folderPath, 'status.txt')).replace('\\', '/')
@@ -117,7 +117,7 @@ def asynchronousRunOnFolder(folderPath):
         f.write('submitted')
     absPathtoMainPipeline = os.path.join(GUARDISTA_PATH, 'mainPipeline.py')
 
-    p = Popen(['python', absPathtoMainPipeline, folderPath, 'false', os.path.join(folderPath,'output')])
+    p = Popen(['python', absPathtoMainPipeline, folderPath, 'false', os.path.join(folderPath,'output'), localize_only])
 
     return
 
@@ -152,7 +152,61 @@ class MulFileUploadView(APIView):
                 return Response(response_for_checks, status=status.HTTP_400_BAD_REQUEST)
         else:
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+
+
+
+
+class LocalizerFileUploadView(APIView):
+    def post(self, request):
+        try:
+            num_case  = request.COOKIES.get('num_case')
+        except:
+            response = HttpResponse({f"invalid {num_case}num_case": 'cookie not set'}) 
+            response.status_code = 401
+            return response
+
+        serializer = MULFileSerializer(data=request.data)
+        if serializer.is_valid():
+            files = serializer.validated_data['files']
+            file_paths = []
+
+            #make a 'source' folder then put all the input files in it
+            script_parent_folder_path = '/'.join(re.split(r'\\',os.path.realpath(__file__))[:-2])
+            case_path = os.path.join(script_parent_folder_path, 'tmp', f'tmp{num_case}')
+            SourceFolder = os.path.join(script_parent_folder_path, 'tmp', f'tmp{num_case}', 'source')
+            if(not os.path.isdir(SourceFolder)):
+                os.makedirs(SourceFolder)
+            
+
+            allFileNames =[f.name for f in files]
+            response_for_checks, validity = sanityChecks(allFileNames)
         
+            if(validity):
+                for file in files:
+                    file_path = os.path.join(SourceFolder, file.name).replace('\\', '/')
+                    with open(file_path, 'wb+') as destination:
+                        for chunk in file.chunks():
+                            destination.write(chunk)
+                    file_paths.append(file_path)
+
+                asynchronousRunOnFolder(case_path, 'true')
+                response = HttpResponse({f"{num_case}": int(num_case)})
+                
+                response.status_code = 201
+                return response #, render(request, 'Loading.html')#, 
+            
+            else:
+                return Response(response_for_checks, status=status.HTTP_400_BAD_REQUEST)
+        else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+
+
         
 
 
@@ -267,25 +321,33 @@ class CheckReportView(APIView):
             OutputDir = os.path.join(script_parent_folder_path, 'tmp', f'tmp{num_case}', 'output')
             StatusFile = str(os.path.join(OutputDir, 'status.txt')).replace('\\', '/')
 
-            Classification_ReportFile =  str(os.path.join(OutputDir, 'finalReport.json')).replace('\\', '/')
+            Classification_ReportFile_Approach1 =  str(os.path.join(OutputDir, 'finalReport1.json')).replace('\\', '/')
+            Classification_ReportFile_Approach2 =  str(os.path.join(OutputDir, 'finalReport2.json')).replace('\\', '/')
             Loc_ReportFile =  str(os.path.join(OutputDir, 'span.json')).replace('\\', '/')
 
 
 
-            if(os.path.isdir(OutputDir) and os.path.isfile(Classification_ReportFile)):
+            if(os.path.isdir(OutputDir) and os.path.isfile(Classification_ReportFile_Approach1) and os.path.isfile(Classification_ReportFile_Approach2)):
                 try:
                     with open (StatusFile, 'r') as f:
                         status_content = f.read()
                     if(status_content == 'classified'):
-                        with open (Classification_ReportFile, 'r') as f:
-                            content = json.load(f)
+                        with open (Classification_ReportFile_Approach1, 'r') as f:
+                            content1 = json.load(f)
+                        with open (Classification_ReportFile_Approach2, 'r') as f:
+                            content2 = json.load(f)
+                        content = {'report1': content1, 'report2': content2}
+                    
                     elif(status_content == 'completed'):
-                        with open (Classification_ReportFile, 'r') as f:
-                            class_content = json.load(f)
+                        with open (Classification_ReportFile_Approach1, 'r') as f:
+                            class_content1 = json.load(f)
+                        with open (Classification_ReportFile_Approach2, 'r') as f:
+                            class_content2 = json.load(f)
                         with open (Loc_ReportFile, 'r') as f:
                             content = json.load(f)
                         newDict = {}
-                        newDict['report'] = class_content
+                        newDict['report1'] = class_content1
+                        newDict['report2'] = class_content2
                         newDict['span'] = content
                         content = newDict
                         
@@ -327,7 +389,7 @@ class LocReportView(APIView):
             OutputDir = os.path.join(script_parent_folder_path, 'tmp', f'tmp{num_case}', 'output')
             StatusFile = str(os.path.join(OutputDir, 'status.txt')).replace('\\', '/')
 
-            Classification_ReportFile =  str(os.path.join(OutputDir, 'finalReport.json')).replace('\\', '/')
+            Classification_ReportFile =  str(os.path.join(OutputDir, 'finalReport2.json')).replace('\\', '/')
             Loc_ReportFile =  str(os.path.join(OutputDir, 'span.json')).replace('\\', '/')
 
 
@@ -348,7 +410,7 @@ class LocReportView(APIView):
                 except:
                     return JsonResponse(json.dumps({f"invalid {num_case}num_case, exception while reading localizer report, no corresponding json report": 'cookie not set'}, ensure_ascii=False), status=status.HTTP_400_BAD_REQUEST, safe=False)
 
-                return JsonResponse(resp)
+                return JsonResponse(content)
             else:
                 return JsonResponse(json.dumps({f"invalid {num_case} num_case, no localization report YET, wait for it, no corresponding json report": 'cookie not set'}, ensure_ascii=False), status=status.HTTP_400_BAD_REQUEST, safe=False)
         

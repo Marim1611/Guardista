@@ -1,5 +1,18 @@
 import Levenshtein
 
+
+'''
+    This script contains all the implementation of the 6 string matching algorithms which are:
+    1) Levenstein
+    2) Jaro-Winkler
+    3) RatCliff-Obershelp
+    4) Trigram
+    5) Sorensen-Dice
+    6) Jaccard
+'''
+
+
+
 def levenshtein_similarity(a, b):
     # calculate Levenshtein similarity
     d = Levenshtein.distance(a, b)

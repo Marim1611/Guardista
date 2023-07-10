@@ -1,18 +1,49 @@
 import hashlib
 
 
+'''
+    Hello, this script defines the full implementation of MOSS algorithm from scratch
+    it is called inside the localizer module
+
+    Here you can find some useful hash functions, the Winnowing algorithm and the diffing function
+
+    MOSS is a similarity measure of software,
+    the requirements for such similarity measure is to be invariant to:
+    1) spaces
+    2) number of lines
+    3) reordering
+    4) replacement
+    5) local update and delete
+    6) insertion of dummy code (to a certain extend)
+
+    MOSS is one of the complex similarity algorithms due to the presence of the hash function and the nested loops used in diffing
+    so it must be used with care, should be used between two suspect codes only, not between any 2 arbitrary codes we 5alas
+
+    enjoy :)
+'''
+
+
+
+
+
+
+
+
+# just for testing
 String1 = "hello i am aymanhello i am aymanhello i am aymanhello i am aymanhello i am aymanhello i am ayman"
 String3 = "am hello i aymanhello i am aymanhello i am aymanhello i am aymanhello i am aymanhello i am ayman"
-
 #String3 = "i am ayman helloi am ayman helloi am ayman helloi am ayman helloi am ayman helloi am ayman hello"
-
 String2 = '''%255 = getelementptr inbounds %"`anonymous-namespace'::write_result", %"`anonymous-namespace'::write_result"* %result_-96, i32 0, i32 0, !insn.addr !5863
   %256 = load i32, i32* %255, align 8, !insn.addr !5863
   %257 = inttoptr i32 %fh to i32*, !insn.addr !5863
   store i32 %256, i32* %257, align 4, !insn.addr !5863
 '''
 
+
 def hash_string(s):
+    '''
+        Simplet hash function for strings
+    '''
     hash_value = 0
     for i in range(len(s)):
         hash_value += ord(s[i]) * (31 ** (len(s) - i - 1))
@@ -21,6 +52,10 @@ def hash_string(s):
 
 
 def ComputeHashes(String2, windowSize=5, hashFunc=hashlib.sha1, PrintStats=False):
+    '''
+        This function takes a window of the input string, computes the hash of each window
+        returns a list of hashes
+    '''
     windows = []
     hexflag = True
     for i in range(len(String2)- windowSize +1):
@@ -48,8 +83,7 @@ def ComputeHashes(String2, windowSize=5, hashFunc=hashlib.sha1, PrintStats=False
             except:
                 print(f"ERROR IN HASH FUNCTION {hashFunc}")
                 exit()
-        #listOfHashes.append(hashlib.sha1(window.encode()))
-        #listOfHashes.append(hash(window)))
+        
 
     if(fl and PrintStats):
         print(f"\n\nHex of hashes of each window in order: ")
@@ -62,6 +96,12 @@ def ComputeHashes(String2, windowSize=5, hashFunc=hashlib.sha1, PrintStats=False
 
 
 def SplitHashesToWindows(HashesWindowSize, ListOfHashes,hexflag):
+    '''
+        Just a helper function for the next function
+        it takes a list of hashes and splits them into windows to extract the signature of each hash window in the following function
+    '''
+
+
     #split hashes into windows
 
     windows = []
@@ -98,6 +138,16 @@ def getOneLargeDict_FromListOfDicts(windows, PrintStats=False):
 
 
 def CalculateSignature(p, windows, hexflag,PrintStats=False):
+    '''
+        This function selects the signature of each window from the passed list of windows
+        in MOSS, there are a lot of selection methods
+        some implementations selects the largest non-recurrent hash in this current window
+        some implementations selects the smallest
+        others select the median
+
+        in our implementation, we select the smallest non-recurrent hash in the window
+        because the hash function has a very big upper limit (infinity), while the lower limit is defined by a number
+    '''
     signature = []
     for i in range(len(windows)):
         subList = windows[i: i+p].copy()
@@ -119,13 +169,30 @@ def CalculateSignature(p, windows, hexflag,PrintStats=False):
 
 
 def Winnow (Stringy, K, windowSize, p, hashFunc=hashlib.sha1, printStats=False):
+    '''
+        As simple as possible
+        it computes the hashes of each window in a string
+        then selects the signature of each window
+        then combines all those signatures in a list
+        returns this list as the signature of the entire document/string
+    '''
     ListOfHashes,hexflag = ComputeHashes(Stringy, K, hashFunc, printStats)
     windows = SplitHashesToWindows(windowSize, ListOfHashes ,hexflag)
     windows = getOneLargeDict_FromListOfDicts(windows, printStats)
     return CalculateSignature(p,windows,hexflag, printStats)
 
 
+
+
 def diff (stringSRC, stringOTHER, K, WindowSize, P, PrintStats = False):
+    '''
+        The diffing algorithm, differentiates between two suspect functions for similarity
+        it extracts the document signature for each string
+        then defines a local window of size WindowSize
+        then calculates the hits and misses in each window with the corresponding window in the other string
+
+        we have 2 similarity measure, you can refer to them in the book for reasons why we chose both
+    '''
 
     sig1 = Winnow(stringSRC, K, WindowSize, P, hash_string, PrintStats)
     sig2 = Winnow(stringOTHER, K, WindowSize, P, hash_string, PrintStats)
@@ -155,21 +222,9 @@ def diff (stringSRC, stringOTHER, K, WindowSize, P, PrintStats = False):
 
     Accuracy_Metric1 = hits/(hits+misses)
 
-    #if(sig1Smaller):
     misses2 = abs(hits-len(sig2))
-    #else:
-    #    misses2 = abs(hits-len(sig2))
-    Accuracy_Metric2 = hits/(hits+misses2)
-
     
-    '''
-    print(f"length of Signature of String1: {len(sig1)}")
-    print(f"length of Signature of String2: {len(sig2)}")
-
-    print(f"\n\n\n\t\t\t[DIFFING RESULTS]\nhits: {hits}")
-    print(f"misses: {misses}")
-    print(f"Accuracy: {hits/(hits+misses)}")
-    '''
+    Accuracy_Metric2 = hits/(hits+misses2)
 
     return Accuracy_Metric1, Accuracy_Metric2,hits, misses, misses2
 
@@ -179,6 +234,10 @@ def diff (stringSRC, stringOTHER, K, WindowSize, P, PrintStats = False):
 
 
 def diffSignatures(sig1, sig2):
+    '''
+        Just a helper function, to diff two signatures instead of two strings
+        it is used when we precomputed all the representatives signatures to optimize things further
+    '''
     sig1 = sorted(sig1)
     sig2 = sorted(sig2)
     hits = 0
@@ -201,11 +260,9 @@ def diffSignatures(sig1, sig2):
         misses += len(sig1)
 
     Accuracy_Metric1 = hits/(hits+misses)
-
-    #if(sig1Smaller):
+    
     misses2 = abs(hits-len(sig2))
-    #else:
-    #    misses2 = abs(hits-len(sig2))
+   
     Accuracy_Metric2 = hits/(hits+misses2)
 
     return Accuracy_Metric1, Accuracy_Metric2,hits, misses, misses2

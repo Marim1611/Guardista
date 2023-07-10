@@ -4,7 +4,7 @@
 
 
 <#
-    this script is a cross compiler, it takes the folder containing all source files and compiles them all regardless of the language
+    this script is to act as a cross compiler, it takes the folder containing all source files and compiles them all regardless of the language
     output files are written inside output directory inside the passed folder
     if you don't have some packages, no problem, this script will hopefully figure out which packages you lack and install them for you
     currently we compile C, CPP, Python, Fortran files
@@ -27,13 +27,21 @@
 #>
 
 
+<#
+    ARGS:
+    1) Input path, whether a file or a folder
+    2) Output path
+    3) Retdec Path for decompilation
+    4) Compiled? (either true if the files are already compiled, else false)
+#>
+
+
 
 
 
 $userCodePath = $args[0]
 $ifFolder = Test-Path -Path $userCodePath -PathType Container
 
-#$activate_script_path = $args[1]
 $GuardistaOutputPath = $args[1]
 
 $projPath = "$GuardistaOutputPath/source"
@@ -53,7 +61,6 @@ else {
 
 
 $scriptPath = Get-Location
-# $rootPath = (get-item $scriptPath).parent.FullName
 $retdecPath = $args[2]
 
 $Compiled = $args[3]
@@ -102,25 +109,6 @@ if($os -eq "Windows_NT")
 
             #ensuring pip
             if(-not(py -3 -m ensurepip)){Write-Host "please install pip"}
-
-
-            # This is just to make a new venv for the user to not mess up his global env
-            <#
-            $folders = Get-ChildItem | Where-Object {$_.Attributes -eq "Directory"}
-            $folders = $folders.Name
-            $flag = $true
-            foreach ($folder in $folders)
-            {
-                if($folder -eq "GP_Env")
-                {
-                    $flag = $false
-                }
-            }
-            if($flag -eq $true){python -m venv GP_Env}
-            
-            # ./GP_Env/bin/Activate.ps1
-            & $activate_script_path
-            #>
             
 
 
@@ -174,7 +162,6 @@ if($os -eq "Windows_NT")
                 $pythonFiles = Get-ChildItem $projPath | Where-Object {$_.Extension -eq ".py"}
                 $pythonFiles = $pythonFiles.Name
                 $mainpyFile = "main.py"
-                #New-Item -ItemType Directory -Path ./output -ErrorAction SilentlyContinue
                 pyinstaller --distpath "$outputDir/dist" -D --clean --workpath "$outputDir/build" --onefile "$projPath/$mainpyFile" -n "binaryex.exe"
             }
 
@@ -249,7 +236,6 @@ if($os -eq "Windows_NT")
             Write-Host "-------------BUILDING LLVM IR---------------"
 
 
-            # TODO if a pdb file is generated, pass it to retdec
             if(Get-ChildItem $outputDir | Where-Object {$_.Name -eq "dist"})
             {
                 #the compiled code is a python file
@@ -288,6 +274,7 @@ if($os -eq "Windows_NT")
             if (1 -eq $exeFiles.count)
             {
                 python $retdecPath/retdec-decompiler.py "$GuardistaOutputPath/source/$exeFiles" -o "$GuardistaOutputPath/LLfiles/UserCode" --stop-after bin2llvmir --backend-no-opts --backend-no-symbolic-names --backend-strict-fpu-semantics --backend-no-var-renaming --backend-no-compound-operators --backend-no-time-varying-info -k
+                Remove-Item -Path "$GuardistaOutputPath/source/$exeFiles"
             }
             
             else{
@@ -295,6 +282,7 @@ if($os -eq "Windows_NT")
                 foreach ($exe in $exeFiles)
                 {
                     python $retdecPath/retdec-decompiler.py "$GuardistaOutputPath/source/$exe" -o "$GuardistaOutputPath/LLfiles/UserCode$cnt" --stop-after bin2llvmir --backend-no-opts --backend-no-symbolic-names --backend-strict-fpu-semantics --backend-no-var-renaming --backend-no-compound-operators --backend-no-time-varying-info -k
+                    Remove-Item -Path "$GuardistaOutputPath/source/$exeFiles"
                     $cnt = $cnt + 1
                 }
             }
@@ -303,6 +291,8 @@ if($os -eq "Windows_NT")
             Set-Location $scriptPath
             
         }
+
+        
 
 
         #Cleaning the LLfiles folder

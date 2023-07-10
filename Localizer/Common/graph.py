@@ -3,6 +3,26 @@ import copy
 import json
 from time import time
 
+'''
+    Hello again, this script provides all the definitions for Graph and Subgraph matching algorithms and classes
+    here you can find the class definition, our assumptions, and helper functions.
+
+    Helper function you can use for yourself are:
+    1) read Graph from JSON or CSV
+    2) Merge nodes
+    3) eliminate duplicate edges
+    4) Merge two adjacent nodes connected by an edge into one big node
+    5) Check if two graphs are equivalent (Graph isomorphism problem)
+    6) Check if two graphs suffering from CFG obfuscation are equivalent (Graph isomorphism problem, but with extra steps :D)
+
+    enjoy :)
+'''
+
+
+
+
+
+#-------------------------------------------------------------- CLASS DEFINITIONS ---------------------------------------------------------------------------------
 
 class Node:
     def __init__(self):
@@ -313,6 +333,7 @@ class Graph:
         return False
 
 
+#-------------------------------------------------------------- Helper functions ---------------------------------------------------------------------------------
 
 
 
@@ -357,6 +378,8 @@ def checkTwoNodes (srcGraph: Graph, dstGraph: Graph, srcNode : Node, dstNode:Nod
     return True
     
 
+
+
 def checkTwoGraphs (srcGraph:Graph , dstGraph:Graph)->bool:
     '''
     for each pair of nodes in the srcGraph and dstGraph, check those nodes for equivalence
@@ -378,6 +401,7 @@ def checkTwoGraphs (srcGraph:Graph , dstGraph:Graph)->bool:
 
 
 
+
 def copyNode(nd:Node)->Node:
     '''
     shallow copying a single node
@@ -387,6 +411,7 @@ def copyNode(nd:Node)->Node:
     newOut = nd.outEdges.copy()
     retNode.initNode(newIn, newOut, copy.copy(nd.ID), copy.copy(nd.label))
     return retNode
+
 
 def copyGraph(gr: Graph)->Graph:
     '''
@@ -399,7 +424,6 @@ def copyGraph(gr: Graph)->Graph:
 
 
 
-#TODO print a message of Timeout
 def matchTwoGraphs(srcGraph:Graph , dstGraph:Graph, found = False, timeLimit=None, t1 = None, t2=None, timeout=False)->bool:
     '''
     solves the isomorphism problem by trying different merges and transformations on dstGraph then check if the resulted graph matches srcGraph or not.
@@ -429,12 +453,8 @@ def matchTwoGraphs(srcGraph:Graph , dstGraph:Graph, found = False, timeLimit=Non
         for n2 in dstGraph.innerNodes:            
             if (dstGraph.IsParentOrChild(n1, n2) and n1.ID != n2.ID):
                 
-                #print(n1.ID, n2.ID , len(dstGraph.innerNodes))                            # DEBUG
                 newGraph = copyGraph(dstGraph)
-                #newGraph.vizualizeGraph( title=f"{n1.ID} and {n2.ID} merged_BEFORE")         # DEBUG
                 newGraph.mergeNodes(newGraph.getNodeFromID(n1.ID), newGraph.getNodeFromID(n2.ID))
-                
-                #newGraph.vizualizeGraph( title=f"{n1.ID} and {n2.ID} merged_AFTER")                  # FOR DEBUGGING
                 found,_ = matchTwoGraphs(srcGraph, newGraph, found, timeLimit, t1= t1, t2 = t2, timeout=timeout)
                 if (timeout):
                     return found, True
@@ -462,8 +482,6 @@ def matchGraphWithListOfGraphs (UserGraph, ListOfStoredGraphs, Names=None,timeLi
     for gr in ListOfStoredGraphs:
         if gr.Name not in Names:
             continue 
-        #gr.vizualizeGraph(title="original", saveGraph=True)
-        #UserGraph.vizualizeGraph(title="other", saveGraph=True)
         startTime = time()
         match_or_not, Timeout = matchTwoGraphs(gr, UserGraph, timeLimit=timeLimit, t1=startTime)
         if(match_or_not and not Timeout):

@@ -378,10 +378,10 @@ foreach ($folder in $avFolders)
 
                 if(Test-Path -Path ./$pdb_file)
                 {
-                    python "$retdecPath\retdec-decompiler.py" $exefile -p ./$pdb_file -o "$GarbageOutputfolder\$llname_without_ext" --stop-after bin2llvmir --backend-no-opts --backend-no-symbolic-names --backend-no-compound-operators --backend-no-time-varying-info
+                    #python "$retdecPath\retdec-decompiler.py" $exefile -p ./$pdb_file -o "$GarbageOutputfolder\$llname_without_ext" --stop-after bin2llvmir --backend-no-opts --backend-no-symbolic-names --backend-no-compound-operators --backend-no-time-varying-info
                 }
                 else{
-                    python "$retdecPath\retdec-decompiler.py" $exefile -o "$GarbageOutputfolder\$llname_without_ext" --stop-after bin2llvmir --backend-no-opts --backend-no-symbolic-names --backend-no-compound-operators --backend-no-time-varying-info
+                    #python "$retdecPath\retdec-decompiler.py" $exefile -o "$GarbageOutputfolder\$llname_without_ext" --stop-after bin2llvmir --backend-no-opts --backend-no-symbolic-names --backend-no-compound-operators --backend-no-time-varying-info
                 }
 
 
@@ -406,10 +406,10 @@ foreach ($folder in $avFolders)
             $llname_without_ext = $exefile.SubString(0, $exefile.Length - 4)
             $pdb_file = "$llname_without_ext.pdb"
             if(Test-Path -Path ./$pdb_file){
-                python "$retdecPath\retdec-decompiler.py" $exefile -p ./$pdb_file -o "$GarbageOutputfolder\$llname_without_ext" --stop-after bin2llvmir --backend-no-opts --backend-no-symbolic-names --backend-strict-fpu-semantics --backend-no-var-renaming --backend-no-compound-operators --backend-no-time-varying-info
+                #python "$retdecPath\retdec-decompiler.py" $exefile -p ./$pdb_file -o "$GarbageOutputfolder\$llname_without_ext" --stop-after bin2llvmir --backend-no-opts --backend-no-symbolic-names --backend-strict-fpu-semantics --backend-no-var-renaming --backend-no-compound-operators --backend-no-time-varying-info
             }
             else{
-                python "$retdecPath\retdec-decompiler.py" $exefile -o "$GarbageOutputfolder\$llname_without_ext" --stop-after bin2llvmir --backend-no-opts --backend-no-symbolic-names --backend-strict-fpu-semantics --backend-no-var-renaming --backend-no-compound-operators --backend-no-time-varying-info
+                #python "$retdecPath\retdec-decompiler.py" $exefile -o "$GarbageOutputfolder\$llname_without_ext" --stop-after bin2llvmir --backend-no-opts --backend-no-symbolic-names --backend-strict-fpu-semantics --backend-no-var-renaming --backend-no-compound-operators --backend-no-time-varying-info
             }
             $counter = $counter +1
 
