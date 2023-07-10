@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 
 
 
-def read_data(file_name,header=None, index_col=None, endcode_labels=False, drop_1st_col=False):
+def read_data(file_name,header=None, index_col=None, endcode_labels=False, drop_1st_col=False, split = True):
     '''
     this function reads the data from the csv file and returns the features and labels 
     splitted into training and validation sets
@@ -21,8 +21,11 @@ def read_data(file_name,header=None, index_col=None, endcode_labels=False, drop_
     labels = df_numpy[:, -1]
     if endcode_labels:
         labels = encode_labels(labels)
-    X_train, X_val, y_train, y_val = train_test_split(features, labels, test_size=0.2, random_state=0)
-    return X_train, X_val, y_train, y_val
+    if split:
+        X_train, X_val, y_train, y_val = train_test_split(features, labels, test_size=0.2, random_state=0)
+        return X_train, X_val, y_train, y_val
+    else:
+        return features,labels
 
 def drop(x,y,c,p):
         '''
@@ -81,7 +84,7 @@ def encode_labels(y):
         unique_labels = np.unique(y)
         labels_dict = dict(zip(unique_labels, range(len(unique_labels))))
         y_encoded = np.array([labels_dict[label] for label in y])
-        return y_encoded
+        return y_encoded,labels_dict
 
 def show_probs(probs, clf, case):
         '''
@@ -121,87 +124,31 @@ def get_class_probs(path,clf):
                 all_probabilities.append(probabilities)
         return all_probabilities,x_safe_test,y_safe_test
 
-def load_model():
+def load_model(model_name):
         '''
         this function to load the model
         '''
-        with open('models/model.pkl', 'rb') as f:
+        with open('models/'+ model_name, 'rb') as f:
                 model = pickle.load(f)
         return model
-#write function to 
-# def validation_curves(clf,x_data,y_data,cv, hyperparameters):
-#     '''
-#     Plot the validation curve for a given model and hyperparameter.
-#     '''
 
-#     categorical = False
-
-#     plt.rcParams['figure.dpi'] = 300
-# #     plt.style.use('dark_background') 
-
-#     nrows = int(np.ceil(len(hyperparameters)/2))
-#     ncols= 2 if len(hyperparameters) > 1 else 1
-
-#     fig, axs = plt.subplots(nrows, ncols, figsize=(20, 10))
-#     fig.subplots_adjust(top=1.0)
-
-#     if len(hyperparameters) % 2 == 1 and len(hyperparameters) > 1:
-#         fig.delaxes(axs[-1, -1])
-
-#     if len(hyperparameters) == 1:
-#         fig.set_size_inches(10,5)
-
-#     for index, param_name in enumerate(hyperparameters.keys()):
-#         param_range = hyperparameters[param_name]
-
-#         if isinstance(param_range[0], str):
-#             categorical = True
-
-#         train_scores, test_scores = validation_curve(clf, x_data, y_data, param_name=param_name, param_range=param_range,
-#                                     cv=StratifiedKFold(cv), scoring="f1_weighted", n_jobs=4)
-        
-#         train_scores= 1-np.mean(train_scores, axis=1)
-#         test_scores= 1-np.mean(test_scores, axis=1)
-
-#         if len(hyperparameters) == 1:
-#             ax= axs
-#         elif len(hyperparameters) == 2:
-#             ax = axs[index]
-#         else:
-#             ax = axs[index // 2, index % 2]
-
-#         if categorical:
-#             # check for nan values and remove them
-#             nan_indices= np.argwhere(np.isnan(train_scores)) 
-
-#             if len(nan_indices) > 0:
-#                 nan_values= [param_range[i] for i in nan_indices.flatten()]
-                
-#                 warnings.warn(f"Validation curve for {param_name} contains NaN values for values {nan_values}. These values will be removed.")
-
-#                 train_scores= np.delete(train_scores, nan_indices)
-#                 test_scores= np.delete(test_scores, nan_indices)
-#                 param_range= np.delete(param_range, nan_indices)
-
-#             x_axis= np.arange(len(param_range))            
-#             ax.bar(x_axis-0.2/2, train_scores,width=0.2, label="Training Error")
-#             ax.bar(x_axis+0.2/2, test_scores,width=0.2, label="Validation Error")
-#             ax.set_xticks(x_axis)
-#             ax.set_xticklabels(param_range)
-
-#         else:
-
-#             ax.plot(param_range, train_scores, label="Training Error")
-#             ax.plot(param_range, test_scores, label="Validation Error")
-            
-#             optimal_param= optimal_hyperparameter(train_scores, test_scores, param_range)
-#             ax.axvline(optimal_param, color='red', linestyle='--', label="Optimal "+param_name+\
-#                        " is around "+str(np.round(optimal_param,2)))
-
-#         ax.set_title(f"Validation Curve for {param_name}")
-#         ax.set_xlabel(param_name)
-#         ax.set_ylabel("Error")
-#         ax.legend(loc="best")  
-
-#     clear_output(wait=False) 
-#     plt.show()
+def get_data(dir_path):
+    '''
+    this function gather data from folder of csv files to store features
+    and labels of each cav
+    input args: 
+        dir_path => relative path to folder contain csv files
+    return:
+        X_all => list of numpy arrays, each numpy array represents set of
+              X_test contains features of specefic CVE 
+        y_all => corresponding true labels of X_all 
+    '''
+    X_all=[]
+    y_all=[]
+    for filename in os.listdir(dir_path):
+        if filename.endswith('.csv'):
+            file_path = os.path.join(dir_path, filename)
+        X,y =read_data(file_path, drop_1st_col=False, split=False)
+        X_all.append(X)
+        y_all.append(y)
+    return X_all,y_all
