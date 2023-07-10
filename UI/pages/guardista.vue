@@ -705,7 +705,5 @@ h3 {
 .custom-font-weight {
   font-weight: 900;
 }
-. {
-  color: #757575 !important;
-}
+
 </style>
