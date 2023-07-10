@@ -46,6 +46,7 @@
       :title="screen.title"
       :bg-color="screen.bgColor"
       :img="screen.img"
+      :isLeft="screen.leftOrRight"
     />
   </v-container>
 </template>
