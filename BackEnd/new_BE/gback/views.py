@@ -244,18 +244,26 @@ class CheckStatusView(APIView):
     
 
                     return JsonResponse({"waiting_status": 3})
+                elif(content == 'safe'):
+
+                    return JsonResponse({"waiting_status": 5})
+                
                 elif(content == 'submitted'):
                     respBody = {"waiting_status": 0}
                     jsonResp = json.dumps(respBody)
                     return HttpResponse(jsonResp, status=status.HTTP_200_OK,content_type='application/json')
+                
+
                 elif(re.findall('.*c.*o.*m.*p.*', content)):
                     respBody = {"waiting_status": 1}
                     jsonResp = json.dumps(respBody)
                     return HttpResponse(jsonResp, status=status.HTTP_200_OK,content_type='application/json')
+                
                 elif(re.findall('.*i.*f.*t.*e.*', content)):
                     respBody = {"waiting_status": 2}
                     jsonResp = json.dumps(respBody)
                     return HttpResponse(jsonResp, status=status.HTTP_200_OK,content_type='application/json')
+                
                 else:
                     respBody = {"waiting_status": content}
                     jsonResp = json.dumps(respBody)
@@ -337,7 +345,7 @@ class CheckReportView(APIView):
                         with open (Classification_ReportFile_Approach2, 'r') as f:
                             content2 = json.load(f)
                         content = {'report1': content1, 'report2': content2}
-                    
+                                            
                     elif(status_content == 'completed'):
                         with open (Classification_ReportFile_Approach1, 'r') as f:
                             class_content1 = json.load(f)

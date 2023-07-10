@@ -267,7 +267,44 @@ def pipeline(userFilePath, userFile, Localize_only_flag):
 
         embeddings_semantic_dict = {}
         #loop on each W2V model, and for each model, extract an embedding's csv
-        for folder in os.listdir(absPath_to_binary_models):
+
+
+        unused_models= [
+            '23',
+            '36',
+            '78',
+            '762'
+        ]
+
+
+
+        W2V_modelss =[
+            '23',
+            '36',
+            #'78',
+            '121',
+            '122',
+            '126',
+            '127',
+            '134',
+            '190',
+            '191',
+            '195',
+            '401',
+            '457',
+            '590',
+            '690',
+            '762'
+        ]
+
+        av_binaryModels = os.listdir(absPath_to_binary_models)
+
+
+        
+
+        for folder in W2V_modelss:
+            if folder in unused_models:
+                continue
             w2v_model_path = os.path.join(absPath_to_binary_models, folder)
 
             if(not (os.path.isdir(w2v_model_path))):
@@ -405,31 +442,39 @@ def pipeline(userFilePath, userFile, Localize_only_flag):
             if re.findall(classification_preds, m):
                 chosen_model = m
                 break
-
-
-        #load the corresponding model
-        Binary_modelPath = os.path.join(SCRIPT_ROOT_PATH, 'models', f'{chosen_model}')
-        with open (Binary_modelPath, 'rb') as f:
-            LR_binary = pickle.load(f)
-
-        print(embeddings_semantic_dict.keys())
-
-        #print(embeddings_semantic_dict['121'])
         
-        FINAL_classification = LR_binary.predict( embeddings_semantic_dict[classification_preds].iloc[:, :-1])
+        if not(classification_preds in unused_models):
+            print (chosen_model)
+            
 
+
+            #load the corresponding model
+            Binary_modelPath = os.path.join(SCRIPT_ROOT_PATH, 'models', f'{chosen_model}')
+            with open (Binary_modelPath, 'rb') as f:
+                LR_binary = pickle.load(f)
+
+            print(embeddings_semantic_dict.keys())
+
+            #print(embeddings_semantic_dict['121'])
+            
+            FINAL_classification = LR_binary.predict( embeddings_semantic_dict[classification_preds].iloc[:, :-1])
+
+            
+            print(f"\n\n\n#######################################\nApproach 1 : I FINALLY CLASSIFIED : \n{FINAL_classification}\n#########################################\n")
+
+            with open(os.path.join(OUTPUT_PATH, 'classification1.txt'), 'w') as f:
+                f.write('\n'.join(FINAL_classification))
+
+            with open(os.path.join(OUTPUT_PATH, 'App1Result.txt'), 'w') as f:
+                f.write('\n'.join(FINAL_classification))
+
+            #############################################################################################################################################
         
-        print(f"\n\n\n#######################################\nApproach 1 : I FINALLY CLASSIFIED : \n{FINAL_classification}\n#########################################\n")
-
-        with open(os.path.join(OUTPUT_PATH, 'classification1.txt'), 'w') as f:
-            f.write('\n'.join(FINAL_classification))
-
-        with open(os.path.join(OUTPUT_PATH, 'App1Result.txt'), 'w') as f:
-            f.write('\n'.join(FINAL_classification))
-
-        #############################################################################################################################################
-        
-
+        else:
+            with open(os.path.join(OUTPUT_PATH, 'classification1.txt'), 'w') as f:
+                f.write('safe')
+            with open(os.path.join(OUTPUT_PATH, 'App1Result.txt'), 'w') as f:
+                f.write('safe')
 
 
 
@@ -443,13 +488,13 @@ def pipeline(userFilePath, userFile, Localize_only_flag):
             '78': os.path.join(SCRIPT_ROOT_PATH, 'models', 'LR_78.pkl'),
             '121': os.path.join(SCRIPT_ROOT_PATH, 'models', 'LR_121.pkl'),
             '122': os.path.join(SCRIPT_ROOT_PATH, 'models', 'ADB_122.pkl'),
-            # '124': os.path.join(SCRIPT_ROOT_PATH, 'models', ''),
+            '124': os.path.join(SCRIPT_ROOT_PATH, 'models', ''),
             '126': os.path.join(SCRIPT_ROOT_PATH, 'models', 'ADB_126.pkl'),
             '127': os.path.join(SCRIPT_ROOT_PATH, 'models', 'ADB_127.pkl'),
             '134': os.path.join(SCRIPT_ROOT_PATH, 'models', 'LR_134.pkl'),
-            # '190': os.path.join(SCRIPT_ROOT_PATH, 'models', ''),
+            '190': os.path.join(SCRIPT_ROOT_PATH, 'models', ''),
             '191': os.path.join(SCRIPT_ROOT_PATH, 'models', 'ADB_191.pkl'),
-            # '194': os.path.join(SCRIPT_ROOT_PATH, 'models', ''),
+            '194': os.path.join(SCRIPT_ROOT_PATH, 'models', ''),
             '195': os.path.join(SCRIPT_ROOT_PATH, 'models', 'LR_195.pkl'),
             '401': os.path.join(SCRIPT_ROOT_PATH, 'models', 'LR_401.pkl'),
             '457': os.path.join(SCRIPT_ROOT_PATH, 'models', 'ADB_457.pkl'),
@@ -461,6 +506,8 @@ def pipeline(userFilePath, userFile, Localize_only_flag):
         all_classifications_of_series = {}
 
         for cve_binary, bin_model_path in binary_models_series_paths.items():
+            if cve_binary in unused_models:
+                continue
             with open(bin_model_path, 'rb') as f:
                 bin_model = pickle.load(f)
             
@@ -524,6 +571,11 @@ def pipeline(userFilePath, userFile, Localize_only_flag):
             f.write('classified')
 
 
+
+        if ((not classification_list or classification_list == []) and FINAL_classification == 'safe'):
+            with open(f'{OUTPUT_PATH}/status.txt', 'w') as f:
+                f.write('safe')
+                return
 
     # ------------------- 5. Localizer ------------------- #
     '''
