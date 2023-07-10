@@ -22,11 +22,14 @@ targets_folder
 4-Features_Extraction/p38/
 4-Features_Extraction/venv/
 LSTM/
-BackEnd/new_BE/tmp
-BackEnd/new_BE/tmp/*
+BackEnd/new_BE/tmp/
 4-Features_Extraction/GCN/gcnNode.ipynb
+
+testSuite/Test_Set/
+testSuite/Test_Set2/
 
 tests/
 unused_models/
 models/
 word2vec.model
+Test Set/

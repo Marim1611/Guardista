@@ -9,11 +9,6 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import f1_score
 
 
-# columns names for the dataset and thier types 
-CATEGORICAL=['Gender', 'H_Cal_Consump', 'Alcohol_Consump', 'Smoking','Food_Between_Meals', 'Fam_Hist', 'H_Cal_Burn', 'Transport']
-NUMERICAL=['Age', 'Height', 'Weight', 'Veg_Consump', 'Water_Consump', 'Meal_Count','Phys_Act', 'Time_E_Dev']
-MIXED=['Gender', 'Age', 'Height', 'Weight', 'H_Cal_Consump', 'Veg_Consump','Water_Consump', 'Alcohol_Consump', 'Smoking', 'Meal_Count','Food_Between_Meals', 'Fam_Hist', 'H_Cal_Burn', 'Phys_Act','Time_E_Dev', 'Transport']
-COLOR= '#ECAF93' # color for the plots
 
 def handle_class_imbalance(X,y, method=None,k=None, sampling_ratio=[1,1,1]):
     '''
@@ -71,6 +66,14 @@ def over_sampling( X,y,k,sampling_ratio,method ):
 
 #------------------------------------------------------------
 def under_sampling(X,y):
+    '''
+    this function apply undersampling technique 
+    input atgs: X => features
+                y=> corrsponding labels
+    return      X_res=> data points after undersampling
+                y_res=> corrsponding labels after undersampling
+
+    '''
     rus = RandomUnderSampler(random_state=42)
     X_res, y_res = rus.fit_resample(X, y)
     return X_res, y_res
@@ -78,6 +81,12 @@ def under_sampling(X,y):
 #------------------------------------------------------------
    
 def cost_sensitive(y):
+    '''
+    this function compute weights for each class (CVE)
+    to handle class-imbalance problem
+    input args: y => classes
+    return : list of weights for each class
+    '''
     weights=dict()
     for i in range(len(np.unique(y))): 
         weights[i]=1 /len(y[y == i])

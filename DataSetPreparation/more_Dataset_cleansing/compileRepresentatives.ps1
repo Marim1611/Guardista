@@ -25,7 +25,7 @@ Set-Location $orig_location
 
 foreach ($CWEFolder in $allCWEFolders)
 {
-    & .\julietBin2LL.ps1 $rootpath\testcases\$CWEFolder $compiled true false false $retdecPath
+    & .\julietBin2LL.ps1 $rootpath\testcases\$CWEFolder $compiled true false true $retdecPath
 }
 
 

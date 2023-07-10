@@ -101,7 +101,7 @@ def main_localizer(compiledFlag, CFG_scriptPath,llvm_user_file,clf_path, src_pat
 
         threshold = 0.4
         k = 2
-        tightness = 0.8
+        tightness = 0.7
 
         #this is a dictionary of key: 
         #                       dictionary of key: vulnerability family 
