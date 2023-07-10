@@ -4,10 +4,6 @@ import numpy as np
 import os
 import gensim
 
-# Define a list of tokenized sentences
-# sentences = [["this", "is", "a", "sentence"], ["this", "is", "another", "sentence"], ["yet", "another", "sentence"]]
-# sentences = [["this is a sentence"], ["this is another sentence"], ["yet another sentence"]]
-
 in_path = sys.argv[1]
 binary_models_path = sys.argv[2]
 cwe_1 = sys.argv[3]

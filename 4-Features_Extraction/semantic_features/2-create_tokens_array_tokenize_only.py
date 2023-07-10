@@ -19,7 +19,7 @@ def Tokenizing_Job_Per_Thread(files, i, outpath, cwe):
                 with open(filepath, 'r') as fi:
                     data = fi.read()
             except: 
-                print('ERRRRRRRRRRRRRRRR')
+                print('ERROR')
                 exit()
             # out = Normalize_Tokenize_LLVM(data, True)
             # outputNumpy.append(np.asarray(out, dtype=object))
@@ -78,9 +78,6 @@ if __name__ == '__main__':
 
     if not os.path.exists(out_path):
         os.mkdir(out_path)
-    # else:
-    #     rmtree(out_path)
-    #     os.mkdir(out_path)
 
     if not os.path.exists(out_path+"/"+cwe):
         os.mkdir(out_path+"/"+cwe)
@@ -88,6 +85,5 @@ if __name__ == '__main__':
 
     tokens_array = create_tokens_array(train_files_path, out_path, cwe)
 
-    
     # with open(out_path+'/tokens_array_'+cwe+'.npy', 'wb') as f:
     #    np.save(f, tokens_array)
