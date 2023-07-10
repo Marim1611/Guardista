@@ -38,12 +38,19 @@
     >
       <v-col cols="3"><v-spacer></v-spacer></v-col>
 
-      <v-col v-for="(ele, i) in cases" :key="i" class="btn">
+      <v-col v-for="(ele, i) in cases.span(0, -1)" :key="i" class="btn">
         <v-icon :class="{ iconColor: done[i] }">{{ icons[i] }}</v-icon>
         <p class="stat" color="#6e1131" :class="{ checked: done[i] }">
           {{ ele }}
         </p>
       </v-col>
+      <v-col class="btn" v-if="!disableLocalization">
+        <v-icon :class="{ iconColor: done[4] }">{{ icons[4] }}</v-icon>
+        <p class="stat" color="#6e1131" :class="{ checked: done[4] }">
+          {{ ele }}
+        </p>
+      </v-col>
+
       <v-col cols="3"><v-spacer></v-spacer></v-col>
     </v-row>
 
@@ -139,7 +146,7 @@
         medium
         class="ml-2"
         @click="localize"
-        :disabled="isSafeMsgDisabled"
+        v-if="!disableLocalization"
       >
         Localize vulnerability?
         <v-icon right dark>mdi-bug</v-icon>
@@ -260,6 +267,7 @@ export default {
         "mdi-loading rotate",
       ],
       message2: "",
+      disableLocalization: false,
     };
   },
   methods: {
@@ -294,11 +302,17 @@ export default {
             this.$set(this.icons, 2, "mdi-check-circle");
 
             console.log("&&&&&&&&&&&&& lifted");
-          } else if (res.data.waiting_status == 3) {
+          } else if (
+            res.data.waiting_status == 3 ||
+            res.data.waiting_status == 5
+          ) {
             this.$set(this.done, 3, true);
             this.$set(this.icons, 3, "mdi-check-circle");
             console.log("&&&&&&&&&&&&& classified");
             this.getReport();
+            if (res.data.waiting_status == 5) {
+              this.disableLocalization = true;
+            }
           } else if (res.data.waiting_status == 4) {
             this.$set(this.done, 4, true);
             this.$set(this.icons, 4, "mdi-check-circle");
@@ -496,6 +510,7 @@ export default {
 
       clearInterval(this.intervalId);
       this.$refs.form.reset();
+      this.disableLocalization = false;
     },
 
     show_report(report) {
