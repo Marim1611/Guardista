@@ -20,27 +20,39 @@
           </td>
           <td>
             <v-btn
-              color="success"
-              dark
+              light
               small
-              class="ml-0 my-6"
+              class="ml-0 my-6 primary--text"
               @click="showReport(item)"
+              text
             >
-              detailed report
-              <v-icon right dark>mdi-file-document-multiple-outline</v-icon>
+              <span class="v-btn__content custom-underline">
+                Detailed Report
+              </span>
+              <v-icon right dark color="primary"
+                >mdi-file-document-multiple-outline</v-icon
+              >
             </v-btn>
           </td>
         </tr>
       </tbody>
     </v-table>
-    <DetailedReport
-      v-if="Object.keys(reportToShow).length > 0"
-      :report="reportToShow"
-      :detailed="detailed"
-      @closeDialog="closeReport"
-      class="dialog"
+    <v-dialog
+      v-model="detailed"
+      width="max-content"
+      class="mt-16 dialog"
+      hide-overlay
+      persistent
+      @keydown.esc="closeReport"
     >
-    </DetailedReport>
+      <DetailedReport
+        v-if="Object.keys(reportToShow).length > 0"
+        :report="reportToShow"
+        :detailed="detailed"
+        @closeDialog="closeReport"
+      >
+      </DetailedReport>
+    </v-dialog>
   </v-card>
 </template>
 
@@ -103,5 +115,13 @@ export default {
 .table td,
 .table th {
   padding: 8px;
+}
+
+.dialog {
+  z-index: 9999; /*not working*/
+}
+
+.custom-underline {
+  text-decoration: underline;
 }
 </style>

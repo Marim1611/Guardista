@@ -1,5 +1,5 @@
 <template>
-  <v-card class="code py-8 px-2">
+  <v-card class="code py-8 px-10">
     <v-card-title class="d-flex justify-end align-end">
       <v-row class="text-center">
         <v-col>
