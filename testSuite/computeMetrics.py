@@ -77,7 +77,7 @@ print(TruePositive_DF)
 print('\n\n\n********************************************************************8')
 
 print(Vuln_DF.sort_values('sumFP'))
-Vuln_DF.to_csv('toChoose.csv')
+Vuln_DF.to_csv('toChoose2.csv')
 
 
 

@@ -389,7 +389,7 @@ export default {
               if (this.spans_dict[id] === undefined) {
                 continue;
               }
-              this.spans.push([id, this.spans_dict[id]]);
+              this.spans.push(this.spans_dict[id]);
             }
           }
           if (this.spans.length == 0 && this.safe_reports[1] == false) {
